@@ -8,7 +8,7 @@
 
 ## 작성자
 
-봉일천고 전중수 (jungsooj@korea.kr)
+봉일천고등학교 진로진학부장 전중수 (jungsooj@korea.kr)
 
 ## 라이선스
 
