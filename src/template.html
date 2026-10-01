@@ -161,7 +161,11 @@ tbody th{font-weight:600;text-align:left}
 .tabs{display:flex;gap:6px;flex-wrap:wrap}
 .tabs button{border:1px solid var(--line2);background:var(--surface);border-radius:8px;padding:11px 22px;min-width:168px;justify-content:center;cursor:pointer;display:flex;gap:8px;align-items:baseline;font-weight:600;font-size:15px}
 @media (max-width:640px){.tabs{display:grid;grid-template-columns:1fr 1fr}.tabs button{min-width:0;padding:10px 12px}}
-.tabs button[aria-selected="true"]{border-color:var(--ink);box-shadow:inset 0 -3px 0 var(--tc)}
+.tabs button{background:color-mix(in srgb,var(--tc) 9%,var(--surface));border-color:color-mix(in srgb,var(--tc) 32%,var(--line2));color:var(--ink);transition:background-color .15s,border-color .15s,box-shadow .15s}
+.tabs button:not(:disabled):hover{background:color-mix(in srgb,var(--tc) 20%,var(--surface));border-color:color-mix(in srgb,var(--tc) 65%,var(--line2))}
+.tabs button:not(:disabled):active{background:color-mix(in srgb,var(--tc) 30%,var(--surface))}
+.tabs button[aria-selected="true"],.tabs button[aria-selected="true"]:hover{background:color-mix(in srgb,var(--tc) 30%,var(--surface));border-color:var(--tc);box-shadow:inset 0 -3px 0 var(--tc);font-weight:800}
+.tabs button[aria-selected="true"] small{color:var(--ink2)}
 .tabs button small{font-family:var(--f-mono);font-weight:500;color:var(--muted)}
 .fchip{display:inline-flex;align-items:center;gap:6px;font-size:13px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:999px;padding:3px 6px 3px 12px}
 .fchip button{all:unset;cursor:pointer;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;color:var(--accent);font-weight:700}
@@ -330,7 +334,8 @@ mark{background:color-mix(in srgb,var(--warn) 35%,transparent);color:inherit;bor
 .cpb{display:inline-block;font-size:11px;font-weight:600;line-height:1;padding:3px 6px;border-radius:4px;margin-left:5px;vertical-align:1px;background:var(--sunk);border:1px solid var(--line2);color:var(--ink2);white-space:nowrap}
 .hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
 .theme{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.theme .seg button{padding:4px 10px;font-size:12.5px}
+.theme .seg{min-height:0;border-radius:8px}
+.theme .seg button{min-height:32px;height:32px;padding:0 11px;font-size:13px;font-weight:600}
 .sw{display:flex;gap:6px;align-items:center}
 .sw button{all:unset;cursor:pointer;width:20px;height:20px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px var(--line2);position:relative}
 .sw button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--c)}
@@ -382,13 +387,19 @@ mark{background:color-mix(in srgb,var(--warn) 35%,transparent);color:inherit;bor
 .thint{font-size:12.5px;color:var(--accent);font-weight:600}.thint[hidden]{display:none}
 @media (max-width:640px){
   .hdr{flex-direction:column;align-items:stretch;gap:10px}
-  .theme{justify-content:space-between;row-gap:10px}
-  .theme .ktog{order:3;width:100%;justify-content:center}
+  .theme{flex-wrap:nowrap;justify-content:space-between;gap:6px}
+  .theme .seg button{padding:0 8px;font-size:12.5px}
+  .fold.ktog{padding:0 9px;font-size:12.5px}
+  .fold.ktog .fhint{display:none}
+  .sw{gap:5px}.sw button{width:18px;height:18px}
 }
+@media (max-width:380px){.fold.ktog .kl2{display:none}.theme .seg button{padding:0 7px}.sw{gap:4px}.sw button{width:16px;height:16px}}
+@media (max-width:359px){.theme{flex-wrap:wrap}}
 .home{color:inherit;text-decoration:none}.home:hover{color:var(--accent)}
-.fold.ktog{border:1px solid var(--line2);border-radius:8px;background:var(--surface);padding:4px 10px;font-size:12.5px;font-weight:600;min-height:30px}
+.fold.ktog{box-sizing:border-box;border:1px solid var(--line2);border-radius:8px;background:var(--surface);padding:0 12px;height:34px;min-height:34px;font-size:13px;font-weight:600;gap:6px;white-space:nowrap;flex:none}
+.fold.ktog:hover{border-color:var(--accent)}
 .fold.ktog[aria-expanded="true"]{border-color:var(--accent);background:var(--accent-soft)}
-.fold.ktog .fhint{border:0;padding:0;font-size:12px}
+.fold.ktog .fhint{border:0;padding:0;font-size:inherit;font-weight:500}
 .ktog[hidden]{display:none}
 .cmpb.full{opacity:.4;cursor:not-allowed}
 #tray.warn{outline:2px solid var(--accent)}
@@ -729,7 +740,7 @@ document.querySelectorAll('.views button').forEach(b=>b.onclick=()=>{if(S.v!==b.
 
 /* ── 요약 수치 ── */
 function renderKpis(){const ab=S.v==='about',sh=kShow();
-  const kt=$('ktog');kt.hidden=!KTV.includes(S.v);kt.setAttribute('aria-expanded',FOLD.k);kt.innerHTML=`<span class="chev" aria-hidden="true">›</span>요약 정보<span class="fhint">${FOLD.k?'접기':'펼치기'}</span>`;kt.onclick=()=>{FOLD.k=!FOLD.k;renderKpis()};
+  const kt=$('ktog');kt.hidden=!KTV.includes(S.v);kt.setAttribute('aria-expanded',FOLD.k);kt.innerHTML=`<span class="chev" aria-hidden="true">›</span>요약<span class="kl2"> 정보</span><span class="fhint">${FOLD.k?'접기':'펼치기'}</span>`;kt.setAttribute('aria-label',`요약 정보 ${FOLD.k?'접기':'펼치기'}`);kt.onclick=()=>{FOLD.k=!FOLD.k;renderKpis()};
   $('kh').hidden=$('kpis').hidden=!sh;if(!sh)return;
   const us=ab?U:U.filter(inScope);$('kscope').textContent=ab?`전체 · ${U.length}개 대학 기준(대학 구분·지역 선택과 무관)`:`${S.g==='all'?'전체':GNAME[S.g]}${S.rg?' · '+S.rg:''}${S.q?' · 검색 “'+S.q+'”':''} · ${scopeU().length}개 대학 기준`;
   const _x=0,rs=us.flatMap(u=>u.rows);
