@@ -1,0 +1,11 @@
+{
+  "name": "2028plan",
+  "private": true,
+  "description": "2028 대입전형 시행계획 요약 대시보드",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs --check"
+  },
+  "license": "CC-BY-NC-4.0"
+}
