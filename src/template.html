@@ -156,7 +156,8 @@ tbody th{font-weight:600;text-align:left}
 .card li .v{font-family:var(--f-mono);font-weight:600}
 .card li .p{font-family:var(--f-mono);font-size:11px;color:var(--muted);text-align:right}
 .tabs{display:flex;gap:6px;flex-wrap:wrap}
-.tabs button{border:1px solid var(--line2);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;display:flex;gap:8px;align-items:baseline;font-weight:600}
+.tabs button{border:1px solid var(--line2);background:var(--surface);border-radius:8px;padding:11px 22px;min-width:168px;justify-content:center;cursor:pointer;display:flex;gap:8px;align-items:baseline;font-weight:600;font-size:15px}
+@media (max-width:640px){.tabs{display:grid;grid-template-columns:1fr 1fr}.tabs button{min-width:0;padding:10px 12px}}
 .tabs button[aria-selected="true"]{border-color:var(--ink);box-shadow:inset 0 -3px 0 var(--tc)}
 .tabs button small{font-family:var(--f-mono);font-weight:500;color:var(--muted)}
 .fchip{display:inline-flex;align-items:center;gap:6px;font-size:13px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:999px;padding:3px 6px 3px 12px}
@@ -375,6 +376,13 @@ mark{background:color-mix(in srgb,var(--warn) 35%,transparent);color:inherit;bor
 .filt{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .filt[hidden]{display:none}
 .kh{margin-bottom:-8px}
+.home{color:inherit;text-decoration:none}.home:hover{color:var(--accent)}
+.fold.ktog{border:1px solid var(--line2);border-radius:8px;background:var(--surface);padding:4px 10px;font-size:12.5px;font-weight:600;min-height:30px}
+.fold.ktog[aria-expanded="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.fold.ktog .fhint{border:0;padding:0;font-size:12px}
+.ktog[hidden]{display:none}
+.cmpb.full{opacity:.4;cursor:not-allowed}
+#tray.warn{outline:2px solid var(--accent)}
 /* 전형별 비교: 모집 요약·전형별 통계 접기 */
 .fold{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font:inherit;color:inherit}
 .fold .chev{margin:0;color:var(--accent);font-size:1.15em;line-height:1;width:.8em;text-align:center}
@@ -531,10 +539,11 @@ details[open]>summary .chev{transform:rotate(90deg)}
 <header>
   <div class="hdr"><span class="eyebrow">2028학년도 대학입학전형 시행계획 · 정원 내</span>
   <div class="theme" role="group" aria-label="화면 테마">
+    <button type="button" class="fold ktog" id="ktog" aria-controls="kpis" aria-expanded="false"></button>
     <div class="seg" id="thm" role="group" aria-label="밝기"><button type="button" data-m="auto" aria-pressed="true">자동</button><button type="button" data-m="light" aria-pressed="false">라이트</button><button type="button" data-m="dark" aria-pressed="false">다크</button></div>
     <div class="sw" id="acc" role="group" aria-label="강조색"><button type="button" data-a="red" style="--c:#bf3036" aria-label="적색" data-tip="적색" aria-pressed="true"></button><button type="button" data-a="navy" style="--c:#2d4f9e" aria-label="남색" data-tip="남색 · 푸른 회백 바탕" aria-pressed="false"></button><button type="button" data-a="forest" style="--c:#2f6b3f" aria-label="숲녹색" data-tip="숲녹색 · 연녹 회백 바탕" aria-pressed="false"></button><button type="button" data-a="plum" style="--c:#8e2f6a" aria-label="자주" data-tip="자주 · 연분홍 회백 바탕" aria-pressed="false"></button><button type="button" data-a="ink" style="--c:#2d333a" aria-label="먹색" data-tip="먹색(무채색)" aria-pressed="false"></button></div>
   </div></div>
-  <h1>2028 대입전형 시행계획 요약</h1>
+  <h1><a href="./" class="home" id="home" title="첫 화면으로">2028 대입전형 시행계획 요약</a></h1>
   <div class="ver" id="ver"></div>
   <p id="lede">선정한 <b>71개 대학</b>(일반대학 56 · 교육대학 10 · 과학기술원 5)의 학생부교과, 학생부종합, 논술, 정시 수능위주 전형과 2027 대비 변경사항을 중심으로 작성(대학발표 2028 대입전형 시행계획 참고)</p>
 </header>
@@ -624,7 +633,8 @@ const MOB=matchMedia('(max-width: 640px)');
 let S={g:'all',rg:'',q:'',v:'univ',t:'교과',f:null,cat:null,sort:null,msort:null,trend:null,tv:'table'};try{const _tv=localStorage.getItem('tv28');if(_tv==='card'||_tv==='table')S.tv=_tv}catch(e){}
 const MID=matchMedia('(min-width: 641px) and (max-width: 1179px)');
 let FOLD={k:false,d:false};
-const foldBtn=(id,label,open,sub='')=>`<button type="button" class="fold" id="${id}" aria-expanded="${open}"><span class="chev" aria-hidden="true">›</span>${label}${sub}<span class="fhint">${open?'접기':'펼치기'}</span></button>`;
+const KTV=['univ','quota','track'];
+const kShow=()=>S.v==='about'||(KTV.includes(S.v)&&FOLD.k);
 const cardMode=()=>MOB.matches||(MID.matches&&S.tv==='card');
 function tvSeg(id){return MID.matches?`<div class="seg tvseg" id="${id}" role="group" aria-label="보기 형식"><button type="button" data-tv="table" aria-pressed="${S.tv==='table'}">표</button><button type="button" data-tv="card" aria-pressed="${S.tv==='card'}">카드</button></div>`:''}
 function bindTv(id,f){const el=$(id);if(!el)return;el.querySelectorAll('button').forEach(b=>b.onclick=()=>{S.tv=b.dataset.tv;try{localStorage.setItem('tv28',S.tv)}catch(e){}f()})}
@@ -702,15 +712,18 @@ function renderBar(){
   $('grp').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.g=b.dataset.g;S.rg='';S.f=null;save();renderAll()});
   const rs=[...new Set(U.filter(u=>S.g==='all'||u.g===S.g).map(u=>u.rg))].sort((a,b)=>a.localeCompare(b,'ko'));
   $('rgn').innerHTML=`<option value="">전체 지역</option>`+rs.map(r=>`<option ${S.rg===r?'selected':''}>${r}</option>`).join('');
-  document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===S.v));document.querySelector('.filt').hidden=S.v==='about';$('kh')&&($('kh').hidden=S.v==='about'||S.v==='quota');$('kpis')&&($('kpis').hidden=S.v==='quota'||(S.v==='track'&&!FOLD.k));
+  document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===S.v));document.querySelector('.filt').hidden=S.v==='about';
 }
 $('rgn').onchange=e=>{S.rg=e.target.value;S.f=null;renderAll()};
 $('q').oninput=e=>{S.q=e.target.value.trim();renderMain()};
-document.querySelectorAll('.views button').forEach(b=>b.onclick=()=>{S.v=b.dataset.v;save();history.replaceState(null,'','#'+S.v);renderAll()});
+document.querySelectorAll('.views button').forEach(b=>b.onclick=()=>{if(S.v!==b.dataset.v)CMP=[];S.v=b.dataset.v;save();history.replaceState(null,'','#'+S.v);renderAll()});
 
 /* ── 요약 수치 ── */
-function renderKpis(){const _us=scopeU();$('kscope').textContent=`${S.g==='all'?'전체':GNAME[S.g]}${S.rg?' · '+S.rg:''}${S.q?' · 검색 “'+S.q+'”':''} · ${_us.length}개 대학 기준`;$('kh').hidden=S.v==='about'||S.v==='quota';const kf=S.v==='track';$('kt').innerHTML=kf?foldBtn('kfold','모집 요약',FOLD.k):'모집 요약';$('kpis').hidden=S.v==='quota'||(kf&&!FOLD.k);if(kf){$('kfold').setAttribute('aria-controls','kpis');$('kfold').onclick=()=>{FOLD.k=!FOLD.k;renderKpis()}}
-  const us=U.filter(inScope),rs=us.flatMap(u=>u.rows);
+function renderKpis(){const ab=S.v==='about',sh=kShow();
+  const kt=$('ktog');kt.hidden=!KTV.includes(S.v);kt.setAttribute('aria-expanded',FOLD.k);kt.innerHTML=`<span class="chev" aria-hidden="true">›</span>요약 정보<span class="fhint">${FOLD.k?'접기':'펼치기'}</span>`;kt.onclick=()=>{FOLD.k=!FOLD.k;renderKpis()};
+  $('kh').hidden=$('kpis').hidden=!sh;if(!sh)return;
+  const us=ab?U:U.filter(inScope);$('kscope').textContent=ab?`전체 · ${U.length}개 대학 기준(대학 구분·지역 선택과 무관)`:`${S.g==='all'?'전체':GNAME[S.g]}${S.rg?' · '+S.rg:''}${S.q?' · 검색 “'+S.q+'”':''} · ${scopeU().length}개 대학 기준`;
+  const _x=0,rs=us.flatMap(u=>u.rows);
   const by=t=>rs.filter(r=>r.track===t).reduce((a,r)=>a+q0(r),0),tot=TR.reduce((a,t)=>a+by(t),0);
   const susi=tot-by('정시');const jae=rs.filter(r=>r.elig==='재학생').length;const chu=us.filter(u=>u.ch.length).length;
   $('kpis').innerHTML=`
@@ -947,11 +960,14 @@ function openU(name,mode='push'){const u=U.find(x=>x.u===name);if(!u)return;cons
 }
 document.addEventListener('keydown',e=>{if(!sheet||!sheet.dataset.u||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){const b=sheet.querySelectorAll('[data-go]')[e.key==='ArrowLeft'?0:1];if(b&&b.dataset.go)openU(b.dataset.go,'replace')}});
 /* ── 비교 ── */
-let CMP=[];try{CMP=JSON.parse(localStorage.getItem('cmp28')||'[]')}catch(e){}
+let CMP=[];try{localStorage.removeItem('cmp28')}catch(e){}
+const CMAX=6;
 const rk=r=>r.u+'|'+r.track+'|'+r.name;
-function cmpBtn(r){const on=CMP.includes(rk(r));return `<button type="button" class="cmpb" data-k="${esc(rk(r))}" aria-pressed="${on}" data-tip="${on?'비교에서 빼기':'비교에 담기(최대 6개)'}">${on?'✓ 비교':'+ 비교'}</button>`}
-function bindCmp(root){root.querySelectorAll('.cmpb').forEach(b=>b.onclick=e=>{e.stopPropagation();const k=b.dataset.k;CMP=CMP.includes(k)?CMP.filter(x=>x!==k):[...CMP,k].slice(-6);try{localStorage.setItem('cmp28',JSON.stringify(CMP))}catch(e){}document.querySelectorAll(`.cmpb[data-k="${CSS.escape(k)}"]`).forEach(x=>{const on=CMP.includes(k);x.setAttribute('aria-pressed',on);x.textContent=on?'✓ 비교':'+ 비교'});renderTray()})}
-function renderTray(){const t=$('tray');if(!CMP.length){t.hidden=true;return}t.hidden=false;t.innerHTML=`<span>비교 ${CMP.length}개</span><button type="button" class="go">나란히 보기</button><button type="button" class="clr">비우기</button>`;t.querySelector('.go').onclick=openCmp;t.querySelector('.clr').onclick=()=>{CMP=[];try{localStorage.setItem('cmp28','[]')}catch(e){}renderMain();renderTray()}}
+const cmpTip=(on,full)=>on?'비교에서 빼기':full?`비교는 최대 ${CMAX}개까지 · 담은 전형을 빼면 추가할 수 있습니다`:`비교에 담기(최대 ${CMAX}개)`;
+function cmpBtn(r){const k=rk(r),on=CMP.includes(k),full=!on&&CMP.length>=CMAX;return `<button type="button" class="cmpb${full?' full':''}" data-k="${esc(k)}" aria-pressed="${on}" aria-disabled="${full}" data-tip="${cmpTip(on,full)}">${on?'✓ 비교':'+ 비교'}</button>`}
+function syncCmp(){document.querySelectorAll('.cmpb').forEach(x=>{const k=x.dataset.k,on=CMP.includes(k),full=!on&&CMP.length>=CMAX;x.setAttribute('aria-pressed',on);x.setAttribute('aria-disabled',full);x.classList.toggle('full',full);x.dataset.tip=cmpTip(on,full);x.textContent=on?'✓ 비교':'+ 비교'})}
+function bindCmp(root){root.querySelectorAll('.cmpb').forEach(b=>b.onclick=e=>{e.stopPropagation();const k=b.dataset.k;if(!CMP.includes(k)&&CMP.length>=CMAX){renderTray(true);return}CMP=CMP.includes(k)?CMP.filter(x=>x!==k):[...CMP,k];syncCmp();renderTray()})}
+function renderTray(warn){const t=$('tray');t.classList.remove('warn');if(!CMP.length){t.hidden=true;return}t.hidden=false;if(warn){t.classList.add('warn');clearTimeout(t._w);t._w=setTimeout(()=>t.classList.remove('warn'),1600)}t.innerHTML=`<span>비교 ${CMP.length}/${CMAX}${CMP.length>=CMAX?' · 가득 참':''}</span><button type="button" class="go">나란히 보기</button><button type="button" class="clr">비우기</button>`;t.querySelector('.go').onclick=openCmp;t.querySelector('.clr').onclick=()=>{CMP=[];syncCmp();renderTray()}}
 function openCmp(){const rs=CMP.map(k=>ALL.find(r=>rk(r)===k)).filter(Boolean);if(!rs.length)return;lastF=document.activeElement;closeU();
   const F=[['구분',r=>`${GNAME[r.g]} · ${TNAME[r.track]}`],['모집인원',r=>Number.isInteger(r.quota)?fmt(r.quota)+'명':'미기재'],['전형방법',r=>r.method],['선발 구조',r=>r.structure==='단계형'?`단계형 · 1단계 ${r.stage1||''}`:r.structure],['수능최저',r=>r.min_flag==='없음'?'없음':r.min_text],['최저 평균 등급',r=>minScore(r)??'—'],['면접',r=>r.interview==='있음'?[r.interview_ratio,r.interview_type].filter(Boolean).join(' · '):'없음'],['지원자격',r=>(r.elig||'')+(r.elig_text?' · '+r.elig_text:'')],['추천',r=>r.recommend],['교과 평가방식',r=>r.stage!=null?STG[r.stage]:''],['반영 과목',r=>r.subjects],['등급 환산',r=>r.grade_scale],['출결',r=>r.attendance],['논술',r=>r.track==='논술'?`${r.essay_ratio||''}% · ${r.other||''} · ${r.essay_type||''}`:''],['모집군',r=>r.gun],['수능 반영',r=>r.areas],['학생부(정시)',r=>r.track==='정시'?(r.gyogwa||'')+' '+(r.gyogwa_ratio||''):''],['2028 변경',r=>r.change]];
   const rows=F.map(([l,f])=>{const v=rs.map(r=>String(f(r)??'').trim());if(v.every(x=>!x))return '';const diff=new Set(v).size>1;return `<tr class="${diff?'diff':''}"><th scope="row">${l}${diff?' ≠':''}</th>${v.map(x=>`<td>${esc(x)||'<span class="na">—</span>'}</td>`).join('')}</tr>`}).join('');
@@ -1013,6 +1029,9 @@ matchMedia('(max-width: 1179px)').addEventListener?.('change',()=>{if(S.v==='tra
 MOB.addEventListener?.('change',()=>{if(S.v==='univ')renderUniv()});MID.addEventListener?.('change',()=>{if(S.v==='univ')renderUniv();if(S.v==='track')renderTrack()});
 renderAll();
 {const m=location.hash.match(/^#u\/(.+)$/);if(m){DEEP=true;openU(decodeURIComponent(m[1]),'none')}}
+
+/* ── 제목: 첫 화면으로 ── */
+$('home').onclick=e=>{e.preventDefault();realClose();DEEP=false;Object.assign(S,{g:'all',rg:'',q:'',v:'univ',t:'교과',f:null,cat:null,sort:null,msort:null,trend:null});CF=null;FOLD={k:false,d:false};CMP=[];$('q').value='';save();history.replaceState(null,'',location.pathname+location.search);renderAll();scrollTo(0,0)};
 
 /* ── 화면 테마 ── */
 (function(){const de=document.documentElement,g=k=>{try{return localStorage.getItem(k)}catch(e){return null}},p=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
