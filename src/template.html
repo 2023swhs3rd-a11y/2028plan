@@ -375,6 +375,17 @@ mark{background:color-mix(in srgb,var(--warn) 35%,transparent);color:inherit;bor
 .filt{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .filt[hidden]{display:none}
 .kh{margin-bottom:-8px}
+/* 전형별 비교: 모집 요약·전형별 통계 접기 */
+.fold{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font:inherit;color:inherit}
+.fold .chev{margin:0;color:var(--accent);font-size:1.15em;line-height:1;width:.8em;text-align:center}
+.fold[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.fold .fhint{font-family:var(--f-body);font-size:12px;font-weight:600;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:1px 9px;white-space:nowrap}
+.fold:hover .fhint{border-color:var(--accent);color:var(--accent)}
+.fold:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.fold-d{width:100%;padding:11px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r,10px);font-family:var(--f-display);font-weight:800;font-size:15px;flex-wrap:wrap}
+.fold-d small{font-family:var(--f-body);font-weight:500;font-size:12.5px;color:var(--muted);flex:1;min-width:0}
+.fold-d[aria-expanded="true"]{border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
+@media (max-width:640px){.fold-d small{order:3;flex-basis:100%;padding-left:calc(.8em + 8px)}.fold-d .fhint{margin-left:auto}}
 @media (max-width:640px){.bar{top:0}.bar .views .seg{width:100%}.bar .views .seg button{font-size:12.5px;padding:8px 2px;line-height:1.25;word-break:keep-all}}
 .rcb{display:inline-block;font-size:11px;font-weight:700;line-height:1;padding:3px 6px;border-radius:4px;margin-left:5px;vertical-align:1px;border:1px solid var(--ink2);color:var(--ink);white-space:nowrap}
 
@@ -543,7 +554,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
   </div>
 </div>
 
-<div class="sec-h kh" id="kh"><h2>모집 요약</h2><p id="kscope"></p></div>
+<div class="sec-h kh" id="kh"><h2 id="kt">모집 요약</h2><p id="kscope"></p></div>
 <div class="kpis" id="kpis"></div>
 <div id="tip" hidden></div>
 <div id="tray" hidden></div>
@@ -565,9 +576,10 @@ details[open]>summary .chev{transform:rotate(90deg)}
   <div class="qlist" id="qlist"></div>
 </section>
 <section class="view" id="s-track" aria-labelledby="v-track" hidden>
-  <div class="sec-h"><h2>전형별 비교</h2><p>분포 항목을 누르면 아래 표가 걸러집니다 · 행을 누르면 세부 항목</p></div>
+  <div class="sec-h"><h2>전형별 비교</h2><p>전형별 통계를 펼쳐 분포 항목을 누르면 아래 표가 걸러집니다 · 행을 누르면 세부 항목</p></div>
   <div class="tabs" id="ttabs" role="tablist" aria-label="전형 유형"></div>
-  <div class="dist" id="dist"></div>
+  <button type="button" class="fold fold-d" id="dfold" aria-expanded="false" aria-controls="dist"></button>
+  <div class="dist" id="dist" hidden></div>
   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="count" id="tcount"></span><span id="fchip"></span></div>
   <div class="legend" id="tlegend"></div>
   <div class="tvw" id="mtv"></div>
@@ -611,6 +623,8 @@ const ALL=U.flatMap(u=>u.rows);
 const MOB=matchMedia('(max-width: 640px)');
 let S={g:'all',rg:'',q:'',v:'univ',t:'교과',f:null,cat:null,sort:null,msort:null,trend:null,tv:'table'};try{const _tv=localStorage.getItem('tv28');if(_tv==='card'||_tv==='table')S.tv=_tv}catch(e){}
 const MID=matchMedia('(min-width: 641px) and (max-width: 1179px)');
+let FOLD={k:false,d:false};
+const foldBtn=(id,label,open,sub='')=>`<button type="button" class="fold" id="${id}" aria-expanded="${open}"><span class="chev" aria-hidden="true">›</span>${label}${sub}<span class="fhint">${open?'접기':'펼치기'}</span></button>`;
 const cardMode=()=>MOB.matches||(MID.matches&&S.tv==='card');
 function tvSeg(id){return MID.matches?`<div class="seg tvseg" id="${id}" role="group" aria-label="보기 형식"><button type="button" data-tv="table" aria-pressed="${S.tv==='table'}">표</button><button type="button" data-tv="card" aria-pressed="${S.tv==='card'}">카드</button></div>`:''}
 function bindTv(id,f){const el=$(id);if(!el)return;el.querySelectorAll('button').forEach(b=>b.onclick=()=>{S.tv=b.dataset.tv;try{localStorage.setItem('tv28',S.tv)}catch(e){}f()})}
@@ -688,14 +702,14 @@ function renderBar(){
   $('grp').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.g=b.dataset.g;S.rg='';S.f=null;save();renderAll()});
   const rs=[...new Set(U.filter(u=>S.g==='all'||u.g===S.g).map(u=>u.rg))].sort((a,b)=>a.localeCompare(b,'ko'));
   $('rgn').innerHTML=`<option value="">전체 지역</option>`+rs.map(r=>`<option ${S.rg===r?'selected':''}>${r}</option>`).join('');
-  document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===S.v));document.querySelector('.filt').hidden=S.v==='about';$('kh')&&($('kh').hidden=S.v==='about'||S.v==='quota');$('kpis')&&($('kpis').hidden=S.v==='quota');
+  document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===S.v));document.querySelector('.filt').hidden=S.v==='about';$('kh')&&($('kh').hidden=S.v==='about'||S.v==='quota');$('kpis')&&($('kpis').hidden=S.v==='quota'||(S.v==='track'&&!FOLD.k));
 }
 $('rgn').onchange=e=>{S.rg=e.target.value;S.f=null;renderAll()};
 $('q').oninput=e=>{S.q=e.target.value.trim();renderMain()};
 document.querySelectorAll('.views button').forEach(b=>b.onclick=()=>{S.v=b.dataset.v;save();history.replaceState(null,'','#'+S.v);renderAll()});
 
 /* ── 요약 수치 ── */
-function renderKpis(){const _us=scopeU();$('kscope').textContent=`${S.g==='all'?'전체':GNAME[S.g]}${S.rg?' · '+S.rg:''}${S.q?' · 검색 “'+S.q+'”':''} · ${_us.length}개 대학 기준`;$('kh').hidden=S.v==='about'||S.v==='quota';$('kpis').hidden=S.v==='quota';
+function renderKpis(){const _us=scopeU();$('kscope').textContent=`${S.g==='all'?'전체':GNAME[S.g]}${S.rg?' · '+S.rg:''}${S.q?' · 검색 “'+S.q+'”':''} · ${_us.length}개 대학 기준`;$('kh').hidden=S.v==='about'||S.v==='quota';const kf=S.v==='track';$('kt').innerHTML=kf?foldBtn('kfold','모집 요약',FOLD.k):'모집 요약';$('kpis').hidden=S.v==='quota'||(kf&&!FOLD.k);if(kf){$('kfold').setAttribute('aria-controls','kpis');$('kfold').onclick=()=>{FOLD.k=!FOLD.k;renderKpis()}}
   const us=U.filter(inScope),rs=us.flatMap(u=>u.rows);
   const by=t=>rs.filter(r=>r.track===t).reduce((a,r)=>a+q0(r),0),tot=TR.reduce((a,t)=>a+by(t),0);
   const susi=tot-by('정시');const jae=rs.filter(r=>r.elig==='재학생').length;const chu=us.filter(u=>u.ch.length).length;
@@ -801,6 +815,7 @@ function renderTrack(){
     return `<article class="card"><h3>${d.t}<small>n = ${n}</small></h3><div class="sbar" role="img" aria-label="${d.t}: ${keys.map(k=>k+' '+c[k]).join(', ')}">${keys.map((k,i)=>`<i style="flex:${c[k]};background:${PAL[i%PAL.length]}" title="${esc(k)} ${c[k]}"></i>`).join('')}</div>
     <ul>${keys.map((k,i)=>{const on=S.f&&S.f.d===di&&S.f.k===k;return `<li><button type="button" class="${on?'on':''}" aria-pressed="${!!on}" data-d="${di}" data-k="${esc(k)}"><span class="sw" style="background:${PAL[i%PAL.length]}"></span><span>${esc(k)}</span><span class="v">${c[k]}</span><span class="p">${n?Math.round(c[k]/n*100):0}%</span></button></li>`}).join('')}</ul>${d.note?`<p class="none" style="margin:0">${d.note}</p>`:''}</article>`}).join('');
   $('dist').querySelectorAll('li button').forEach(b=>b.onclick=()=>{const di=+b.dataset.d,k=b.dataset.k;S.f=S.f&&S.f.d===di&&S.f.k===k?null:{d:di,k};renderTrack()});
+  const df=$('dfold');df.setAttribute('aria-expanded',FOLD.d);df.innerHTML=`<span class="chev" aria-hidden="true">›</span>전형별 통계<small>${DS().map(d=>d.t).join(' · ')}${S.f&&!FOLD.d?' · 필터 적용 중':''}</small><span class="fhint">${FOLD.d?'접기':'펼치기'}</span>`;$('dist').hidden=!FOLD.d;df.onclick=()=>{FOLD.d=!FOLD.d;renderTrack()};
   let rows=S.f?base.filter(r=>DS()[S.f.d].f(r)===S.f.k):base;
   $('fchip').innerHTML=S.f?`<span class="fchip">${esc(DS()[S.f.d].t)}: ${esc(S.f.k)}<button type="button" id="fx" aria-label="필터 해제">×</button></span>`:'';
   if(S.f)$('fx').onclick=()=>{S.f=null;renderTrack()};
