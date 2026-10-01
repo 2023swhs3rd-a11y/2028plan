@@ -97,6 +97,10 @@ else V.forEach((v, i) => {
   if (V.findIndex(x => x.v === v.v) !== i) err('data/versions.json', `버전 ${v.v} 가 중복됩니다`);
 });
 
+// 링크 공유 미리보기(카카오톡 등): 필수 태그와 이미지가 있는지, 큰 파비콘 data URI보다 앞에 있는지 확인
+for (const k of ['og:title', 'og:description', 'og:image', 'og:url']) if (!template.includes(`property="${k}"`)) err('src/template.html', `${k} 메타 태그가 없습니다`);
+if (template.indexOf('property="og:image"') > template.indexOf('@@ICON:')) err('src/template.html', 'og 메타 태그는 파비콘 링크보다 앞에 두어야 합니다(미리보기 수집기가 문서 앞부분만 읽을 수 있음)');
+if (!existsSync(P('og.png'))) err('og.png', '공유 미리보기 이미지가 없습니다');
 const json = JSON.stringify({ U, V });
 if (/<\/script|<!--/i.test(json)) err('data', "데이터에 '</script' 또는 '<!--' 문자열이 있으면 페이지가 깨집니다");
 
@@ -107,6 +111,7 @@ if (errors.length) {
 
 // 파비콘: src/icons 의 PNG를 data URI로 넣어 단일 파일에서도 아이콘이 보이게 함
 const html = template.replace('/*@@DATA@@*/', () => json)
+  .replace(/@@VER@@/g, () => V[V.length - 1].v) // 공유 미리보기 이미지 캐시 갱신용(버전이 바뀌면 카카오톡 등이 새 이미지를 받음)
   .replace(/@@ICON:([\w.-]+)@@/g, (_, f) => 'data:image/png;base64,' + readFileSync(P('src/icons', f)).toString('base64'));
 const rows = U.reduce((a, u) => a + u.rows.length, 0);
 const summary = `대학 ${U.length}곳 · 전형 ${rows}개 · v${V[V.length - 1].v}`;
