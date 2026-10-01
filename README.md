@@ -58,6 +58,7 @@ https://2023swhs3rd-a11y.github.io/2028plan/
 | `data/versions.json` | 버전 기록('자료 기준' 탭에 표시) |
 | `src/template.html` | 화면(HTML·CSS·JS), 데이터 자리는 `/*@@DATA@@*/` |
 | `src/og-card.html` → `og.png` | 링크 공유 미리보기 이미지(1200×630) |
+| `src/icons/` | 파비콘(64px)·홈 화면 아이콘(180px), 빌드 때 `index.html`에 넣음 |
 | `scripts/build.mjs` | 데이터 검증 후 `index.html` 생성 |
 
 ```sh
