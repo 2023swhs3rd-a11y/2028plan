@@ -780,6 +780,7 @@ function renderUniv(){
   const cols=[['대학',u=>u.u],['구분',u=>GR.indexOf(u.g)*100+(u.rg||'').charCodeAt(0)],...TR.map(t=>[t,u=>st.get(u.u)[t].p]),['합계',u=>st.get(u.u).tot],['정시 비중',u=>st.get(u.u).js],['변경',u=>u.ch.length],['재학생',u=>st.get(u.u).jae]];
   let list=[...us].sort((a,b)=>GR.indexOf(a.g)-GR.indexOf(b.g)||a.u.localeCompare(b.u,'ko'));
   if(S.sort){const k=cols[S.sort.i][1];list.sort((a,b)=>{const x=k(a),y=k(b);return (x>y?1:x<y?-1:0)*S.sort.dir})}
+  UORD=list.map(u=>u.u);
   const th=(l,i,cls='')=>{const s=S.sort&&S.sort.i===i?(S.sort.dir>0?'ascending':'descending'):'none';return `<th scope="col" class="${cls}" aria-sort="${s}"><button type="button" data-s="${i}">${l}<span class="ar">${s==='ascending'?'▲':s==='descending'?'▼':'↕'}</span></button></th>`};
   $('ulegend').innerHTML=TR.map(t=>`<span><i class="dot" style="border-color:${TC[t]};background:${TC[t]};width:9px;height:9px;border-width:0"></i> ${TNAME[t]}</span>`).join('')+`<span>${elig({elig:'재학생'})} 졸업예정자만 지원하는 전형 수</span><span>${qual({sq:'medium'})} PDF 일부 판독 불가</span>`;
   $('ut').innerHTML=`<thead><tr>${th('대학',0)}${th('구분·지역',1,'hm')}${TR.map((t,i)=>th(t,i+2,'r')).join('')}${th('합계',6,'r')}${th('수시·정시 구성',7,'hm')}${th('2028 변경',8,'r')}${th('재학생',9,'r')}</tr></thead><tbody>${list.map(u=>{const s=st.get(u.u);
@@ -978,7 +979,9 @@ let sheet=null,lastF=null;
 function realClose(){if(!sheet)return;sheet.remove();sheet=null;document.body.classList.remove('lock');lastF&&lastF.focus?.()}
 let DEEP=false;
 function closeU(){if(!sheet)return;if(sheet.dataset.u&&location.hash.startsWith('#u/')){if(DEEP){DEEP=false;history.replaceState(null,'','#'+S.v);realClose()}else history.back()}else if(!sheet.dataset.u&&history.state&&history.state.r)history.back();else realClose()}
-function uOrder(){const l=scopeU();return (l.length?l:U).map(u=>u.u).sort((a,b)=>a.localeCompare(b,'ko'))}
+// 대학 상세의 이전·다음: 대학별 목록과 같은 순서(일반대→교대→과기원, 그 안에서 가나다). 대학별 탭에서 열 정렬을 바꿨으면 그 순서를 따름
+let UORD=[];
+function uOrder(){if(S.v==='univ'&&UORD.length)return UORD;const l=scopeU();return [...(l.length?l:U)].sort((a,b)=>GR.indexOf(a.g)-GR.indexOf(b.g)||a.u.localeCompare(b.u,'ko')).map(u=>u.u)}
 window.addEventListener('popstate',()=>{const m=location.hash.match(/^#u\/(.+)$/);if(m)openU(decodeURIComponent(m[1]),'none');else if(sheet)realClose()});
 function jc(r){return `<div class="jc"><div class="jc-h"><b>${hl(r.name)}</b>${dpb(r)}${cpb(r)}${rcb(r)}${elig(r)}${newb(r)}<span class="q">${dv(r,'quota',Number.isInteger(r.quota)?fmt(r.quota)+'명':'인원 미기재')}</span></div>
   <dl>${[['방법',r.method,'method'],['구조',r.structure==='단계형'?`단계형 · 1단계 ${r.stage1||''}`:r.structure,['structure','stage1']],['최저',r.min_flag==='없음'?'없음':r.min_text+(minScore(r)!=null?` (평균 ${minScore(r)})`:''),['min_flag','min_text']],
