@@ -11,6 +11,7 @@ https://2023swhs3rd-a11y.github.io/2028plan/
 - 대학 상세 바로가기: 주소 뒤에 `#u/대학명`을 붙입니다. 예) [`#u/한국항공대`](https://2023swhs3rd-a11y.github.io/2028plan/#u/한국항공대) · 대학 상세의 '링크 복사' 버튼으로도 만들 수 있습니다.
 - 내려받아 보기: 저장소의 [`index.html`](index.html) 한 파일만 있으면 인터넷 연결 없이도 열립니다(웹폰트만 기본 글꼴로 바뀜).
 - 출처: 각 대학이 공개한 2028학년도 대입전형 시행계획 PDF. 외부 사교육 자료는 참고하지 않았습니다.
+- 버전 기록: [`CHANGELOG.md`](CHANGELOG.md)(화면에서는 당분간 생략)
 - 주의: 요약 과정에서 누락이나 오기가 있을 수 있습니다. 지원 전에는 반드시 대학별 시행계획과 모집요강 원문을 확인하세요.
 
 ## 화면 구성
@@ -21,7 +22,7 @@ https://2023swhs3rd-a11y.github.io/2028plan/
 | 모집인원 | 대학별·전형 유형별 모집인원과 수시·정시 비중 |
 | 전형별 비교 | 학생부교과·학생부종합·논술·정시를 대학 간 비교(교과 평가방식, 수능최저, 수능 반영영역 등) |
 | 2028 변경 | 2027 대비 변경사항을 주요 추세·항목별로 모아 보기 |
-| 자료 기준 | 출처와 분석 범위, 표기 방법, 버전 기록 |
+| 자료 기준 | 출처와 분석 범위, 표기 방법 |
 
 - 상단에서 대학 구분(일반대·교대·과기원)·지역·검색어로 거를 수 있습니다.
 - 전형별 비교에서는 '빠른 조건'(수능최저 없음·면접 없음 등)과 전형별 통계 항목을 여러 개 겹쳐 걸 수 있습니다. 같은 항목 안의 값은 '또는', 다른 항목끼리는 '그리고'로 걸러지고, 걸린 조건은 표 위 칩에서 하나씩 해제합니다.
@@ -62,18 +63,19 @@ https://2023swhs3rd-a11y.github.io/2028plan/
 | 경로 | 내용 |
 |---|---|
 | `data/universities/NN-대학명.json` | 대학별 전형 데이터(번호 순서가 화면 기본 순서) |
-| `data/versions.json` | 버전 기록('자료 기준' 탭에 표시) |
+| `data/versions.json` | 버전 기록 원본(빌드 때 `CHANGELOG.md`로 생성) |
+| `CHANGELOG.md` | 버전별 변경 내용과 대학별 수정 항목(생성물, 직접 고치지 않음) |
 | `src/template.html` | 화면(HTML·CSS·JS), 데이터 자리는 `/*@@DATA@@*/` |
 | `src/og-card.html` → `og.png` | 링크 공유 미리보기 이미지(1200×630) |
 | `src/icons/` | 파비콘(64px)·홈 화면 아이콘(180px), 빌드 때 `index.html`에 넣음 |
-| `scripts/build.mjs` | 데이터 검증 후 `index.html` 생성 |
+| `scripts/build.mjs` | 데이터 검증 후 `index.html`·`CHANGELOG.md` 생성 |
 
 ```sh
-node scripts/build.mjs          # 검증 + index.html 생성 (Node.js 18 이상, 설치할 패키지 없음)
-node scripts/build.mjs --check  # 검증 + index.html 이 최신인지 확인
+node scripts/build.mjs          # 검증 + index.html·CHANGELOG.md 생성 (Node.js 18 이상, 설치할 패키지 없음)
+node scripts/build.mjs --check  # 검증 + index.html·CHANGELOG.md 가 최신인지 확인
 ```
 
-데이터를 고친 뒤 빌드하고 `data/`와 `index.html`을 함께 커밋합니다. 화면을 고칠 때는 `index.html`이 아니라 `src/template.html`을 고칩니다. 대학을 추가·삭제하면 이 README의 대학 수와 수록 대학 목록, `src/template.html` 머리글 문구, 공유 이미지(`og.png`)도 함께 바꿉니다. 전형 유형·대학 구분·변경 분류 같은 허용값이 틀리거나 수시+정시 인원 합계가 맞지 않으면 빌드가 실패하고 어느 파일의 어느 항목인지 알려 줍니다.
+데이터를 고친 뒤 빌드하고 `data/`, `index.html`, `CHANGELOG.md`를 함께 커밋합니다. 화면을 고칠 때는 `index.html`이 아니라 `src/template.html`을 고칩니다. 대학을 추가·삭제하면 이 README의 대학 수와 수록 대학 목록, `src/template.html` 머리글 문구, 공유 이미지(`og.png`)도 함께 바꿉니다. 전형 유형·대학 구분·변경 분류 같은 허용값이 틀리거나 수시+정시 인원 합계가 맞지 않으면 빌드가 실패하고 어느 파일의 어느 항목인지 알려 줍니다.
 
 `main`에 push하면 GitHub Actions가 검증 후 [GitHub Pages](https://2023swhs3rd-a11y.github.io/2028plan/)에 배포합니다(배포 기록: [Actions](https://github.com/2023swhs3rd-a11y/2028plan/actions/workflows/pages.yml)). Pull request에서는 검증만 실행합니다.
 

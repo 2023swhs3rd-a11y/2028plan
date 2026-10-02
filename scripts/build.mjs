@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// data/ 의 JSON을 검증한 뒤 src/template.html 에 넣어 단일 파일 index.html 을 만든다.
-//   node scripts/build.mjs           → index.html 생성
+// data/ 의 JSON을 검증한 뒤 src/template.html 에 넣어 단일 파일 index.html 을 만들고, 버전 기록 CHANGELOG.md 를 만든다.
+//   node scripts/build.mjs           → index.html·CHANGELOG.md 생성
 //   node scripts/build.mjs --check   → 검증 + index.html 이 최신인지 확인(CI용, 파일은 쓰지 않음)
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -113,6 +113,16 @@ if (errors.length) {
 const html = template.replace('/*@@DATA@@*/', () => json)
   .replace(/@@VER@@/g, () => V[V.length - 1].v) // 공유 미리보기 이미지 캐시 갱신용(버전이 바뀌면 카카오톡 등이 새 이미지를 받음)
   .replace(/@@ICON:([\w.-]+)@@/g, (_, f) => 'data:image/png;base64,' + readFileSync(P('src/icons', f)).toString('base64'));
+// 버전 기록: 화면에서는 빼고 저장소의 CHANGELOG.md 로 남긴다(versions.json·대학별 hu 에서 생성)
+const changelog = ['# 버전 기록', '',
+  '> `data/versions.json`과 대학 파일의 `hu`에서 `node scripts/build.mjs`가 생성합니다. 직접 고치지 마세요.', '',
+  ...[...V].reverse().flatMap(v => {
+    const us = U.filter(u => u.hu.some(h => h.v === v.v)).map(u => {
+      const h = u.hu.find(x => x.v === v.v);
+      return `- **${u.u}** 항목 ${h.n}건` + (h.m.length ? ' · ' + h.m.join(' · ') : '');
+    });
+    return [`## v${v.v} (${v.t} KST)`, '', v.note, '', ...(us.length ? [...us, ''] : [])];
+  })].join('\n');
 const rows = U.reduce((a, u) => a + u.rows.length, 0);
 const summary = `대학 ${U.length}곳 · 전형 ${rows}개 · v${V[V.length - 1].v}`;
 if (CHECK) {
@@ -121,8 +131,13 @@ if (CHECK) {
     console.error('index.html 이 data/·src/ 와 다릅니다. node scripts/build.mjs 를 실행한 뒤 index.html 도 커밋하세요.');
     process.exit(1);
   }
+  if ((existsSync(P('CHANGELOG.md')) ? readFileSync(P('CHANGELOG.md'), 'utf8') : '') !== changelog) {
+    console.error('CHANGELOG.md 가 data/ 와 다릅니다. node scripts/build.mjs 를 실행한 뒤 CHANGELOG.md 도 커밋하세요.');
+    process.exit(1);
+  }
   console.log(`검증 통과, index.html 최신 (${summary})`);
 } else {
   writeFileSync(P('index.html'), html);
+  writeFileSync(P('CHANGELOG.md'), changelog);
   console.log(`index.html 생성 (${summary}, ${(Buffer.byteLength(html) / 1024).toFixed(0)}KB)`);
 }
