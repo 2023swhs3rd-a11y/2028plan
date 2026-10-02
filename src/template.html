@@ -422,8 +422,9 @@ thead th .info{vertical-align:middle}
   @page{size:A4 landscape;margin:10mm}
   body{background:#fff!important;color:#000;font-size:11px}
   .wrap{max-width:none;padding:0;gap:10px}
-  .bar,.theme,#tray,#tip,.tvw,.msort,#mlist,.thint,.tact,.qf,#dfold,.dist,.cmpb,.info,.fclr,#fchip button,.kh,.kpis,.ktog,header .ver details{display:none!important}
-  .ponly{display:block;font-size:11px;color:#333;margin:0}
+  header,.view>.sec-h,#ttabs,.trow,.legend,.bar,.theme,#tray,#tip,.tvw,.msort,#mlist,.thint,.tact,.qf,#dfold,.dist,.cmpb,.info,.fclr,#fchip button,.kh,.kpis,.ktog,header .ver details{display:none!important}
+  .ponly{display:block;font-size:10.5px;color:#444;margin:0 0 4px}
+  .wrap{padding-top:0!important}
   #mtbox,#mtbox[hidden],#utbox{display:block!important;overflow:visible!important;border:0;background:none!important}
   #mt,#ut{min-width:0!important;width:100%;table-layout:auto!important}
   #mt col,#ut col{width:auto!important}
@@ -435,7 +436,6 @@ thead th .info{vertical-align:middle}
   /* 페이지마다 반복되는 머리글에서 버튼 글자가 빠지는 크롬 인쇄 문제 회피: 글자를 data-l로 표시 */
   #mt thead th[data-l]>*{display:none!important}
   #mt thead th[data-l]::before{content:attr(data-l)}
-  header p#lede{display:none}
   #mt thead,#ut thead{display:table-header-group}
   #mt tr,#ut tr{break-inside:avoid}
   #mt th:first-child,#ut th:first-child{position:static;box-shadow:none}
@@ -670,7 +670,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
   <div class="dist" id="dist" hidden></div>
   <div class="qf" id="qf" role="group" aria-label="빠른 조건"></div>
   <p class="ponly" id="pinfo"></p>
-  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="count" id="tcount"></span><span id="fchip"></span><span class="thint" id="thint" hidden>표가 화면보다 넓어요 · 좌우로 밀어 보세요 ↔</span><span class="tact"><button type="button" class="abtn" id="csvb" data-tip="지금 걸러진 전형을 엑셀에서 열 수 있는 CSV로 저장">CSV 내려받기</button><button type="button" class="abtn" id="prtb" data-tip="메뉴·필터를 빼고 표만 인쇄(가로 방향 권장)">인쇄</button></span></div>
+  <div class="trow" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="count" id="tcount"></span><span id="fchip"></span><span class="thint" id="thint" hidden>표가 화면보다 넓어요 · 좌우로 밀어 보세요 ↔</span><span class="tact"><button type="button" class="abtn" id="csvb" data-tip="지금 걸러진 전형을 엑셀에서 열 수 있는 CSV로 저장">CSV 내려받기</button><button type="button" class="abtn" id="prtb" data-tip="메뉴·필터를 빼고 표만 인쇄(가로 방향 권장)">인쇄</button></span></div>
   <div class="legend" id="tlegend"></div>
   <div class="tvw" id="mtv"></div>
   <div class="tbox" id="mtbox"><table id="mt"></table></div>
