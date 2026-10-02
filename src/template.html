@@ -422,11 +422,11 @@ thead th .info{vertical-align:middle}
 .ponly{display:none}
 @media (max-width:640px){.tact{margin-left:0}}
 @media print{
-  @page{size:A4 landscape;margin:10mm}
+  @page{size:A4 landscape;margin:15mm 10mm 13mm}
   body{background:#fff!important;color:#000;font-size:11px}
   .wrap{max-width:none;padding:0;gap:10px}
   header,.view>.sec-h,#ttabs,.trow,.legend,.bar,.theme,#tray,#tip,.tvw,.msort,#mlist,.thint,.tact,.qf,#dfold,.dist,.cmpb,.info,.fclr,#fchip button,.kh,.kpis,.ktog,header .ver details{display:none!important}
-  .ponly{display:block;font-size:10.5px;color:#444;margin:0 0 4px}
+  .ponly{display:none!important} /* 조건·건수는 모든 쪽 머리글(@page)에 표시 */
   .wrap{padding-top:0!important}
   #mtbox,#mtbox[hidden],#utbox{display:block!important;overflow:visible!important;border:0;background:none!important}
   #mt,#ut{min-width:0!important;width:100%;table-layout:auto!important}
@@ -1165,6 +1165,15 @@ matchMedia('(max-width: 1179px)').addEventListener?.('change',()=>{if(S.v==='tra
 MOB.addEventListener?.('change',()=>{if(S.v==='univ')renderUniv()});MID.addEventListener?.('change',()=>{if(S.v==='univ')renderUniv();if(S.v==='track')renderTrack()});
 renderAll();
 {const m=location.hash.match(/^#u\/(.+)$/);if(m){DEEP=true;openU(decodeURIComponent(m[1]),'none')}}
+
+/* ── 인쇄: 모든 쪽 위에 머리글·인쇄 시각, 아래에 쪽 번호(@page 여백 상자, 크롬·엣지 131+) ── */
+const VNAME={univ:'대학별 한눈에',quota:'전형별 모집인원',track:'전형별 비교',change:'2027 대비 2028 변경사항',about:'자료 기준'};
+function printHead(){if(sheet&&sheet.dataset.u)return `${sheet.dataset.u} 대학 상세`;if(sheet)return '전형 비교';
+  return S.v==='track'?$('pinfo').textContent.split(' · v')[0]:`${VNAME[S.v]} · ${S.g==='all'?'전체':GNAME[S.g]}${S.rg?' · '+S.rg:''}`}
+function setPrintBoxes(){const d=new Date(),p=n=>String(n).padStart(2,'0');const ts=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  const q=t=>'"'+String(t).replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,' ')+'"';const st=$('pboxes')||document.head.appendChild(Object.assign(document.createElement('style'),{id:'pboxes'}));
+  st.textContent=`@media print{@page{@top-left{content:${q('2028 대입전형 시행계획 요약 · '+printHead())};font-size:9pt;color:#333;vertical-align:bottom;padding-bottom:3mm}@top-right{content:${q('인쇄 '+ts)};font-size:9pt;color:#333;vertical-align:bottom;padding-bottom:3mm}@bottom-left{content:${q('v'+LV.v+' · 2023swhs3rd-a11y.github.io/2028plan')};font-size:8pt;color:#777}@bottom-right{content:counter(page) " / " counter(pages) "쪽";font-size:9pt;color:#333}}}`}
+addEventListener('beforeprint',setPrintBoxes);matchMedia('print').addEventListener?.('change',e=>{if(e.matches)setPrintBoxes()});
 
 /* ── 제목: 첫 화면으로 ── */
 $('home').onclick=e=>{e.preventDefault();realClose();DEEP=false;Object.assign(S,{g:'all',rg:'',q:'',v:'univ',t:'교과',f:null,cat:null,sort:null,msort:null,trend:null});CF=null;FOLD={k:false,d:false};CMP=[];$('q').value='';save();history.replaceState(null,'',location.pathname+location.search);renderAll();scrollTo(0,0)};
