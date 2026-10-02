@@ -296,14 +296,6 @@ body.lock{overflow:hidden}
 .ver{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12.5px;color:var(--ink2)}
 .ver .auth{display:inline-flex;gap:5px;align-items:baseline;flex-wrap:wrap}.ver .auth a{color:var(--info)}
 .ver .vb{font-family:var(--f-mono);font-weight:600;background:var(--ink);color:var(--bg);border-radius:4px;padding:2px 7px}
-.ver details{position:relative}
-.ver summary{cursor:pointer;color:var(--info);list-style:none}
-.ver summary::-webkit-details-marker{display:none}
-.vlog{position:absolute;z-index:40;top:24px;left:0;width:min(560px,86vw);max-height:60vh;overflow:auto;background:var(--surface);border:1px solid var(--line2);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);padding:12px 14px;display:flex;flex-direction:column;gap:10px}
-.vlog h4{margin:0;font-size:13px;display:flex;gap:8px;align-items:baseline}
-.vlog h4 span{font-family:var(--f-mono);font-weight:500;color:var(--muted);font-size:11.5px}
-.vlog p{margin:2px 0 0;font-size:12.5px;color:var(--ink2)}
-.vlog ul{margin:4px 0 0;padding-left:16px;font-size:12px;color:var(--ink2)}
 .dv{border-bottom:1.5px dotted var(--warn);cursor:help}
 .dv:focus-visible{outline:2px solid var(--warn)}
 .nb{display:inline-block;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--warn-soft);color:var(--ink);border:1px solid var(--warn);vertical-align:1px;cursor:help;white-space:nowrap}
@@ -425,7 +417,7 @@ thead th .info{vertical-align:middle}
   @page{size:A4 landscape;margin:15mm 10mm 13mm}
   body{background:#fff!important;color:#000;font-size:11px}
   .wrap{max-width:none;padding:0;gap:10px}
-  header,.view>.sec-h,#ttabs,.trow,.legend,.bar,.theme,#tray,#tip,.tvw,.msort,#mlist,.thint,.tact,.qf,#dfold,.dist,.cmpb,.info,.fclr,#fchip button,.kh,.kpis,.ktog,header .ver details{display:none!important}
+  header,.view>.sec-h,#ttabs,.trow,.legend,.bar,.theme,#tray,#tip,.tvw,.msort,#mlist,.thint,.tact,.qf,#dfold,.dist,.cmpb,.info,.fclr,#fchip button,.kh,.kpis,.ktog{display:none!important}
   .ponly{display:none!important} /* 조건·건수는 모든 쪽 머리글(@page)에 표시 */
   .wrap{padding-top:0!important}
   #mtbox,#mtbox[hidden],#utbox{display:block!important;overflow:visible!important;border:0;background:none!important}
@@ -789,8 +781,7 @@ function scopeU(){return U.filter(u=>inScope(u)&&qMatch(u))}
 /* ── 필터 바 ── */
 function renderVer(){
   $('ver').innerHTML=`<span class="vb">v${LV.v}</span><span>${LV.t} KST 기준</span><span>· v0.5 이후 바뀐 값은 <span class="dv" data-tip="예시: 마우스를 올리면 이전 값이 표시됩니다">점선 밑줄</span>로 표시</span>
-   <span class="auth">작성 <b>봉일천고등학교 진로진학부장 전중수</b> <span class="mono">jungsooj@korea.kr</span> · <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.ko" target="_blank" rel="noopener license">CC BY-NC 4.0</a> 저작자표시-비영리</span>
-   <details><summary>버전 기록 ${VERS.length}건 ▾</summary><div class="vlog">${[...VERS].reverse().map(v=>{const us=U.filter(u=>(u.hu||[]).some(h=>h.v===v.v));return `<div><h4>v${v.v}<span>${v.t} KST</span></h4><p>${esc(v.note)}</p>${us.length?`<ul>${us.map(u=>{const h=u.hu.find(x=>x.v===v.v);return `<li><b>${esc(u.u)}</b> 항목 ${h.n}건${h.m.length?' · '+esc(h.m.join(' · ')):''}</li>`}).join('')}</ul>`:''}</div>`}).join('')}</div></details>`;
+   <span class="auth">작성 <b>봉일천고등학교 진로진학부장 전중수</b> <span class="mono">jungsooj@korea.kr</span> · <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.ko" target="_blank" rel="noopener license">CC BY-NC 4.0</a> 저작자표시-비영리</span>`;
 }
 function renderBar(){
   const cnt=g=>U.filter(u=>g==='all'||u.g===g).length;
@@ -1123,7 +1114,7 @@ function renderAbout(){
    <li><i class="dot f"></i> 수능최저 있음 · <i class="dot p"></i> 일부 모집단위만 · <i class="dot"></i> 없음. '2개 합 5' 등은 일반 모집단위 기준</li>
    <li>${sj('FSDN?')} 국·수·영·사탐·과탐 반영 여부(반영/선택/감점·가산/미반영/미공개)</li>
    <li>2028 변경 분류는 문구 기준 자동 분류라 한 항목이 여러 분류에 들어갈 수 있습니다.</li></ul></div>
-  <div class="box"><h3>버전 기록</h3><ul>${[...VERS].reverse().map(v=>`<li><b class="num">v${v.v}</b> <span class="src">${v.t} KST</span><br>${esc(v.note)}</li>`).join('')}</ul><p class="src">v0.5 이후 값이 바뀐 칸은 점선 밑줄로 표시되고, 마우스를 올리거나 키보드로 초점을 옮기면 이전 값이 뜹니다.</p></div>
+  <div class="box"><h3>바뀐 값 표시</h3><p class="src">v0.5 이후 값이 바뀐 칸은 점선 밑줄로 표시되고, 마우스를 올리거나 키보드로 초점을 옮기면 이전 값이 뜹니다.</p></div>
   <div class="box"><h3>출처 쪽수·비교·최저 강도</h3><ul><li>전형마다 원문 PDF 쪽수(p.N)를 달았습니다. 전형명으로 자동 탐색한 쪽이라 ±1쪽 차이가 있을 수 있습니다.</li><li>수능최저 '평균 N'은 합산 기준 ÷ 영역 수(각 N등급은 N)입니다. 일반 모집단위의 첫 기준을 쓰고, 한국사·영어 별도 조건은 뺐습니다.</li><li>'+ 비교'로 최대 6개 전형을 담아 나란히 볼 수 있습니다. 담은 목록은 이 브라우저에만 저장됩니다.</li></ul></div>
   <div class="box"><h3>판독 한계</h3><ul>${low.length?low.map(u=>`<li><b>${esc(u.u)}</b> ${qual(u)} <span class="src">${esc((u.notes.find(n=>/판독|이미지|요약|미기재/.test(n))||'원문이 요약본이라 세부 항목 미기재').slice(0,140))}</span></li>`).join(''):'<li class="src">모든 대학 원문 판독 완료</li>'}</ul>
    <p class="src">세부 사항은 대학별 모집요강(수시·정시)으로 확인하세요.</p></div>`;
