@@ -780,7 +780,7 @@ function renderUniv(){
   const cols=[['대학',u=>u.u],['구분',u=>GR.indexOf(u.g)*100+(u.rg||'').charCodeAt(0)],...TR.map(t=>[t,u=>st.get(u.u)[t].p]),['합계',u=>st.get(u.u).tot],['정시 비중',u=>st.get(u.u).js],['변경',u=>u.ch.length],['재학생',u=>st.get(u.u).jae]];
   let list=[...us].sort((a,b)=>GR.indexOf(a.g)-GR.indexOf(b.g)||a.u.localeCompare(b.u,'ko'));
   if(S.sort){const k=cols[S.sort.i][1];list.sort((a,b)=>{const x=k(a),y=k(b);return (x>y?1:x<y?-1:0)*S.sort.dir})}
-  UORD=list.map(u=>u.u);
+  VORD.univ=list.map(u=>u.u);
   const th=(l,i,cls='')=>{const s=S.sort&&S.sort.i===i?(S.sort.dir>0?'ascending':'descending'):'none';return `<th scope="col" class="${cls}" aria-sort="${s}"><button type="button" data-s="${i}">${l}<span class="ar">${s==='ascending'?'▲':s==='descending'?'▼':'↕'}</span></button></th>`};
   $('ulegend').innerHTML=TR.map(t=>`<span><i class="dot" style="border-color:${TC[t]};background:${TC[t]};width:9px;height:9px;border-width:0"></i> ${TNAME[t]}</span>`).join('')+`<span>${elig({elig:'재학생'})} 졸업예정자만 지원하는 전형 수</span><span>${qual({sq:'medium'})} PDF 일부 판독 불가</span>`;
   $('ut').innerHTML=`<thead><tr>${th('대학',0)}${th('구분·지역',1,'hm')}${TR.map((t,i)=>th(t,i+2,'r')).join('')}${th('합계',6,'r')}${th('수시·정시 구성',7,'hm')}${th('2028 변경',8,'r')}${th('재학생',9,'r')}</tr></thead><tbody>${list.map(u=>{const s=st.get(u.u);
@@ -876,6 +876,7 @@ function renderTrack(){
   const NARROW=innerWidth<1180;const C=MCOL[S.t].filter(c=>!(NARROW&&c.lp));if(S.msort&&S.msort.i>=C.length)S.msort=null;
   if(S.msort){const k=S.msort.i<0?(r=>r.quota??-1):C[S.msort.i].k;rows=[...rows].sort((a,b)=>{const x=k(a),y=k(b);if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return -1;return (x>y?1:x<y?-1:0)*S.msort.dir})}
   else rows=[...rows].sort((a,b)=>GR.indexOf(a.g)-GR.indexOf(b.g)||a.u.localeCompare(b.u,'ko'));
+  VORD.track=[...new Set(rows.map(r=>r.u))];
   $('tlegend').innerHTML=LEG[S.t];
   const th=(l,i)=>{const s=S.msort&&S.msort.i===i?(S.msort.dir>0?'ascending':'descending'):'none';const tt=i<0?'모집인원 순':(C[i].tt||'').replace('MKTT',`최종 ${MKW[S.t]} 반영 비율 순(단계형은 1단계 비중 환산)`);return `<th scope="col" aria-sort="${s}" class="${i<0?'r':''}"><button type="button" data-s="${i}" ${tt?`data-tip="정렬 기준: ${esc(tt)}"`:''}>${l}<span class="ar">${s==='ascending'?'▲':s==='descending'?'▼':'↕'}</span></button></th>`};
   let GZ=0;const FW=C.reduce((a,c)=>a+(c.w||0),0),AW=C.filter(c=>!c.w).length;$('mt').style.minWidth=(236+70+FW+AW*200)+'px';$('mt').innerHTML=`<colgroup><col style="width:236px"><col style="width:70px">${C.map(c=>`<col${c.w?` style="width:${c.w}px"`:''}>`).join('')}</colgroup><thead><tr><th scope="col">대학 · 전형</th>${th('인원',-1)}${C.map((c,i)=>th(c.h,i)).join('')}</tr></thead><tbody>${rows.map((r,i)=>{const same=!S.msort&&i>0&&rows[i-1].u===r.u;if(!same)GZ++;const cnt=S.msort?0:rows.filter(x=>x.u===r.u).length;
@@ -963,6 +964,7 @@ function renderChange(){
   const match=c=>!CF||(CF.t==='cat'?c.c.includes(CF.k):TT.rx.test(c.t));
   let list=us.filter(u=>CF?(CF.t==='tr'?TT.test(u):u.ch.some(match)):true).map(u=>({u,cs:u.ch.filter(match)}));
   list.sort(CSORT==='n'?(a,b)=>b.cs.length-a.cs.length||a.u.u.localeCompare(b.u.u,'ko'):(a,b)=>a.u.u.localeCompare(b.u.u,'ko'));
+  VORD.change=list.map(x=>x.u.u);
   const shown=list.reduce((a,x)=>a+x.cs.length,0);
   $('chcount').textContent=`${list.length}개 대학 · ${shown}건`;
   $('chchip').innerHTML=CF?`<span class="fchip">${esc(CF.t==='tr'?TT.t:CF.k)}<button type="button" id="chx" aria-label="필터 해제">×</button></span>`:'';
@@ -979,9 +981,10 @@ let sheet=null,lastF=null;
 function realClose(){if(!sheet)return;sheet.remove();sheet=null;document.body.classList.remove('lock');lastF&&lastF.focus?.()}
 let DEEP=false;
 function closeU(){if(!sheet)return;if(sheet.dataset.u&&location.hash.startsWith('#u/')){if(DEEP){DEEP=false;history.replaceState(null,'','#'+S.v);realClose()}else history.back()}else if(!sheet.dataset.u&&history.state&&history.state.r)history.back();else realClose()}
-// 대학 상세의 이전·다음: 대학별 목록과 같은 순서(일반대→교대→과기원, 그 안에서 가나다). 대학별 탭에서 열 정렬을 바꿨으면 그 순서를 따름
-let UORD=[];
-function uOrder(){if(S.v==='univ'&&UORD.length)return UORD;const l=scopeU();return [...(l.length?l:U)].sort((a,b)=>GR.indexOf(a.g)-GR.indexOf(b.g)||a.u.localeCompare(b.u,'ko')).map(u=>u.u)}
+// 대학 상세의 이전·다음: 지금 보고 있는 화면 목록에 나온 대학과 순서를 따름
+// (대학별 표, 모집인원 목록, 전형별 비교의 선택 전형·필터 결과, 2028 변경 목록). 기록이 없으면 일반대→교대→과기원, 그 안에서 가나다
+const VORD={};
+function uOrder(){const o=VORD[S.v];if(o&&o.length)return o;const l=scopeU();return [...(l.length?l:U)].sort((a,b)=>GR.indexOf(a.g)-GR.indexOf(b.g)||a.u.localeCompare(b.u,'ko')).map(u=>u.u)}
 window.addEventListener('popstate',()=>{const m=location.hash.match(/^#u\/(.+)$/);if(m)openU(decodeURIComponent(m[1]),'none');else if(sheet)realClose()});
 function jc(r){return `<div class="jc"><div class="jc-h"><b>${hl(r.name)}</b>${dpb(r)}${cpb(r)}${rcb(r)}${elig(r)}${newb(r)}<span class="q">${dv(r,'quota',Number.isInteger(r.quota)?fmt(r.quota)+'명':'인원 미기재')}</span></div>
   <dl>${[['방법',r.method,'method'],['구조',r.structure==='단계형'?`단계형 · 1단계 ${r.stage1||''}`:r.structure,['structure','stage1']],['최저',r.min_flag==='없음'?'없음':r.min_text+(minScore(r)!=null?` (평균 ${minScore(r)})`:''),['min_flag','min_text']],
@@ -1060,6 +1063,7 @@ function renderQuota(){const us=scopeU().map(u=>({u,s:uStat(u)})).filter(x=>x.s.
   $('qleg').innerHTML=TR.map(t=>`<span><i class="dot" style="border-color:${TC[t]};background:${TC[t]};width:9px;height:9px;border-width:0"></i> ${TNAME[t]}</span>`).join('');
   const key={tot:x=>x.s.tot,susi:susi,name:null};TR.forEach(t=>key[t]=x=>QM==='p'?(x.s.tot?x.s[t].p/x.s.tot:0):x.s[t].p);
   const L=[...us].sort(QS==='name'?(a,b)=>a.u.u.localeCompare(b.u.u,'ko'):(a,b)=>key[QS](b)-key[QS](a)||a.u.u.localeCompare(b.u.u,'ko'));
+  VORD.quota=L.map(x=>x.u.u);
   const mx=Math.max(1,...us.map(x=>x.s.tot));
   $('qlist').innerHTML=L.map(x=>{const s=x.s,w=QM==='p'?100:s.tot/mx*100;const miss=TR.some(t=>s[t].miss);
     return `<button type="button" class="qrow" data-u="${esc(x.u.u)}"><span class="qn"><b>${hl(x.u.u)}</b><small>${GNAME[x.u.g]}${x.u.rg?' · '+esc(x.u.rg):''}</small></span><span class="qbar"><span class="qfill" style="width:${w}%">${TR.map(t=>s[t].p?`<i class="q${TR.indexOf(t)}" style="flex:${s[t].p};background:${TC[t]}" data-tip="${TNAME[t]} ${fmt(s[t].p)}명 (${pct(s[t].p/s.tot)})">${(QM==='p'?s[t].p/s.tot>=.12:s[t].p/mx>=.07)?(QM==='p'?pct(s[t].p/s.tot):fmt(s[t].p)):''}</i>`:'').join('')}</span></span><span class="qt num">${fmt(s.tot)}${miss?'<sup data-tip="일부 전형 인원 미기재">*</sup>':''}<small>수시 ${pct(susi(x))}</small></span></button>`}).join('');
