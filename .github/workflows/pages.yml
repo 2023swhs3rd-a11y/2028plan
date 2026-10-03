@@ -28,7 +28,7 @@ jobs:
       - name: 배포 파일 모으기
         run: |
           mkdir _site
-          cp index.html og.png LICENSE .nojekyll _site/
+          cp index.html og.png sitemap.xml LICENSE .nojekyll _site/
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
         with:
