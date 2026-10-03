@@ -32,6 +32,31 @@ const ENUM = {
 const isStr = v => typeof v === 'string' && v.trim() !== '';
 const isInt = v => Number.isInteger(v) && v >= 0;
 
+// 정시 반영비율(wt): 계열별 [{g, k·m·e·s·c·t(국·수·영·사·과·탐 고정 비율), rk:[{p, v:[순위별 비율]}], en(영어 감점·가산·최저), n}]
+const WK = ['k', 'm', 'e', 's', 'c', 't'], WEN = ['감점', '가산', '최저'];
+function checkWt(wt, w) {
+  if (!Array.isArray(wt) || !wt.length) return err(w, 'wt 는 계열이 1개 이상인 배열이어야 합니다');
+  wt.forEach((x, i) => {
+    const at = `${w} wt[${i}]`;
+    const bad = Object.keys(x).filter(k => ![...WK, 'g', 'rk', 'en', 'n'].includes(k));
+    if (bad.length) err(at, `알 수 없는 키 ${bad.join(',')}`);
+    if (wt.length > 1 && !isStr(x.g)) err(at, '계열이 여럿이면 g(계열 이름)가 필요합니다');
+    let sum = 0;
+    for (const k of WK) if (x[k] != null) { if (!(typeof x[k] === 'number' && x[k] > 0)) err(at, `${k} 는 양수여야 합니다`); else sum += x[k] }
+    if (x.rk != null) {
+      if (!Array.isArray(x.rk) || !x.rk.length) err(at, 'rk 는 비어 있지 않은 배열이어야 합니다');
+      else x.rk.forEach((g, j) => {
+        if (!isStr(g.p)) err(at, `rk[${j}].p(대상 영역)가 비어 있습니다`);
+        if (!Array.isArray(g.v) || !g.v.length || !g.v.every(v => typeof v === 'number' && v > 0)) err(at, `rk[${j}].v 는 양수 배열이어야 합니다`);
+        else sum += g.v.reduce((a, b) => a + b, 0);
+      });
+    }
+    if (!(sum > 0)) err(at, '반영 비율이 없습니다');
+    if (x.en != null && !WEN.includes(x.en)) err(at, `en='${x.en}' 는 ${WEN.join('/')} 중 하나여야 합니다`);
+    if (x.en != null && x.e != null) err(at, '영어 비율(e)과 영어 처리(en)를 함께 쓸 수 없습니다');
+  });
+}
+
 function checkUniv(u, file) {
   for (const k of ['u', 'g', 'rg', 'fid', 'ft']) if (!isStr(u[k])) err(file, `'${k}' 는 빈 문자열이 아니어야 합니다`);
   if (!GR.includes(u.g)) err(file, `g='${u.g}' 는 ${GR.join('/')} 중 하나여야 합니다`);
@@ -67,6 +92,7 @@ function checkUniv(u, file) {
     if (r.pg != null && !(Number.isInteger(r.pg) && r.pg > 0)) err(w, `pg=${JSON.stringify(r.pg)} 는 양의 정수 또는 null 이어야 합니다`);
     if (r.stage != null && !(Number.isInteger(r.stage) && r.stage >= 0 && r.stage <= 6)) err(w, `stage=${JSON.stringify(r.stage)} 는 0~6 이어야 합니다`);
     if (r.h != null && !Array.isArray(r.h)) err(w, 'h 는 배열이어야 합니다');
+    if (r.wt != null) checkWt(r.wt, w);
   });
 }
 
