@@ -143,10 +143,10 @@ tbody th{font-weight:600;text-align:left}
 .gun b{display:inline-grid;place-items:center;width:21px;height:21px;border-radius:50%;border:1.5px solid var(--t4);color:var(--t4);font-size:11.5px}
 .gun b.off{border-color:var(--line2);color:var(--line2)}
 .sj{display:inline-flex;gap:2px}
-.sj b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:4px;font-size:11px;font-weight:700;border:1px solid var(--line2);color:var(--muted)}
-.sj b.F{background:var(--t4);border-color:var(--t4);color:var(--surface)}
-.sj b.S{background:color-mix(in srgb,var(--t4) 25%,var(--surface));border-color:var(--t4);color:var(--ink)}
-.sj b.D{border-style:dashed;border-color:var(--ink2);color:var(--ink2)}
+.sj b{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:4px;font-size:11px;font-weight:700;border:1px solid var(--line);color:var(--muted);opacity:.6}
+.sj b.F{background:var(--c);border-color:var(--c);color:var(--f);opacity:1}
+.sj b.S{background:color-mix(in srgb,var(--c) 22%,var(--surface));border-color:var(--c);color:var(--ink);opacity:1}
+.sj b.D{border-style:dashed;border-color:var(--c);color:var(--ink2);opacity:1}
 .stg{display:inline-flex;align-items:flex-start;gap:6px;min-width:0;max-width:100%}
 .stg>span{min-width:0;line-height:1.35;padding-top:2px}
 .stg small{display:block;font-size:11.5px;color:var(--muted)}
@@ -164,6 +164,9 @@ tbody th{font-weight:600;text-align:left}
 .wbar i.rk{background:repeating-linear-gradient(135deg,var(--sunk) 0 4px,var(--line2) 4px 6px);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line2)}
 .wtb .wx{display:flex;flex-wrap:wrap;gap:2px 8px;font-size:11px;color:var(--muted)}
 .wtb .wx b{font-weight:600;color:var(--ink2)}
+.wts.cp{gap:3px;margin-top:5px}
+.wft{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wft .wmore{border-bottom:1px dotted var(--line2)}
 .wmore{font-size:11px;color:var(--muted);align-self:flex-start;border-bottom:1px dotted var(--line2);cursor:help}
 .wleg{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11px;color:var(--ink2)}
 .wleg span{display:inline-flex;align-items:center;gap:4px}
@@ -385,7 +388,7 @@ mark{background:color-mix(in srgb,var(--warn) 35%,transparent);color:inherit;bor
 :root:not([data-theme="light"])[data-accent="plum"]{--accent:#e08cc0;--accent-soft:#35202d;--accent-ink:#12161b;--bg:#171217}}
 
 .sjw{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.nab{display:inline-grid;place-items:center;min-width:26px;height:24px;padding:0 5px;border-radius:5px;font-family:var(--f-mono);font-size:15px;font-weight:700;color:var(--surface);background:var(--t4);border:1px solid var(--t4);font-variant-numeric:tabular-nums}
+.nab{display:inline-grid;place-items:center;min-width:22px;height:19px;padding:0 4px;border-radius:4px;font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--ink);background:var(--sunk);border:1px solid var(--line2);font-variant-numeric:tabular-nums}
 .nab.w{font-size:11.5px;font-family:var(--f-body)}
 .jmin{display:block;margin-top:5px;font-size:12px;color:var(--ink2);white-space:normal}.jmin b{font-weight:700;color:var(--ink)}
 .sj b{width:22px;height:22px;font-size:12px}
@@ -519,7 +522,7 @@ thead th .info{vertical-align:middle}
   .mf small{color:var(--muted)}
   .mf.sjw{background:none;padding:0}
   .mf .sj b{width:19px;height:19px;font-size:11px}
-  .mf .nab{min-width:22px;height:20px;font-size:13px}
+  .mf .nab{min-width:20px;height:19px;font-size:12.5px}
 
 .sheet-bg.full{background:rgba(10,14,18,.35)}
 .sheet-bg.full .sheet{width:100%;box-shadow:none}
@@ -787,15 +790,16 @@ function nA(r){const n=r.n_areas||'';const m=n.match(/^(\d)개$/);if(m)return +m
 function naB(r){const n=r.n_areas||'';const t=/^\d개$/.test(n)?n[0]:/이하/.test(n)?'≤3':n==='계열별'?'계열':n==='미반영'?'0':(nA(r)||'?');const tip=n==='계열별'?'계열(모집단위)별로 반영 영역 수가 다름':n==='미반영'?'수능 점수 미반영(최저학력기준만)':`수능 ${t}개 영역 반영`;return `<b class="nab${t.length>1?' w':''}" data-tip="${esc(tip)}">${t}</b>`}
 const WL={k:'국',m:'수',e:'영',s:'사',c:'과',t:'탐'},WKS=Object.keys(WL),WN={k:'국어',m:'수학',e:'영어',s:'통합사회',c:'통합과학',t:'탐구(통합사회·통합과학)'};
 // 막대 순서: 국·수·영·사·과·탐, 우수순·택일 묶음은 대상 영역 중 맨 앞 영역 자리에
-function wtBar(x){const segs=[];WKS.forEach((k,i)=>{if(x[k])segs.push({k,v:x[k],o:i})});(x.rk||[]).forEach((g,gi)=>{const o=Math.min(...['국','수','영','사','과','탐'].map((c,i)=>g.p.includes(c)?i-.5:9));g.v.forEach((v,j)=>segs.push({rk:g,j,v,gi,o:o+gi*.01+j*.001}))});segs.sort((a,b)=>a.o-b.o);
+function wtBar(x,cp){const segs=[];WKS.forEach((k,i)=>{if(x[k])segs.push({k,v:x[k],o:i})});(x.rk||[]).forEach((g,gi)=>{const o=Math.min(...['국','수','영','사','과','탐'].map((c,i)=>g.p.includes(c)?i-.5:9));g.v.forEach((v,j)=>segs.push({rk:g,j,v,gi,o:o+gi*.01+j*.001}))});segs.sort((a,b)=>a.o-b.o);
   const tot=segs.reduce((a,b)=>a+b.v,0)||1,pc=v=>v/tot*100,rd=v=>{const p=pc(v);return p>=10||Math.abs(p-Math.round(p))<.05?Math.round(p):Math.round(p*10)/10};
   const bar=segs.map(sg=>{const p=pc(sg.v);if(sg.k)return `<i style="flex:${p};background:var(--s${sg.k});color:var(--s${sg.k}f)" title="${WN[sg.k]} ${rd(sg.v)}%">${p>=9?WL[sg.k]+rd(sg.v):p>=5?WL[sg.k]:''}</i>`;
     const lab=sg.rk.v.length>1?`${sg.j+1}순위 `:'';return `<i class="rk" style="flex:${p}" title="${esc(sg.rk.p)} ${lab}${rd(sg.v)}%">${p>=9?rd(sg.v):''}</i>`}).join('');
   const ex=[...(x.rk||[]).map(g=>`<span>빗금 <b>${esc(g.p)}</b> ${g.v.map(rd).join('·')}</span>`),x.en?`<span>영어 <b>${esc(x.en==='최저'?'최저기준만':x.en)}</b></span>`:'',x.n?`<span>${esc(x.n)}</span>`:''].filter(Boolean).join('');
+  if(cp)return `<span class="wbar" role="img" data-tip="${esc([(x.rk||[]).map(g=>'빗금: '+g.p+' '+g.v.map(rd).join('·')).join(', '),x.en?'영어 '+(x.en==='최저'?'최저기준만':x.en):'',x.n||''].filter(Boolean).join(' / ')||'반영 비율')}">${bar}</span>`;
   return `<span class="wtb">${x.g?`<span class="wg" title="${esc(x.g)}">${esc(x.g)}</span>`:''}<span class="wbar" role="img" aria-label="${esc((x.g?x.g+': ':'')+segs.map(sg=>(sg.k?WL[sg.k]:sg.rk.p+(sg.rk.v.length>1?' '+(sg.j+1)+'순위':''))+' '+rd(sg.v)+'%').join(', '))}">${bar}</span>${ex?`<span class="wx">${ex}</span>`:''}</span>`}
-function wtCell(r){const w=r.wt;if(!w||!w.length)return '';return `<span class="wts">${wtBar(w[0])}${w.length>1?`<span class="wmore" tabindex="0" data-tip="${esc('다른 계열: '+w.slice(1).map(x=>x.g).join(', ')+' (대학 상세에서 모두 보기)')}">외 ${w.length-1}개 계열</span>`:''}</span>`}
+function wtCell(r,cp){const w=r.wt;if(!w||!w.length)return '';if(cp){const ft=[w[0].g?esc(w[0].g):'',w.length>1?`<span class="wmore" tabindex="0" data-tip="${esc('다른 계열: '+w.slice(1).map(x=>x.g).join(', ')+' (대학 상세에서 모두 보기)')}">+${w.length-1}계열</span>`:'',w[0].en?'영어 '+esc(w[0].en==='최저'?'최저만':w[0].en):'',w[0].rk?'빗금 우수순·택일':''].filter(Boolean);return `<span class="wts cp">${wtBar(w[0],1)}${ft.length?`<span class="wft">${ft.join(' · ')}</span>`:''}</span>`}return `<span class="wts">${wtBar(w[0])}${w.length>1?`<span class="wmore" tabindex="0" data-tip="${esc('다른 계열: '+w.slice(1).map(x=>x.g).join(', ')+' (대학 상세에서 모두 보기)')}">외 ${w.length-1}개 계열</span>`:''}</span>`}
 function wtAll(r){const w=r.wt;return w&&w.length?`<div class="wts">${w.map(wtBar).join('')}</div>`:''}
-function sj(m){m=(m||'?????').padEnd(5,'?');const L=['국','수','영','사','과'],D={F:'반영',S:'선택 반영',D:'감점·가산',N:'미반영','?':'미공개'};return `<span class="sj">${L.map((x,i)=>`<b class="${m[i]}" title="${x}: ${D[m[i]]||m[i]}">${x}</b>`).join('')}</span>`}
+function sj(m){m=(m||'?????').padEnd(5,'?');const L=['국','수','영','사','과'],K=['k','m','e','s','c'],D={F:'반영',S:'선택 반영',D:'감점·가산',N:'미반영','?':'미공개'};return `<span class="sj">${L.map((x,i)=>`<b class="${m[i]}" style="--c:var(--s${K[i]});--f:var(--s${K[i]}f)" title="${x}: ${D[m[i]]||m[i]}">${x}</b>`).join('')}</span>`}
 function stg(r){const k=r.stage;if(k==null)return '<span class="na">—</span>';return `<span class="stg" title="${esc(STGL[k]||'')}"><i style="--k:${k||0}">${k||'–'}</i><span>${STG[k]||''}${r.stage_note&&k===5?`<small>${esc(r.stage_note)}</small>`:''}</span></span>`}
 function qn(r){return dv(r,'quota',Number.isInteger(r.quota)?fmt(r.quota):'<span class="na">미기재</span>')}
 function ratio(s){const m=String(s||'').match(/(\d+(?:\.\d+)?)\s*%?/);return m?+m[1]:null}
@@ -1001,7 +1005,7 @@ const MCOL={
  교과:[{h:'평가방식',info:'stage',w:140,d:1,tt:'①등급만 → ⑥성취도만 순(정성·미공개는 맨 뒤)',k:stgK,c:r=>dv(r,['stage','stage_desc'],stg(r))},{h:'전형방법',info:'share',w:0,tt:'MKTT',k:r=>effShare(r.method,MKW[r.track]),c:r=>dv(r,'method',shBar(r)+`<span class="mt">${esc(r.method||'')}</span>`)},{h:'선발',w:92,d:1,tt:'단계형은 1단계 배수가 작은 순, 일괄은 맨 뒤',k:r=>r.structure==='단계형'?bxN(r.stage1)??bxN(r.method):null,c:r=>dv(r,['structure','stage1'],r.structure==='단계형'?`<span class="chip">단계 · ${esc(r.stage1||'')}</span>`:'일괄')},{h:'수능최저',info:'min',w:166,k:MINK,c:minCell},{h:'반영 과목',w:210,d:1,tt:'반영 과목 수가 적은 순(상위 n과목 → 일부 제외 → 전 과목+선택 일부 → 전 과목)',k:ssK,c:r=>dv(r,'subjects',ssp(r)+`<span class="rg clamp" title="${esc(r.subjects||'')}">${esc(r.subjects||'—')}</span>`)},{h:'등급 환산(1~5)',w:120,lp:1,tt:'5등급 점수가 1등급의 몇 %인지(높을수록 등급 간 차이가 작음)',k:gsK,c:r=>dv(r,'grade_scale',`<span class="num rg clamp" title="${esc(r.grade_scale||'')}">${esc(r.grade_scale||'—').replace(/\//g,'/<wbr>')}</span>`)},{h:'추천',w:118,d:1,tt:'추천 인원이 적은 순 → 인원 제한 없음 → 추천 없음',k:rcK,c:r=>dv(r,'recommend',rcc(r.recommend))}],
  종합:[{h:'유형',w:80,k:r=>r.type,c:r=>dv(r,'type',r.type?`<span class="chip tch" style="--c:var(--t2)">${esc(r.type)}</span>`:'—')},{h:'전형방법',info:'share',w:0,tt:'MKTT',k:r=>effShare(r.method,MKW[r.track]),c:r=>dv(r,'method',shBar(r)+`<span class="mt">${esc(r.method||'')}</span>`)},{h:'1단계',w:80,d:1,tt:'1단계 배수가 작은 순, 일괄은 맨 뒤',k:r=>bxN(r.stage1),c:r=>dv(r,'stage1',esc(r.stage1||(r.structure==='일괄'?'일괄':'—')))},{h:'면접',w:128,k:r=>ratio(r.interview_ratio)||0,c:r=>dv(r,['interview','interview_ratio','interview_type'],r.interview==='있음'?`<b class="num">${esc(r.interview_ratio||'')}</b> <span class="rg">${esc(r.interview_type||'')}</span>`:'<span class="na">없음</span>')},{h:'수능최저',info:'min',w:166,k:MINK,c:minCell},{h:'지원자격',w:104,k:r=>['재학생','졸업연도 제한','졸업생 전용','제한 없음'].indexOf(r.elig),c:r=>dv(r,['elig','elig_text'],elc(r))}],
  논술:[{h:'논술 비율 · 그 외',info:'essay',w:230,k:r=>+r.essay_ratio||0,c:r=>dv(r,['essay_ratio','other'],esBar(r))},{h:'수능최저',info:'min',w:166,k:MINK,c:minCell},{h:'출제 형태',w:0,tt:'약술형 먼저',k:r=>/약술/.test(r.essay_type||'')?1:0,c:r=>dv(r,'essay_type',(/약술/.test(r.essay_type||'')?'<span class="chip tch" style="--c:var(--t3)">약술형</span> ':'')+`<span class="rg">${esc(String(r.essay_type||'').slice(0,60))}</span>`)},{h:'지원자격',w:104,k:r=>['재학생','졸업연도 제한','졸업생 전용','제한 없음'].indexOf(r.elig),c:r=>dv(r,['elig','elig_text'],elc(r))}],
- 정시:[{h:'모집군',w:96,d:1,tt:'가군 → 다군 순',k:r=>{const g=r.gun||'';if(!/[가나다]/.test(g))return null;return ['가','나','다'].map(x=>g.includes(x)?'0':'1').join('')},c:r=>dv(r,'gun',gun(r.gun))},{h:'반영 영역',info:'area',w:270,k:r=>nA(r),c:r=>dv(r,['smap','areas','min_text'],`<span class="sjw">${naB(r)}${sj(r.smap)}</span>${r.min_flag&&r.min_flag!=='없음'?`<span class="jmin"><b>수능최저</b> ${esc(r.min_text||'있음')}</span>`:''}`)+wtCell(r)},{h:'전형방법',info:'share',w:0,tt:'MKTT',k:r=>effShare(r.method,MKW[r.track]),c:r=>dv(r,'method',shBar(r)+`<span class="mt">${esc(r.method||'')}</span>`)},{h:'학생부',w:96,k:r=>r.gyogwa==='미반영'?0:ratio(r.gyogwa_ratio)||1,c:r=>dv(r,['gyogwa','gyogwa_ratio'],r.gyogwa&&r.gyogwa!=='미반영'?`${esc(r.gyogwa)} <b class="num">${esc(r.gyogwa_ratio||'')}</b>`:'<span class="na">미반영</span>')},{h:'면접',w:72,k:r=>r.interview==='있음'?1:0,c:r=>dv(r,['interview','interview_ratio'],r.interview==='있음'?`<b class="num">${esc(r.interview_ratio||'있음')}</b>`:'<span class="na">없음</span>')},{h:'지원자격',w:104,k:r=>['재학생','졸업연도 제한','졸업생 전용','제한 없음'].indexOf(r.elig),c:r=>dv(r,['elig','elig_text'],elc(r))}]
+ 정시:[{h:'모집군',w:96,d:1,tt:'가군 → 다군 순',k:r=>{const g=r.gun||'';if(!/[가나다]/.test(g))return null;return ['가','나','다'].map(x=>g.includes(x)?'0':'1').join('')},c:r=>dv(r,'gun',gun(r.gun))},{h:'전형방법',info:'share',w:0,tt:'MKTT',k:r=>effShare(r.method,MKW[r.track]),c:r=>dv(r,'method',shBar(r)+`<span class="mt">${esc(r.method||'')}</span>`)},{h:'반영 영역',info:'area',w:290,k:r=>nA(r),c:r=>dv(r,['smap','areas'],`<span class="sjw">${naB(r)}${sj(r.smap)}</span>`)+wtCell(r,1)+(r.min_flag&&r.min_flag!=='없음'?`<span class="jmin"><b>수능최저</b> ${esc(r.min_text||'있음')}</span>`:'')},{h:'학생부',w:96,k:r=>r.gyogwa==='미반영'?0:ratio(r.gyogwa_ratio)||1,c:r=>dv(r,['gyogwa','gyogwa_ratio'],r.gyogwa&&r.gyogwa!=='미반영'?`${esc(r.gyogwa)} <b class="num">${esc(r.gyogwa_ratio||'')}</b>`:'<span class="na">미반영</span>')},{h:'면접',w:72,k:r=>r.interview==='있음'?1:0,c:r=>dv(r,['interview','interview_ratio'],r.interview==='있음'?`<b class="num">${esc(r.interview_ratio||'있음')}</b>`:'<span class="na">없음</span>')},{h:'지원자격',w:104,k:r=>['재학생','졸업연도 제한','졸업생 전용','제한 없음'].indexOf(r.elig),c:r=>dv(r,['elig','elig_text'],elc(r))}]
 };
 const LEG={
  교과:`<span><span class="shb" style="--c:${TC.교과};margin:0;display:inline-flex"><span class="tr" style="width:36px"><i style="width:70%"></i></span></span> 교과 실질 반영 비율(단계형은 1단계 비중 환산) ${ifo('share')}</span><span><span class="stg"><i style="--k:1">1</i></span>~<span class="stg"><i style="--k:6">6</i></span> 교과 평가방식 단계(성취도 활용 증가) ${ifo('stage')}</span><span><i class="dot f"></i> 최저 있음 <i class="dot p"></i> 일부 <i class="dot"></i> 없음</span><span><span class="eb j">재학생</span> 졸업예정자만</span><span><span class="eb c">변경</span> 2028 변경</span>`,
