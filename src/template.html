@@ -76,6 +76,7 @@ header p{margin:0;color:var(--ink2);max-width:80ch}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .seg small{font-family:var(--f-mono);font-size:11px;opacity:.75}
+.seg button.zero:not([aria-pressed="true"]){color:var(--muted)}
 .bar select,.bar input{font:inherit;border:1px solid var(--line2);border-radius:8px;background:var(--surface);color:var(--ink);padding:7px 10px;min-width:0}
 .bar input{flex:1 1 200px;max-width:320px}
 .views{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
@@ -489,6 +490,7 @@ thead th .info{vertical-align:middle}
 .fold-d small{font-family:var(--f-body);font-weight:500;font-size:12.5px;color:var(--muted);flex:1;min-width:0}
 .fold-d[aria-expanded="true"]{border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
 @media (max-width:640px){.fold-d small{order:3;flex-basis:100%;padding-left:calc(.8em + 8px)}.fold-d .fhint{margin-left:auto}}
+@media (max-width:640px){.filt .seg{display:flex;width:100%}.filt .seg button{flex:1 1 auto;justify-content:center;padding:0 5px;gap:4px}}
 @media (max-width:640px){.bar{top:0}.bar .views .seg{width:100%}.bar .views .seg button{font-size:12.5px;padding:8px 2px;line-height:1.25;word-break:keep-all}}
 .rcb{display:inline-block;font-size:11px;font-weight:700;line-height:1;padding:3px 6px;border-radius:4px;margin-left:5px;vertical-align:1px;border:1px solid var(--ink2);color:var(--ink);white-space:nowrap}
 
@@ -653,7 +655,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
   </div></nav>
   <div class="filt" role="group" aria-label="대상 대학">
     <div class="seg" id="grp" role="group" aria-label="대학 구분"></div>
-    <select id="rgn" aria-label="지역"></select>
+    <div class="seg" id="rgn" role="group" aria-label="지역"></div>
     <input id="q" type="search" placeholder="대학·전형명 검색" aria-label="대학 또는 전형명 검색">
   </div>
 </div>
@@ -718,6 +720,9 @@ const TR=['교과','종합','논술','정시'];
 const TNAME={교과:'학생부교과',종합:'학생부종합',논술:'논술',정시:'정시 수능위주'};
 const TC={교과:'var(--t1)',종합:'var(--t2)',논술:'var(--t3)',정시:'var(--t4)'};
 const GR=['일반','교대','과기원'];const GNAME={일반:'일반대학',교대:'교육대학',과기원:'과학기술원'};
+// 지역 필터: 수도권은 시·도별, 나머지(교대·과기원 소재지)는 비수도권으로 묶음. S.rg='' 은 전체
+const RGS=[['','전체'],['서울','서울'],['경기','경기'],['인천','인천'],['지방','비수도권']];const RGNAME=Object.fromEntries(RGS);
+const rgOf=u=>['서울','경기','인천'].includes(u.rg)?u.rg:'지방';const rgL=()=>S.rg?' · '+RGNAME[S.rg]:'';
 const STG={1:'등급만',2:'등급 우선',3:'유형별 분담',4:'유리한 값',5:'등급+성취도',6:'성취도만',0:'정성·미공개'};
 const STGL={1:'석차등급 산출 과목만 반영',2:'등급 있는 과목은 등급, 성취도만 있는 과목은 성취도 환산',3:'공통·일반=등급, 진로·융합=성취도 등 과목 유형별 고정',4:'등급 환산과 성취도 환산 중 높은 값',5:'등급과 성취도를 가중합 또는 매트릭스로 결합',6:'성취도만 반영',0:'정성평가 또는 반영방법 미공개'};
 const $=id=>document.getElementById(id);
@@ -735,9 +740,9 @@ const kShow=()=>S.v==='about'||(KTV.includes(S.v)&&FOLD.k);
 const cardMode=()=>MOB.matches||(MID.matches&&S.tv==='card');
 function tvSeg(id){return MID.matches?`<div class="seg tvseg" id="${id}" role="group" aria-label="보기 형식"><button type="button" data-tv="table" aria-pressed="${S.tv==='table'}">표</button><button type="button" data-tv="card" aria-pressed="${S.tv==='card'}">카드</button></div>`:''}
 function bindTv(id,f){const el=$(id);if(!el)return;el.querySelectorAll('button').forEach(b=>b.onclick=()=>{S.tv=b.dataset.tv;try{localStorage.setItem('tv28',S.tv)}catch(e){}f()})}
-try{const s=JSON.parse(localStorage.getItem('dash28')||'{}');['g','v','t'].forEach(k=>{if(s[k])S[k]=s[k]})}catch(e){}
+try{const s=JSON.parse(localStorage.getItem('dash28')||'{}');['g','v','t','rg'].forEach(k=>{if(s[k])S[k]=s[k]});if(!(S.rg in RGNAME))S.rg=''}catch(e){}
 const hv=location.hash.slice(1);if(['univ','quota','track','change','about'].includes(hv))S.v=hv;
-function save(){try{localStorage.setItem('dash28',JSON.stringify({g:S.g,v:S.v,t:S.t}))}catch(e){}}
+function save(){try{localStorage.setItem('dash28',JSON.stringify({g:S.g,v:S.v,t:S.t,rg:S.rg}))}catch(e){}}
 
 /* ── 버전·변경 표시 ── */
 const FL={quota:'모집인원',method:'전형방법',structure:'선발 구조',stage1:'1단계 배수',min_flag:'수능최저 여부',min_text:'수능최저',interview:'면접',interview_ratio:'면접 비율',interview_type:'면접 유형',elig:'지원자격 구분',elig_text:'지원자격',recommend:'추천',stage:'교과 평가방식',stage_desc:'교과 반영방법',doc_ratio:'서류평가',attendance:'출결',subjects:'반영 과목',grade_scale:'등급 환산',type:'유형',essay_ratio:'논술 비율',other:'논술 외 요소',essay_type:'논술 출제',gun:'모집군',gyogwa:'학생부(정시)',gyogwa_ratio:'학생부 비율',areas:'수능 반영',smap:'반영 영역',index:'활용 지표',n_areas:'영역 수',change:'2028 변경'};
@@ -808,7 +813,7 @@ function qn(r){return dv(r,'quota',Number.isInteger(r.quota)?fmt(r.quota):'<span
 function ratio(s){const m=String(s||'').match(/(\d+(?:\.\d+)?)\s*%?/);return m?+m[1]:null}
 
 /* ── 필터 ── */
-function inScope(u){return (S.g==='all'||u.g===S.g)&&(!S.rg||u.rg===S.rg)}
+function inScope(u){return (S.g==='all'||u.g===S.g)&&(!S.rg||rgOf(u)===S.rg)}
 function qMatch(u,r){if(!S.q)return true;const q=S.q.toLowerCase();return u.u.toLowerCase().includes(q)||(r?String(r.name).toLowerCase().includes(q):u.rows.some(x=>String(x.name).toLowerCase().includes(q)))}
 function scopeU(){return U.filter(u=>inScope(u)&&qMatch(u))}
 
@@ -818,14 +823,14 @@ function renderVer(){
    <span class="auth">작성 <b>봉일천고등학교 진로진학부장 전중수</b> <span class="mono">jungsooj@korea.kr</span> · <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.ko" target="_blank" rel="noopener license">CC BY-NC 4.0</a> 저작자표시-비영리</span>`;
 }
 function renderBar(){
-  const cnt=g=>U.filter(u=>g==='all'||u.g===g).length;
-  $('grp').innerHTML=[['all','전체'],['일반','일반대'],['교대','교대'],['과기원','과기원']].map(([k,l])=>`<button type="button" data-g="${k}" aria-pressed="${S.g===k}">${l}<small>${cnt(k)}</small></button>`).join('');
-  $('grp').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.g=b.dataset.g;S.rg='';S.f=null;save();renderAll()});
-  const rs=[...new Set(U.filter(u=>S.g==='all'||u.g===S.g).map(u=>u.rg))].sort((a,b)=>a.localeCompare(b,'ko'));
-  $('rgn').innerHTML=`<option value="">전체 지역</option>`+rs.map(r=>`<option ${S.rg===r?'selected':''}>${r}</option>`).join('');
+  // 두 필터는 '그리고'로 겹친다. 각 버튼의 숫자는 다른 쪽 선택을 적용한 대학 수
+  const cnt=g=>U.filter(u=>(g==='all'||u.g===g)&&(!S.rg||rgOf(u)===S.rg)).length,rcnt=r=>U.filter(u=>(S.g==='all'||u.g===S.g)&&(!r||rgOf(u)===r)).length;
+  $('grp').innerHTML=[['all','전체'],['일반','일반대'],['교대','교대'],['과기원','과기원']].map(([k,l])=>{const n=cnt(k);return `<button type="button" data-g="${k}" aria-pressed="${S.g===k}"${n?'':' class="zero"'}>${l}<small>${n}</small></button>`}).join('');
+  $('grp').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.g=b.dataset.g;S.f=null;save();renderAll()});
+  $('rgn').innerHTML=RGS.map(([k,l])=>{const n=rcnt(k);return `<button type="button" data-r="${k}" aria-pressed="${S.rg===k}"${n?'':' class="zero"'}>${l}<small>${n}</small></button>`}).join('');
+  $('rgn').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.rg=b.dataset.r;S.f=null;save();renderAll()});
   document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===S.v));document.querySelector('.filt').hidden=S.v==='about';
 }
-$('rgn').onchange=e=>{S.rg=e.target.value;S.f=null;renderAll()};
 $('q').oninput=e=>{S.q=e.target.value.trim();renderMain()};
 document.querySelectorAll('.views button').forEach(b=>b.onclick=()=>{if(S.v!==b.dataset.v)CMP=[];S.v=b.dataset.v;save();history.replaceState(null,'','#'+S.v);renderAll()});
 
@@ -833,7 +838,7 @@ document.querySelectorAll('.views button').forEach(b=>b.onclick=()=>{if(S.v!==b.
 function renderKpis(){const ab=S.v==='about',sh=kShow();
   const kt=$('ktog');kt.hidden=!KTV.includes(S.v);kt.setAttribute('aria-expanded',FOLD.k);kt.innerHTML=`<span class="chev" aria-hidden="true">›</span>요약<span class="kl2"> 정보</span><span class="fhint">${FOLD.k?'접기':'펼치기'}</span>`;kt.setAttribute('aria-label',`요약 정보 ${FOLD.k?'접기':'펼치기'}`);kt.onclick=()=>{FOLD.k=!FOLD.k;renderKpis()};
   $('kh').hidden=$('kpis').hidden=!sh;if(!sh)return;
-  const us=ab?U:U.filter(inScope);$('kscope').textContent=ab?`전체 · ${U.length}개 대학 기준(대학 구분·지역 선택과 무관)`:`${S.g==='all'?'전체':GNAME[S.g]}${S.rg?' · '+S.rg:''}${S.q?' · 검색 “'+S.q+'”':''} · ${scopeU().length}개 대학 기준`;
+  const us=ab?U:U.filter(inScope);$('kscope').textContent=ab?`전체 · ${U.length}개 대학 기준(대학 구분·지역 선택과 무관)`:`${S.g==='all'?'전체':GNAME[S.g]}${rgL()}${S.q?' · 검색 “'+S.q+'”':''} · ${scopeU().length}개 대학 기준`;
   const _x=0,rs=us.flatMap(u=>u.rows);
   const by=t=>rs.filter(r=>r.track===t).reduce((a,r)=>a+q0(r),0),tot=TR.reduce((a,t)=>a+by(t),0);
   const susi=tot-by('정시');const jae=rs.filter(r=>r.elig==='재학생').length;const chu=us.filter(u=>u.ch.length).length;
@@ -852,7 +857,7 @@ function renderKpis(){const ab=S.v==='about',sh=kShow();
 function uStat(u){const o={tot:0,n:u.rows.length,jae:u.rows.filter(r=>r.elig==='재학생').length};TR.forEach(t=>{const rs=u.rows.filter(r=>r.track===t);o[t]={n:rs.length,p:rs.reduce((a,r)=>a+q0(r),0),miss:rs.some(r=>!Number.isInteger(r.quota))};o.tot+=o[t].p});o.js=o.tot?o['정시'].p/o.tot:0;return o}
 function renderUniv(){
   const us=scopeU();const st=new Map(us.map(u=>[u.u,uStat(u)]));
-  const cols=[['대학',u=>u.u],['구분',u=>GR.indexOf(u.g)*100+(u.rg||'').charCodeAt(0)],...TR.map(t=>[t,u=>st.get(u.u)[t].p]),['합계',u=>st.get(u.u).tot],['정시 비중',u=>st.get(u.u).js],['변경',u=>u.ch.length],['재학생',u=>st.get(u.u).jae]];
+  const cols=[['대학',u=>u.u],['구분',u=>GR.indexOf(u.g)+(u.rg||'')],...TR.map(t=>[t,u=>st.get(u.u)[t].p]),['합계',u=>st.get(u.u).tot],['정시 비중',u=>st.get(u.u).js],['변경',u=>u.ch.length],['재학생',u=>st.get(u.u).jae]];
   let list=[...us].sort((a,b)=>GR.indexOf(a.g)-GR.indexOf(b.g)||a.u.localeCompare(b.u,'ko'));
   if(S.sort){const k=cols[S.sort.i][1];list.sort((a,b)=>{const x=k(a),y=k(b);return (x>y?1:x<y?-1:0)*S.sort.dir})}
   VORD.univ=list.map(u=>u.u);
@@ -972,7 +977,7 @@ function renderTrack(){
   const mob=cardMode();$('mtbox').hidden=mob;$('msortw').hidden=!mob;$('mlist').hidden=!mob;if(mob)renderMList(rows,C);
   tHint();
   TROWS=rows;$('csvb').onclick=()=>csvOut(TROWS);$('prtb').onclick=()=>print();
-  $('pinfo').textContent=`${TNAME[S.t]} · ${S.g==='all'?'전체':GNAME[S.g]}${S.rg?' · '+S.rg:''}${S.q?' · 검색 “'+S.q+'”':''}${FL0.length?' · 조건: '+FL0.map(f=>f.t.replace(/\(.*\)/,'')+' '+f.k).join(', '):''} · ${us.size}개 대학 ${rows.length}개 전형 · v${LV.v} · 인쇄 ${new Date().toLocaleDateString('ko-KR')} · 2023swhs3rd-a11y.github.io/2028plan`;
+  $('pinfo').textContent=`${TNAME[S.t]} · ${S.g==='all'?'전체':GNAME[S.g]}${rgL()}${S.q?' · 검색 “'+S.q+'”':''}${FL0.length?' · 조건: '+FL0.map(f=>f.t.replace(/\(.*\)/,'')+' '+f.k).join(', '):''} · ${us.size}개 대학 ${rows.length}개 전형 · v${LV.v} · 인쇄 ${new Date().toLocaleDateString('ko-KR')} · 2023swhs3rd-a11y.github.io/2028plan`;
 }
 let TROWS=[];
 function csvOut(rows){const q=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
@@ -1194,7 +1199,7 @@ renderAll();
 /* ── 인쇄: 모든 쪽 위에 머리글·인쇄 시각, 아래에 쪽 번호(@page 여백 상자, 크롬·엣지 131+) ── */
 const VNAME={univ:'대학별 한눈에',quota:'전형별 모집인원',track:'전형별 비교',change:'2027 대비 2028 변경사항',about:'자료 기준'};
 function printHead(){if(sheet&&sheet.dataset.u)return `${sheet.dataset.u} 대학 상세`;if(sheet)return '전형 비교';
-  return S.v==='track'?$('pinfo').textContent.split(' · v')[0]:`${VNAME[S.v]} · ${S.g==='all'?'전체':GNAME[S.g]}${S.rg?' · '+S.rg:''}`}
+  return S.v==='track'?$('pinfo').textContent.split(' · v')[0]:`${VNAME[S.v]} · ${S.g==='all'?'전체':GNAME[S.g]}${rgL()}`}
 function setPrintBoxes(){const d=new Date(),p=n=>String(n).padStart(2,'0');const ts=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
   const q=t=>'"'+String(t).replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,' ')+'"';const st=$('pboxes')||document.head.appendChild(Object.assign(document.createElement('style'),{id:'pboxes'}));
   st.textContent=`@media print{@page{@top-left{content:${q('2028 대입전형 시행계획 요약 · '+printHead())};font-size:9pt;color:#333;vertical-align:bottom;padding-bottom:3mm}@top-right{content:${q('인쇄 '+ts)};font-size:9pt;color:#333;vertical-align:bottom;padding-bottom:3mm}@bottom-left{content:${q('v'+LV.v+' · 2023swhs3rd-a11y.github.io/2028plan')};font-size:8pt;color:#777}@bottom-right{content:counter(page) " / " counter(pages) "쪽";font-size:9pt;color:#333}}}`}
