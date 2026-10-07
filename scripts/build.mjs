@@ -58,6 +58,23 @@ function checkWt(wt, w) {
   });
 }
 
+// 교과 반영 과목(sb)·등급 환산(gv)
+const SBK = ['전 과목', '상위', '일부'], SBV = ['반영', '일부', '가산', '미반영', '미기재'];
+const isNum = v => typeof v === 'number' && Number.isFinite(v);
+function checkSb(r, w) {
+  const s = r.sb;
+  if (!s) return err(w, '교과 전형에는 sb(반영 과목 구조)가 필요합니다');
+  if (!SBK.includes(s.k)) err(w, `sb.k='${s.k}' 는 ${SBK.join('/')} 중 하나여야 합니다`);
+  if (s.k === '상위' && !(Number.isInteger(s.n) && s.n > 0)) err(w, 'sb.k 가 상위면 sb.n(총 반영 과목 수)이 필요합니다');
+  if (s.n != null && !(Number.isInteger(s.n) && s.n > 0)) err(w, `sb.n=${JSON.stringify(s.n)} 는 양의 정수여야 합니다`);
+  for (const g of ['공통', '일반', '진로', '융합']) if (!SBV.includes(s.g?.[g])) err(w, `sb.g.${g}='${s.g?.[g]}' 는 ${SBV.join('/')} 중 하나여야 합니다`);
+  const v = r.gv;
+  if (v == null) return;
+  if (!v.grade && !v.ach) err(w, 'gv 에는 grade 나 ach 가 있어야 합니다');
+  if (v.grade && !(Array.isArray(v.grade) && v.grade.length === 5 && v.grade.every(isNum))) err(w, 'gv.grade 는 숫자 5개여야 합니다');
+  if (v.ach && !Object.entries(v.ach).every(([k, x]) => 'ABCDE'.includes(k) && k.length === 1 && isNum(x))) err(w, 'gv.ach 는 A~E 숫자여야 합니다');
+  if (v.max != null && !isNum(v.max)) err(w, 'gv.max 는 숫자여야 합니다');
+}
 function checkUniv(u, file) {
   for (const k of ['u', 'g', 'rg', 'fid', 'ft']) if (!isStr(u[k])) err(file, `'${k}' 는 빈 문자열이 아니어야 합니다`);
   if (!GR.includes(u.g)) err(file, `g='${u.g}' 는 ${GR.join('/')} 중 하나여야 합니다`);
@@ -95,6 +112,7 @@ function checkUniv(u, file) {
     if (r.h != null && !Array.isArray(r.h)) err(w, 'h 는 배열이어야 합니다');
     if (r.wt != null) checkWt(r.wt, w);
     if ((r.fid != null || r.ft != null) && !(isStr(r.fid) && isStr(r.ft))) err(w, '행별 출처는 fid·ft 를 함께 적어야 합니다');
+    if (r.track === '교과') checkSb(r, w);
   });
 }
 
