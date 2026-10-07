@@ -13,10 +13,10 @@ catch { ({ chromium } = createRequire(execSync('npm root -g').toString().trim() 
 const URL = 'file://' + join(ROOT, 'index.html');
 const problems = [];
 
-// 칸(td·th)이나 카드(.jc·.uc 등) 안의 요소가 그 경계를 넘는지
+// 칸(td·th)이나 카드(.jc·.uc 등)·환산점수 그래프(.gv) 안의 요소가 그 경계를 넘는지
 const scan = () => {
   const out = [];
-  const boxes = document.querySelectorAll('td, th, .jc dd, .kv dd');
+  const boxes = document.querySelectorAll('td, th, .jc dd, .kv dd, .gv');
   boxes.forEach(box => {
     if (!box.offsetParent) return;
     const br = box.getBoundingClientRect();
@@ -40,7 +40,7 @@ for (const [w, scheme] of [[1440, 'light'], [1440, 'dark'], [390, 'light'], [390
   p.on('pageerror', e => errs.push(e.message));
   await p.goto(URL); await p.evaluate(() => { try { localStorage.clear(); } catch {} }); await p.reload(); await p.waitForTimeout(600);
   const tag = `${w} ${scheme}`;
-  for (const v of ['univ', 'track', 'gyo', 'quota', 'change', 'about']) {
+  for (const v of ['univ', 'track', 'quota', 'change', 'about']) {
     await p.click(`[data-v="${v}"]`); await p.waitForTimeout(300);
     if (v === 'track') {
       for (const t of await p.$$eval('#ttabs button:not([disabled])', bs => bs.map(x => x.dataset.t))) {
