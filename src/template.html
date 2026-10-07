@@ -4,23 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>2028 대입전형 시행계획 요약</title>
-<meta name="description" content="92개 대학(일반대학 57 · 국립대학 19 · 교육대학 10 · 과학기술원 6)의 2028학년도 학생부교과·학생부종합·논술·정시 전형과 2027 대비 변경사항 요약">
+<meta name="description" content="93개 대학(일반대학 57 · 지방국립대학 20 · 교육대학 10 · 과학기술원 6)의 2028학년도 학생부교과·학생부종합·논술·정시 전형과 2027 대비 변경사항 요약">
 <link rel="canonical" href="https://2023swhs3rd-a11y.github.io/2028plan/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="2028 대입전형 시행계획 요약">
 <meta property="og:locale" content="ko_KR">
 <meta property="og:url" content="https://2023swhs3rd-a11y.github.io/2028plan/">
 <meta property="og:title" content="2028 대입전형 시행계획 요약">
-<meta property="og:description" content="92개 대학 학생부교과·종합·논술·정시 전형과 2027 대비 변경사항">
+<meta property="og:description" content="93개 대학 학생부교과·종합·논술·정시 전형과 2027 대비 변경사항">
 <meta property="og:image" content="https://2023swhs3rd-a11y.github.io/2028plan/og.png?v=@@VER@@">
 <meta property="og:image:secure_url" content="https://2023swhs3rd-a11y.github.io/2028plan/og.png?v=@@VER@@">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="2028 대입전형 시행계획 요약 · 92개 대학">
+<meta property="og:image:alt" content="2028 대입전형 시행계획 요약 · 93개 대학">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="2028 대입전형 시행계획 요약">
-<meta name="twitter:description" content="92개 대학 학생부교과·종합·논술·정시 전형과 2027 대비 변경사항">
+<meta name="twitter:description" content="93개 대학 학생부교과·종합·논술·정시 전형과 2027 대비 변경사항">
 <meta name="twitter:image" content="https://2023swhs3rd-a11y.github.io/2028plan/og.png?v=@@VER@@">
 <meta name="theme-color" content="#bf3036">
 <link rel="icon" type="image/png" sizes="64x64" href="@@ICON:icon-64.png@@">
@@ -643,7 +643,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
   </div></div>
   <h1><a href="./" class="home" id="home" title="첫 화면으로">2028 대입전형 시행계획 요약</a></h1>
   <div class="ver" id="ver"></div>
-  <p id="lede">선정한 <b>92개 대학</b>(일반대학 57 · 국립대학 19 · 교육대학 10 · 과학기술원 6)의 학생부교과, 학생부종합, 논술, 정시 수능위주 전형과 2027 대비 변경사항을 중심으로 작성(대학발표 2028 대입전형 시행계획 참고)</p>
+  <p id="lede">선정한 <b>93개 대학</b>(일반대학 57 · 지방국립대학 20 · 교육대학 10 · 과학기술원 6)의 학생부교과, 학생부종합, 논술, 정시 수능위주 전형과 2027 대비 변경사항을 중심으로 작성(대학발표 2028 대입전형 시행계획 참고)</p>
 </header>
 
 <div class="bar" role="region" aria-label="보기와 대상">
@@ -721,8 +721,8 @@ const D=/*@@DATA@@*/;const U=D.U,VERS=D.V,LV=VERS[VERS.length-1];
 const TR=['교과','종합','논술','정시'];
 const TNAME={교과:'학생부교과',종합:'학생부종합',논술:'논술',정시:'정시 수능위주'};
 const TC={교과:'var(--t1)',종합:'var(--t2)',논술:'var(--t3)',정시:'var(--t4)'};
-const GR=['일반','국립','교대','과기원'];const GNAME={일반:'일반대학',국립:'국립대학',교대:'교육대학',과기원:'과학기술원'};
-// 지역 필터: 수도권은 시·도별, 나머지(국립대·교대·과기원 소재지)는 비수도권으로 묶음. S.rg='' 은 전체
+const GR=['일반','지방국립','교대','과기원'];const GNAME={일반:'일반대학',지방국립:'지방국립대학',교대:'교육대학',과기원:'과학기술원'};
+// 지역 필터: 수도권은 시·도별, 나머지(지방국립대·교대·과기원 소재지)는 비수도권으로 묶음. S.rg='' 은 전체
 const RGS=[['','전체'],['서울','서울'],['경기','경기'],['인천','인천'],['지방','비수도권']];const RGNAME=Object.fromEntries(RGS);
 const uCmp=(a,b)=>(S.g==='all'&&!S.rg?GR.indexOf(a.g)-GR.indexOf(b.g):0)||a.u.localeCompare(b.u,'ko');
 const rgOf=u=>['서울','경기','인천'].includes(u.rg)?u.rg:'지방';const rgL=()=>S.rg?' · '+RGNAME[S.rg]:'';
@@ -829,7 +829,7 @@ function renderVer(){
 function renderBar(){
   // 두 필터는 '그리고'로 겹친다. 각 버튼의 숫자는 다른 쪽 선택을 적용한 대학 수
   const cnt=g=>U.filter(u=>(g==='all'||u.g===g)&&(!S.rg||rgOf(u)===S.rg)).length,rcnt=r=>U.filter(u=>(S.g==='all'||u.g===S.g)&&(!r||rgOf(u)===r)).length;
-  $('grp').innerHTML=[['all','전체'],['일반','일반대'],['국립','국립대'],['교대','교대'],['과기원','과기원']].map(([k,l])=>{const n=cnt(k);return `<button type="button" data-g="${k}" aria-pressed="${S.g===k}"${n?'':' class="zero"'}>${l}<small>${n}</small></button>`}).join('');
+  $('grp').innerHTML=[['all','전체'],['일반','일반대'],['지방국립','지방국립대'],['교대','교대'],['과기원','과기원']].map(([k,l])=>{const n=cnt(k);return `<button type="button" data-g="${k}" aria-pressed="${S.g===k}"${n?'':' class="zero"'}>${l}<small>${n}</small></button>`}).join('');
   $('grp').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.g=b.dataset.g;S.f=null;save();renderAll()});
   $('rgn').innerHTML=RGS.map(([k,l])=>{const n=rcnt(k);return `<button type="button" data-r="${k}" aria-pressed="${S.rg===k}"${n?'':' class="zero"'}>${l}<small>${n}</small></button>`}).join('');
   $('rgn').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.rg=b.dataset.r;S.f=null;save();renderAll()});
@@ -1148,7 +1148,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeU()});
 function renderAbout(){
   const low=U.filter(u=>u.sq!=='high');
   $('about').innerHTML=`
-  <div class="box"><h3>출처와 범위</h3><p>Google Drive 'claude workbook' 폴더의 대학별 2028학년도 대학입학전형 시행계획 PDF ${U.length}개(일반대학 ${U.filter(u=>u.g==='일반').length} · 국립대학 ${U.filter(u=>u.g==='국립').length} · 교육대학 ${U.filter(u=>u.g==='교대').length} · 과학기술원 ${U.filter(u=>u.g==='과기원').length}). 외부 사교육 자료는 쓰지 않았습니다.</p>
+  <div class="box"><h3>출처와 범위</h3><p>Google Drive 'claude workbook' 폴더의 대학별 2028학년도 대학입학전형 시행계획 PDF ${U.length}개(일반대학 ${U.filter(u=>u.g==='일반').length} · 지방국립대학 ${U.filter(u=>u.g==='지방국립').length} · 교육대학 ${U.filter(u=>u.g==='교대').length} · 과학기술원 ${U.filter(u=>u.g==='과기원').length}). 외부 사교육 자료는 쓰지 않았습니다.</p>
    <p>대상: 정원 내 학생부교과·학생부종합·논술·정시 수능위주 전형. 지역균형·지역인재·학교장추천 포함. 고른기회, 실기·실적(특기자), 재외국민, 정원 외 전형은 제외하고 대학 상세의 '참고'에 적었습니다.</p>
    <p>모집인원은 분석 전형의 합계라 대학 입학정원과 다를 수 있습니다. 여러 캠퍼스는 전형명 뒤에 캠퍼스를 붙였습니다.</p></div>
   <div class="box"><h3>교과 평가방식 6단계</h3><div class="tbox" style="border:0"><table><tbody>${[1,2,3,4,5,6,0].map(k=>`<tr><td>${stg({stage:k})}</td><td class="src">${STGL[k]}</td></tr>`).join('')}</tbody></table></div></div>
