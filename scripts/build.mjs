@@ -93,6 +93,7 @@ function checkUniv(u, file) {
     if (r.stage != null && !(Number.isInteger(r.stage) && r.stage >= 0 && r.stage <= 6)) err(w, `stage=${JSON.stringify(r.stage)} 는 0~6 이어야 합니다`);
     if (r.h != null && !Array.isArray(r.h)) err(w, 'h 는 배열이어야 합니다');
     if (r.wt != null) checkWt(r.wt, w);
+    if ((r.fid != null || r.ft != null) && !(isStr(r.fid) && isStr(r.ft))) err(w, '행별 출처는 fid·ft 를 함께 적어야 합니다');
   });
 }
 
