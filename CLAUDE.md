@@ -19,5 +19,5 @@ GitHub Pages로 배포하는 정적 단일 파일 대시보드. 빌드 도구·�
 ## 확인
 - `node scripts/build.mjs --check`: 데이터 검증 + `index.html`·`CHANGELOG.md` 최신 여부(CI와 동일).
 - 화면 변경 후에는 Playwright로 390px(모바일)·1440px, 라이트·다크 모드에서 콘솔 오류와 가로 스크롤이 없는지 확인한다.
-- `og.png`는 `src/og-card.html`을 1200×630으로 캡처한 것이다. 대학 수 등 문구가 바뀌면 함께 갱신한다.
+- `og.png`는 `src/og-card.html`을 1200×630으로 캡처한 것이다. 대학 수 등 문구가 바뀌면 함께 갱신한다. 공유 미리보기 이미지 주소에 og.png 해시가 붙으므로 og.png를 바꾼 뒤에는 빌드를 다시 돌린다.
 - 대학을 추가·삭제하면 대학 수가 적힌 곳(`src/template.html` 머리글·메타 태그, `src/og-card.html`, README 첫 문단과 수록 대학 목록)을 함께 고친다.

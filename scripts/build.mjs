@@ -5,6 +5,7 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CHECK = process.argv.includes('--check');
@@ -138,7 +139,7 @@ if (errors.length) {
 
 // 파비콘: src/icons 의 PNG를 data URI로 넣어 단일 파일에서도 아이콘이 보이게 함
 const html = template.replace('/*@@DATA@@*/', () => json)
-  .replace(/@@VER@@/g, () => V[V.length - 1].v) // 공유 미리보기 이미지 캐시 갱신용(버전이 바뀌면 카카오톡 등이 새 이미지를 받음)
+  .replace(/@@VER@@/g, () => V[V.length - 1].v + '-' + createHash('sha1').update(readFileSync(P('og.png'))).digest('hex').slice(0, 8)) // 공유 미리보기 이미지 캐시 갱신용(버전이나 og.png가 바뀌면 카카오톡 등이 새 이미지를 받음)
   .replace(/@@ICON:([\w.-]+)@@/g, (_, f) => 'data:image/png;base64,' + readFileSync(P('src/icons', f)).toString('base64'));
 // 버전 기록: 화면에서는 빼고 저장소의 CHANGELOG.md 로 남긴다(versions.json·대학별 hu 에서 생성)
 const changelog = ['# 버전 기록', '',
