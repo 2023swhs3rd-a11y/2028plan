@@ -178,7 +178,8 @@
       "essay_ratio": 85,
       "other": "교과 15%",
       "essay_type": "미기재",
-      "pg": 5
+      "pg": 5,
+      "min_s": "2개 합 5 (약학 3개 합 4)"
     },
     {
       "track": "정시",
