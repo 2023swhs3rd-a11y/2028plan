@@ -858,8 +858,8 @@ function elig(r){if(!r||!r.elig)return '';const t=esc(r.elig_text||'');
   if(r.elig==='졸업연도 제한')return `<span class="eb y" title="${t}">졸업연도 제한</span>`;
   if(r.elig==='졸업생 전용')return `<span class="eb g" title="${t}">졸업생 전용</span>`;return ''}
 function qual(u){return u.sq==='low'?'<span class="eb q" title="PDF 본문이 이미지라 판독 불가 · 이전 작업 자료 기준">이전 자료</span>':u.sq==='medium'?'<span class="eb q" title="PDF 일부 판독 불가 · 누락 항목 있음">일부 판독</span>':''}
-// 요약표 최저: 'N개 합 X'가 모집단위별로 여러 개면 N끼리 묶어 'N개 합 6 또는 7'(셋 이상은 6~8), N이 여럿이면 '2개 합 5~6 / 3개 합 4'. 전문은 상세에
-function minSum(t){const M=[...t.matchAll(/(\d)\s*개\s*(?:영역\s*)?(합|각)\s*(\d+)/g)].map(m=>[m[1]+'개 '+m[2],+m[3]]);if(!M.length)return (t.match(/\d개\s*\d등급/)||[''])[0]||'';
+// 요약표 최저: 행에 min_s(사람이 정한 요약)가 있으면 그것을 쓰고, 없으면 'N개 합 X'가 모집단위별로 여러 개면 N끼리 묶어 'N개 합 6 또는 7'(셋 이상은 6~8), N이 여럿이면 '2개 합 5~6 / 3개 합 4'. 전문은 상세에
+function minSum(t){const M=[...t.matchAll(/(\d)\s*개\s*(?:\([^)]*\)\s*)?(?:영역\s*)?(?:등급\s*)?(합|각)\s*(\d+)/g)].map(m=>[m[1]+'개 '+m[2],+m[3]]);if(!M.length)return (t.match(/\d개\s*\d등급/)||[''])[0]||'';
   const G={};M.forEach(([k,v])=>(G[k]=G[k]||new Set).add(v));
   const K=Object.keys(G).sort();return K.slice(0,2).map(k=>{const v=[...G[k]].sort((a,b)=>a-b);return `${k} ${v.length===1?v[0]:v.length===2&&K.length===1?v[0]+' 또는 '+v[1]:v[0]+'~'+v[v.length-1]}`}).join(' / ')+(K.length>2?' 등':'')}
 // 요약표 1단계 배수: 모집단위·인원별 배수가 여럿이면 전체 범위만(예: 7~10배수). 전문은 상세에
@@ -867,9 +867,9 @@ function s1s(r){const t=String(r.stage1||'');if(!/[(/]/.test(t))return t;const v
   if(!v.length)return t;const a=Math.min(...v),b=Math.max(...v);return a===b?a+'배수':`${a}~${b}배수`}
 const s1h=r=>esc(s1s(r)),s1t=r=>s1s(r)!==(r.stage1||'')?` title="${esc(r.stage1)}"`:'';
 function minShort(r){const f=r.min_flag||'',t=r.min_text||'';if(!f||f==='없음')return {k:'n',t:'없음'};
-  const s=minSum(t);
+  const s=r.min_s||minSum(t);
   return f==='일부'?{k:'p',t:'일부'+(s?' · '+s:'')}:{k:'f',t:s||'있음'}}
-function minCell(r){const m=minShort(r),sc=/또는|~|\//.test(m.t)?null:minScore(r);return dv(r,['min_flag','min_text'],`<span class="mnc" title="${esc(r.min_text||'')}"><span class="mnt"><i class="dot ${m.k==='f'?'f':m.k==='p'?'p':''}" aria-hidden="true"></i>${esc(m.t)}</span>${sc!=null?`<span class="mins" title="영역 평균 등급">평균 ${sc}</span>`:''}</span>`)}
+function minCell(r){const m=minShort(r),sc=/또는|~|\//.test(m.t)?null:minScore(r);return dv(r,['min_flag','min_text'],`<span class="mnc" title="${esc(r.min_text||'')}"><span class="mnt"><i class="dot ${m.k==='f'?'f':m.k==='p'?'p':''}" aria-hidden="true"></i><span>${esc(m.t).replace(/ \/ /g,'<br>')}</span></span>${sc!=null?`<span class="mins" title="영역 평균 등급">평균 ${sc}</span>`:''}</span>`)}
 function gun(g){g=g||'';if(!/[가나다]/.test(g))return '<span class="na">미기재</span>';return `<span class="gun" aria-label="${esc(g)}군">${['가','나','다'].map(x=>`<b class="${g.includes(x)?'':'off'}">${x}</b>`).join('')}</span>`}
 
 /* 정렬 키: 표시값은 그대로, 정렬만 의미 있는 수치로 */
