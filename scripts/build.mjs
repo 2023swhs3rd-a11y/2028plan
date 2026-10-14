@@ -147,6 +147,13 @@ function checkRur(u, file) {
     if (r.h != null && !Array.isArray(r.h)) err(w, 'h 는 배열이어야 합니다');
     if ((r.fid != null || r.ft != null) && !(isStr(r.fid) && isStr(r.ft))) err(w, '행별 출처는 fid·ft 를 함께 적어야 합니다');
     if (u.rows.some(x => x.track === r.track && x.name === r.name)) err(w, '같은 전형이 rows 에도 있습니다(농어촌 전형은 rur 에만)');
+    // 일반 전형과 같은 상세 정보(지원자격·추천, 교과 반영 과목·등급 환산, 정시 반영비율)
+    if (!ENUM.elig.includes(r.elig)) err(w, `elig='${r.elig}' 는 ${ENUM.elig.join('/')} 중 하나여야 합니다`);
+    if (!isStr(r.recommend)) err(w, 'recommend 가 비어 있습니다');
+    if (r.stage != null && !(Number.isInteger(r.stage) && r.stage >= 0 && r.stage <= 6)) err(w, `stage=${JSON.stringify(r.stage)} 는 0~6 이어야 합니다`);
+    if (r.track === '교과') checkSb(r, w);
+    if (r.track === '종합' && !['서류형', '면접형'].includes(r.type)) err(w, `type='${r.type}' 는 서류형/면접형 중 하나여야 합니다`);
+    if (r.wt != null) checkWt(r.wt, w);
   });
 }
 
