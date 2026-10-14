@@ -199,7 +199,7 @@ tbody th{font-weight:600;text-align:left}
 .chip.tch{border-color:var(--c);background:color-mix(in srgb,var(--c) 12%,var(--surface));color:var(--ink);font-weight:600}
 
 /* 분포 카드 */
-.dist{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.dist{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .card h3{font-size:14px;font-weight:700;display:flex;justify-content:space-between;gap:8px}
 .card h3 small{font-family:var(--f-mono);font-weight:500;color:var(--muted);font-size:11px}
@@ -1109,10 +1109,10 @@ function renderTrack(){
   const fOn=(t,k)=>FL0.some(f=>f.t===t&&f.k===k);
   const fTog=(t,k)=>{const L=FL0.filter(f=>!(f.t===t&&f.k===k));if(!fOn(t,k))L.push({t,k});S.f=L.length?L:null;renderTrack()};
   const pass=(r,skip)=>{const G={};FL0.forEach(f=>{if(f.t!==skip)(G[f.t]=G[f.t]||[]).push(f.k)});return Object.entries(G).every(([t,ks])=>{const d=DSL.find(x=>x.t===t);return ks.includes(d.f(r))})};
-  // 농어촌 보기는 항목마다 모집인원 합을 함께 보여 주고 막대·%도 인원 기준(인원 미기재 전형은 0명)
-  $('dist').innerHTML=DSL.map((d,di)=>{const sub=base.filter(r=>pass(r,d.t));const c={},m={};base.forEach(r=>{c[d.f(r)]=0;m[d.f(r)]=0});sub.forEach(r=>{const k=d.f(r);c[k]=(c[k]||0)+1;m[k]=(m[k]||0)+q0(r)});const keys=[...d.order.filter(k=>k in c),...Object.keys(c).filter(k=>!d.order.includes(k))];const n=sub.length,M=sub.reduce((a,r)=>a+q0(r),0),w=k=>RV?m[k]:c[k],W=RV?M:n;
-    return `<article class="card${RV?' rm':''}"><h3>${d.t}<small>${RV?`${n}개 · ${fmt(M)}명`:`n = ${n}`}</small></h3><div class="sbar" role="img" aria-label="${d.t}: ${keys.map(k=>k+' '+c[k]+(RV?'개 '+m[k]+'명':'')).join(', ')}">${keys.map((k,i)=>w(k)?`<i style="flex:${w(k)};background:${dpal(d,i)}" title="${esc(k)} ${RV?`${c[k]}개 · ${fmt(m[k])}명`:c[k]}"></i>`:'').join('')}</div>
-    <ul>${keys.map((k,i)=>{const on=fOn(d.t,k);return `<li><button type="button" class="${on?'on':''}${c[k]||on?'':' zero'}" aria-pressed="${on}" data-d="${di}" data-k="${esc(k)}"><span class="sw" style="background:${dpal(d,i)}"></span><span>${esc(k)}</span><span class="v">${c[k]}${RV?'<small>개</small>':''}</span>${RV?`<span class="m">${fmt(m[k])}<small>명</small></span>`:''}<span class="p">${W?Math.round(w(k)/W*100):0}%</span></button></li>`}).join('')}</ul>${d.note?`<p class="none" style="margin:0">${d.note}</p>`:''}</article>`}).join('')+(RV?'<p class="none dnote">막대와 %는 모집인원 기준 · 포함 전형 인원은 여러 대상이 함께 쓰는 인원 · 인원 미기재(수시 이월분만 뽑는 정시 등)는 0명</p>':'');
+  // 항목마다 전형 수와 모집인원 합을 함께 보여 주고 막대·%는 인원 기준(인원 미기재 전형은 0명)
+  $('dist').innerHTML=DSL.map((d,di)=>{const sub=base.filter(r=>pass(r,d.t));const c={},m={};base.forEach(r=>{c[d.f(r)]=0;m[d.f(r)]=0});sub.forEach(r=>{const k=d.f(r);c[k]=(c[k]||0)+1;m[k]=(m[k]||0)+q0(r)});const keys=[...d.order.filter(k=>k in c),...Object.keys(c).filter(k=>!d.order.includes(k))];const n=sub.length,M=sub.reduce((a,r)=>a+q0(r),0),w=k=>m[k],W=M;
+    return `<article class="card rm"><h3>${d.t}<small>${n}개 · ${fmt(M)}명</small></h3><div class="sbar" role="img" aria-label="${d.t}: ${keys.map(k=>k+' '+c[k]+'개 '+m[k]+'명').join(', ')}">${keys.map((k,i)=>w(k)?`<i style="flex:${w(k)};background:${dpal(d,i)}" title="${esc(k)} ${c[k]}개 · ${fmt(m[k])}명"></i>`:'').join('')}</div>
+    <ul>${keys.map((k,i)=>{const on=fOn(d.t,k);return `<li><button type="button" class="${on?'on':''}${c[k]||on?'':' zero'}" aria-pressed="${on}" data-d="${di}" data-k="${esc(k)}"><span class="sw" style="background:${dpal(d,i)}"></span><span>${esc(k)}</span><span class="v">${c[k]}<small>개</small></span><span class="m">${fmt(m[k])}<small>명</small></span><span class="p">${W?Math.round(w(k)/W*100):0}%</span></button></li>`}).join('')}</ul>${d.note?`<p class="none" style="margin:0">${d.note}</p>`:''}</article>`}).join('')+`<p class="none dnote">${RV?'막대와 %는 모집인원 기준 · 포함 전형 인원은 여러 대상이 함께 쓰는 인원 · 인원 미기재(수시 이월분만 뽑는 정시 등)는 0명':'막대와 %는 모집인원 기준 · 개 = 전형 수, 명 = 정원 내 모집인원 합'}</p>`;
   $('dist').querySelectorAll('li button').forEach(b=>b.onclick=()=>fTog(DSL[+b.dataset.d].t,b.dataset.k));
   const df=$('dfold');df.setAttribute('aria-expanded',FOLD.d);df.innerHTML=`<span class="chev" aria-hidden="true">›</span>전형별 통계<small>${DSL.map(d=>d.t).join(' · ')}${FL0.length&&!FOLD.d?` · 필터 ${FL0.length}개 적용 중`:''}</small><span class="fhint">${FOLD.d?'접기':'펼치기'}</span>`;$('dist').hidden=!FOLD.d;df.onclick=()=>{FOLD.d=!FOLD.d;renderTrack()};
   // 빠른 조건: 상담에서 자주 거르는 조건을 표 위에 칩으로
