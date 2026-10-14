@@ -465,6 +465,7 @@ td .chip,td .ssp{white-space:normal;max-width:100%;overflow-wrap:break-word;vert
 .bar .views .seg{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));width:min(760px,100%)}
 .bar .views .seg button{border-radius:0;justify-content:center;font-size:15px;font-weight:700;min-height:42px;padding:8px 14px;color:var(--ink2)}
 .bar .views .seg button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.bar .views .seg button#v-rur:not([aria-selected="true"]){background:color-mix(in srgb,var(--t2) 18%,var(--surface));color:var(--ink)}
 .filt{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
 .vrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.vrow .views{flex:0 1 760px;min-width:0}.vrow .views .seg{width:100%}
 .filt[hidden]{display:none}
@@ -722,10 +723,10 @@ details[open]>summary .chev{transform:rotate(90deg)}
   <div class="vrow" id="m1"><nav class="views" aria-label="보기"><div class="seg" role="tablist">
     <button role="tab" id="v-univ" data-v="univ">대학별</button>
     <button role="tab" id="v-track" data-v="track">전형별 비교</button>
-    <button role="tab" id="v-rur" data-v="rur">농어촌</button>
     <button role="tab" id="v-quota" data-v="quota">모집인원</button>
     <button role="tab" id="v-change" data-v="change">2028 변경</button>
     <button role="tab" id="v-about" data-v="about">자료 기준</button>
+    <button role="tab" id="v-rur" data-v="rur">농어촌</button>
   </div></nav></div>
   <div class="filt" role="group" aria-label="대상 대학">
     <div class="seg" id="rgn" role="group" aria-label="지역"></div>
@@ -812,7 +813,7 @@ const ALL=U.flatMap(u=>u.rows);
 const AUD=['전용','포함'];const CAP=['외','내','미기재'];const RQ=['6년','12년','6년·12년','미기재'];const CARRY=['별도','이월','없음','미기재'];
 U.forEach(u=>(u.rur||[]).forEach(r=>{r.u=u.u;r.g=u.g;r.rg=u.rg;r.rur=1}));
 const RALL=U.flatMap(u=>u.rur||[]);
-const VIEWS=['univ','track','rur','quota','change','about'];
+const VIEWS=['univ','track','quota','change','about','rur'];
 const isTV=()=>S.v==='track'||S.v==='rur',SRC=()=>S.v==='rur'?RALL:ALL;
 let TT={track:'교과',rur:'교과'};
 const MOB=matchMedia('(max-width: 640px)');
