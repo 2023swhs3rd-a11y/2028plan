@@ -127,7 +127,7 @@ function checkRur(u, file) {
     const w = `${file} rur[${i}] ${r.name ?? ''}`;
     if (!isStr(r.name)) err(w, 'name 이 비어 있습니다');
     if (!TR.includes(r.track)) err(w, `track='${r.track}' 는 ${TR.join('/')} 중 하나여야 합니다`);
-    const key = r.track + '|' + r.name + '|' + (r.campus || '') + '|' + r.cap;
+    const key = r.track + '|' + r.name + '|' + (r.campus || '') + '|' + r.cap + '|' + (r.dept || '');
     if (seen.has(key)) err(w, '같은 대학 안에 track·name 이 같은 농어촌 전형이 중복됩니다');
     seen.add(key);
     if (!AUD.includes(r.aud)) err(w, `aud='${r.aud}' 는 ${AUD.join('/')} 중 하나여야 합니다`);

@@ -1280,7 +1280,7 @@ document.addEventListener('keydown',e=>{if(!sheet||!sheet.dataset.u||/INPUT|SELE
 /* ── 비교 ── */
 let CMP=[];try{localStorage.removeItem('cmp28')}catch(e){}
 const CMAX=6;
-const rk=r=>r.u+'|'+r.track+'|'+r.name;
+const rk=r=>[r.u,r.track,r.name,r.campus,r.cap,r.dept].map(x=>x||'').join('|');
 const cmpTip=(on,full)=>on?'비교에서 빼기':full?`비교는 최대 ${CMAX}개까지 · 담은 전형을 빼면 추가할 수 있습니다`:`비교에 담기(최대 ${CMAX}개)`;
 function cmpBtn(r){const k=rk(r),on=CMP.includes(k),full=!on&&CMP.length>=CMAX;return `<button type="button" class="cmpb${full?' full':''}" data-k="${esc(k)}" aria-pressed="${on}" aria-disabled="${full}" data-tip="${cmpTip(on,full)}">${on?'✓ 비교':'+ 비교'}</button>`}
 function syncCmp(){document.querySelectorAll('.cmpb').forEach(x=>{const k=x.dataset.k,on=CMP.includes(k),full=!on&&CMP.length>=CMAX;x.setAttribute('aria-pressed',on);x.setAttribute('aria-disabled',full);x.classList.toggle('full',full);x.dataset.tip=cmpTip(on,full);x.textContent=on?'✓ 비교':'+ 비교'})}
