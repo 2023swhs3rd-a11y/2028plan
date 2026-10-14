@@ -23,6 +23,7 @@ const listFrom = name => {
   return m[1].split(',').map(s => s.trim().replace(/^'|'$/g, ''));
 };
 const TR = listFrom('TR'), GR = listFrom('GR'), CATS = listFrom('CATS');
+const AUD = listFrom('AUD'), CAP = listFrom('CAP'), RQ = listFrom('RQ'), CARRY = listFrom('CARRY');
 const ENUM = {
   sq: ['high', 'medium', 'low'],
   structure: ['일괄', '단계형'],
@@ -116,6 +117,39 @@ function checkUniv(u, file) {
   });
 }
 
+// 농어촌 전형(rur): 정원 내 rows 와 따로 두는 배열. 수집 전 대학은 rur 키 자체가 없다(빈 배열 = 농어촌 전형 없음 확인)
+function checkRur(u, file) {
+  if (u.rur == null) { if (u.rur_note != null) err(file, 'rur_note 는 rur 배열과 함께 적어야 합니다'); return }
+  if (!Array.isArray(u.rur)) return err(file, 'rur 는 배열이어야 합니다');
+  if (u.rur_note != null && !isStr(u.rur_note)) err(file, 'rur_note 는 빈 문자열이 아니어야 합니다');
+  const seen = new Set();
+  u.rur.forEach((r, i) => {
+    const w = `${file} rur[${i}] ${r.name ?? ''}`;
+    if (!isStr(r.name)) err(w, 'name 이 비어 있습니다');
+    if (!TR.includes(r.track)) err(w, `track='${r.track}' 는 ${TR.join('/')} 중 하나여야 합니다`);
+    const key = r.track + '|' + r.name + '|' + (r.campus || '') + '|' + r.cap + '|' + (r.dept || '');
+    if (seen.has(key)) err(w, '같은 대학 안에 track·name 이 같은 농어촌 전형이 중복됩니다');
+    seen.add(key);
+    if (!AUD.includes(r.aud)) err(w, `aud='${r.aud}' 는 ${AUD.join('/')} 중 하나여야 합니다`);
+    if (r.aud === '포함' && !isStr(r.aud_with)) err(w, '포함형은 aud_with(함께 지원하는 대상)가 필요합니다');
+    if (!CAP.includes(r.cap)) err(w, `cap='${r.cap}' 는 ${CAP.join('/')} 중 하나여야 합니다`);
+    if (!RQ.includes(r.rq)) err(w, `rq='${r.rq}' 는 ${RQ.join('/')} 중 하나여야 합니다`);
+    if (!CARRY.includes(r.carry)) err(w, `carry='${r.carry}' 는 ${CARRY.join('/')} 중 하나여야 합니다`);
+    if (r.track !== '정시' && r.carry === '별도') err(w, "carry='별도' 는 정시 행에만 씁니다");
+    if (r.track === '정시' && r.carry === '없음') err(w, "정시 행의 carry 는 '별도'·'이월'·'미기재' 중 하나입니다");
+    if (r.quota != null && !isInt(r.quota)) err(w, `quota=${JSON.stringify(r.quota)} 는 0 이상 정수여야 합니다`);
+    if (r.quota == null && !(r.track === '정시' && r.carry === '이월')) err(w, 'quota 가 없을 수 있는 것은 수시 이월분만 뽑는 정시 행뿐입니다(그 밖에는 notes·rur_note 에 사유)');
+    if (!isStr(r.method)) err(w, 'method 가 비어 있습니다');
+    for (const k of ['structure', 'min_flag', 'interview'])
+      if (!ENUM[k].includes(r[k])) err(w, `${k}='${r[k]}' 는 ${ENUM[k].join('/')} 중 하나여야 합니다`);
+    if (r.min_flag !== '없음' && !isStr(r.min_text)) err(w, '수능최저가 있으면 min_text 가 필요합니다');
+    if (r.pg != null && !(Number.isInteger(r.pg) && r.pg > 0)) err(w, `pg=${JSON.stringify(r.pg)} 는 양의 정수 또는 null 이어야 합니다`);
+    if (r.h != null && !Array.isArray(r.h)) err(w, 'h 는 배열이어야 합니다');
+    if ((r.fid != null || r.ft != null) && !(isStr(r.fid) && isStr(r.ft))) err(w, '행별 출처는 fid·ft 를 함께 적어야 합니다');
+    if (u.rows.some(x => x.track === r.track && x.name === r.name)) err(w, '같은 전형이 rows 에도 있습니다(농어촌 전형은 rur 에만)');
+  });
+}
+
 // 대학 파일: data/universities/NN-대학명.json, 파일명 순서 = 화면 기본 순서
 const UDIR = P('data/universities');
 const files = readdirSync(UDIR).filter(f => f.endsWith('.json')).sort();
@@ -130,6 +164,7 @@ for (const f of files) {
   if (names.has(u.u)) err(where, `대학명 '${u.u}' 가 ${names.get(u.u)} 와 중복됩니다`);
   names.set(u.u, where);
   checkUniv(u, where);
+  if (Array.isArray(u.rows)) checkRur(u, where);
   U.push(u);
 }
 
@@ -170,7 +205,8 @@ const changelog = ['# 버전 기록', '',
     return [`## v${v.v} (${v.t} KST)`, '', v.note, '', ...(us.length ? [...us, ''] : [])];
   })].join('\n');
 const rows = U.reduce((a, u) => a + u.rows.length, 0);
-const summary = `대학 ${U.length}곳 · 전형 ${rows}개 · v${V[V.length - 1].v}`;
+const rur = U.filter(u => Array.isArray(u.rur)), rurN = rur.reduce((a, u) => a + u.rur.length, 0);
+const summary = `대학 ${U.length}곳 · 전형 ${rows}개${rur.length ? ` · 농어촌 ${rur.length}곳 ${rurN}개` : ''} · v${V[V.length - 1].v}`;
 if (CHECK) {
   const cur = existsSync(P('index.html')) ? readFileSync(P('index.html'), 'utf8') : '';
   if (cur !== html) {

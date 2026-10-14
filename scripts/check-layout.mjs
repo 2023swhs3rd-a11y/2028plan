@@ -40,12 +40,12 @@ for (const [w, scheme] of [[1440, 'light'], [1440, 'dark'], [390, 'light'], [390
   p.on('pageerror', e => errs.push(e.message));
   await p.goto(URL); await p.evaluate(() => { try { localStorage.clear(); } catch {} }); await p.reload(); await p.waitForTimeout(600);
   const tag = `${w} ${scheme}`;
-  for (const v of ['univ', 'track', 'quota', 'change', 'about']) {
+  for (const v of ['univ', 'track', 'quota', 'change', 'about', 'rur']) {
     await p.click(`[data-v="${v}"]`); await p.waitForTimeout(300);
-    if (v === 'track') {
+    if (v === 'track' || v === 'rur') {
       for (const t of await p.$$eval('#ttabs button:not([disabled])', bs => bs.map(x => x.dataset.t))) {
         await p.click(`#ttabs button[data-t="${t}"]`); await p.waitForTimeout(300);
-        (await p.evaluate(scan)).forEach(x => problems.push(`${tag} 전형별 비교·${t}: ${x}`));
+        (await p.evaluate(scan)).forEach(x => problems.push(`${tag} ${v === 'rur' ? '농어촌' : '전형별 비교'}·${t}: ${x}`));
       }
     } else (await p.evaluate(scan)).forEach(x => problems.push(`${tag} ${v}: ${x}`));
   }
