@@ -576,6 +576,7 @@ thead th .info{vertical-align:middle}
 .rnote{margin:6px 0 10px;font-size:13px;color:var(--ink2)}
 /* 대학 상세 농어촌 묶음: 위 전형 열과 같은 폭이 되도록 상자 테두리·안쪽 여백 없이 */
 .rbox{padding:6px 0 0;border:0;border-top:2px solid color-mix(in srgb,var(--t2) 40%,var(--line));border-radius:0;background:none}
+.rbx{display:flex;flex-direction:column;gap:3px;font-size:12.5px;line-height:1.3}.rbx small{font-size:11.5px;color:var(--ink2)}
 .rbox h3 small{font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
 .jc-h .eb{margin-left:2px}
 #mt tbody tr.dp>*,#mt tbody tr.dp>th:first-child,.mlist li.dp>button,.jc.dp{background:color-mix(in srgb,var(--info) 7%,var(--surface))}
@@ -1154,13 +1155,16 @@ const capC={h:'정원',w:70,k:r=>CAP.indexOf(r.cap),c:r=>dv(r,'cap',r.cap?esc(CA
 const rqC={h:'자격 요건',w:104,tt:'6년 → 12년 순',k:r=>RQ.indexOf(r.rq||'미기재'),c:r=>dv(r,['rq','rq_text'],`<span class="rq"${r.rq_text?` data-tip="${esc(r.rq_text)}"`:''}>${esc(r.rq||'미기재')}</span>`)};
 const cyC=t=>({h:t==='정시'?'정시 모집':'정시 이월',w:112,k:r=>CARRY.indexOf(r.carry||'미기재'),c:r=>dv(r,'carry',r.carry&&r.carry!=='미기재'?`<span class="rg">${esc(CYL(r))}</span>`:'<span class="na">미기재</span>')});
 const pickC=(t,h)=>MCOL[t].find(c=>c.h===h);
-// 농어촌 표: 지원 대상·자격 요건·정원·이월을 앞에 두고, 뒤에 전형 종류별 핵심 열(선발·추천·지원자격 등은 행 상세에서)
-function RCOL(t){const R=[audC,rqC,capC,cyC(t)],M=h=>pickC(t,h);
-  if(t==='교과')return [...R,M('평가방식'),M('전형방법'),M('수능최저'),M('반영 과목'),M('등급 환산(1~5)')];
+// 농어촌 조건(지원 대상·정원·자격 요건·이월)을 한 칸에 묶어 표가 한 화면(약 1200px)에 들어가게 함. 함께 지원하는 대상·요건 원문은 툴팁과 행 상세에서
+const RYL=r=>r.track==='정시'?({별도:'정시 별도 모집',이월:'수시 이월분만'}[r.carry]||''):({이월:'정시 이월',없음:'이월 없음'}[r.carry]||'');
+const rurC={h:'농어촌 조건',w:150,tt:'전용 → 포함 순',k:r=>AUD.indexOf(r.aud),c:r=>dv(r,['aud','aud_with','cap','rq','rq_text','carry'],`<span class="rbx"><span><span class="chip rch${r.aud==='전용'?'':' p'}"${r.aud_with?` data-tip="${esc('함께 지원: '+r.aud_with)}"`:''}>${r.aud==='전용'?'전용':'포함'}</span> <small>${esc(r.cap==='외'?'정원 외':r.cap==='내'?'정원 내':'정원 미기재')}</small></span><span class="rq"${r.rq_text?` data-tip="${esc(r.rq_text)}"`:''}>${esc(r.rq||'요건 미기재')}</span>${RYL(r)?`<small class="rg">${esc(RYL(r))}</small>`:''}</span>`)};
+// 농어촌 표: 농어촌 조건을 맨 앞에, 뒤에 전형 종류별 핵심 열(선발·추천·등급 환산·지원자격 등은 행 상세에서)
+function RCOL(t){const R=[rurC],M=h=>pickC(t,h);
+  if(t==='교과')return [...R,M('평가방식'),M('전형방법'),M('수능최저'),M('반영 과목')];
   if(t==='종합')return [...R,M('유형'),M('전형방법'),M('1단계'),M('면접'),M('수능최저')];
   if(t==='논술')return [...R,M('논술 비율 · 그 외'),M('수능최저')];
   return [...R,M('모집군'),M('전형방법'),M('반영 영역'),M('학생부')]}
-const RLEG=`<span><span class="chip rch">농어촌 전용</span> 농어촌학생만 지원</span><span><span class="chip rch p">농어촌 포함</span> 여러 대상 중 하나</span><span><i class="dot f"></i> 최저 있음 <i class="dot"></i> 없음</span><span><span class="eb c">변경</span> 2028 변경</span>`;
+const RLEG=`<span><span class="chip rch">전용</span> 농어촌학생만 지원</span><span><span class="chip rch p">포함</span> 기회균형 등 여러 대상 중 하나(누르거나 올리면 함께 지원하는 대상)</span><span>6년·12년 = 농어촌 거주·재학 요건</span><span><i class="dot f"></i> 최저 있음 <i class="dot"></i> 없음</span><span><span class="eb c">변경</span> 2028 변경</span>`;
 function rNote(on){const el=$('rnote');el.hidden=!on;if(!on)return;const us=U.filter(inScope),got=us.filter(u=>Array.isArray(u.rur));
   el.innerHTML=`<b>수집 ${got.length} / ${us.length}개 대학</b> · 원문 시행계획에서 수집한 대학만 표에 나옵니다${got.length<us.length?` · 아직 수집 전: ${us.length-got.length}곳`:''}${got.filter(u=>!u.rur.length).length?` · 농어촌 전형 없음: ${got.filter(u=>!u.rur.length).map(u=>esc(u.u)).join(', ')}`:''}`}
 const QF={교과:[['수능최저','없음','수능최저 없음'],['교과 외 요소','교과만','교과만(면접·서류 없음)'],['지원자격','제한 없음','졸업생도 지원 가능'],['학교장 추천','추천 없음','학교장 추천 없음']],
