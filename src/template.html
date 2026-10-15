@@ -481,8 +481,15 @@ td .chip,td .ssp{white-space:normal;max-width:100%;overflow-wrap:break-word;vert
 .bar .views{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;margin:0;gap:0;border:0;overflow:visible}
 .bar .views .seg{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));width:min(760px,100%)}
 .bar .views .seg button{border-radius:0;justify-content:center;font-size:15px;font-weight:700;padding:0 14px;color:var(--ink2)}
-.bar .views .seg button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
-.bar .views .seg button#v-rur:not([aria-selected="true"]){background:color-mix(in srgb,var(--t2) 18%,var(--surface));color:var(--ink)}
+.bar .views .seg button[aria-selected="true"]{background:color-mix(in srgb,var(--ink) 11%,var(--surface));color:var(--ink);font-weight:800;box-shadow:inset 0 -3px 0 var(--accent)}
+.bar .views .seg button:not([aria-selected="true"]):hover{background:var(--sunk);color:var(--ink)}
+/* 농어촌 칸은 늘 옅은 바탕색이 있으므로, 선택 여부는 더 진한 바탕 + 밑줄로 구분 */
+.bar .views .seg button#v-rur{background:color-mix(in srgb,var(--t2) 14%,var(--surface));color:var(--ink)}
+.bar .views .seg button#v-rur:not([aria-selected="true"]):hover{background:color-mix(in srgb,var(--t2) 24%,var(--surface))}
+.bar .views .seg button#v-rur[aria-selected="true"]{background:color-mix(in srgb,var(--t2) 34%,var(--surface))}
+/* 모집 요약 펼치기: PC에서는 고정 영역의 마지막 줄(전형 선택 줄, 없으면 지역·구분 줄) 바로 옆, 모바일은 머리글 */
+.trw{display:flex;gap:10px;align-items:center}@media (max-width:640px){.trw>#ttabs{flex:1 1 auto}}.trw[hidden]{display:none}
+.bar .fold.ktog{height:var(--ctl);min-height:var(--ctl);border-radius:var(--r);padding:0 14px}
 .filt{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
 .vrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.vrow .views{flex:0 1 760px;min-width:0}.vrow .views .seg{width:100%}
 .filt[hidden]{display:none}
@@ -757,7 +764,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
     <div class="seg" id="grp" role="group" aria-label="대학 구분(여럿 선택 가능)"></div></div>
     <input id="q" type="search" placeholder="대학·전형명 검색" aria-label="대학 또는 전형명 검색">
   </div>
-  <div class="tabs" id="ttabs" role="tablist" aria-label="전형 유형" hidden></div>
+  <div class="trw" id="trw" hidden><div class="tabs" id="ttabs" role="tablist" aria-label="전형 유형" hidden></div></div>
 </div>
 
 <div class="sec-h kh" id="kh"><h2 id="kt">모집 요약</h2><p id="kscope"></p></div>
@@ -975,14 +982,17 @@ function renderBar(){
   $('grp').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.g=tog(S.g,b.dataset.g==='all'?'':b.dataset.g,GR);S.f=null;save();renderAll()});
   $('rgn').innerHTML=RGS.map(([k,l])=>{const n=rcnt(k);return `<button type="button" data-r="${k}" aria-pressed="${k?S.rg.includes(k):!S.rg.length}"${n?'':' class="zero"'}>${l}<small>${n}</small></button>`}).join('');
   $('rgn').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.rg=tog(S.rg,b.dataset.r,RGS.map(x=>x[0]).filter(Boolean));S.f=null;save();renderAll()});
-  document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===S.v));document.querySelector('.filt').hidden=S.v==='about';$('ttabs').hidden=!isTV();
+  document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===S.v));document.querySelector('.filt').hidden=S.v==='about';$('ttabs').hidden=$('trw').hidden=!isTV();
 }
 $('q').oninput=e=>{S.q=e.target.value.trim();renderMain()};
 document.querySelectorAll('.views button').forEach(b=>b.onclick=()=>{if(S.v!==b.dataset.v){CMP=[];if(isTV())TT[S.v]=S.t;S.f=null;S.msort=null}S.v=b.dataset.v;if(isTV())S.t=TT[S.v];save();history.replaceState(null,'','#'+S.v);renderAll()});
 
 /* ── 요약 수치 ── */
+// 모집 요약 펼치기 버튼 자리: PC는 고정 영역 마지막 줄 끝(펼쳐지는 요약 바로 위), 모바일은 머리글 오른쪽
+function kPlace(){const k=$('ktog'),t=MOB.matches?document.querySelector('.hact'):isTV()?$('trw'):document.querySelector('.filt');if(k.parentNode===t)return;MOB.matches?t.prepend(k):t.append(k)}
+MOB.addEventListener('change',kPlace);
 function renderKpis(){const ab=S.v==='about',sh=kShow();
-  const kt=$('ktog');kt.hidden=!KTV.includes(S.v);kt.setAttribute('aria-expanded',FOLD.k);kt.innerHTML=`<span class="chev" aria-hidden="true">›</span>요약<span class="kl2"> 정보</span><span class="fhint">${FOLD.k?'접기':'펼치기'}</span>`;kt.setAttribute('aria-label',`요약 정보 ${FOLD.k?'접기':'펼치기'}`);kt.onclick=()=>{FOLD.k=!FOLD.k;renderKpis()};
+  const kt=$('ktog');kt.hidden=!KTV.includes(S.v);kt.setAttribute('aria-expanded',FOLD.k);kPlace();kt.innerHTML=`<span class="chev" aria-hidden="true">›</span><span class="kl2">모집 </span>요약<span class="fhint">${FOLD.k?'접기':'펼치기'}</span>`;kt.setAttribute('aria-label',`모집 요약 ${FOLD.k?'접기':'펼치기'}`);kt.onclick=()=>{FOLD.k=!FOLD.k;renderKpis()};
   $('kh').hidden=$('kpis').hidden=!sh;if(!sh)return;
   const us=ab?U:U.filter(inScope);$('kscope').textContent=ab?`전체 · ${U.length}개 대학 기준(대학 구분·지역 선택과 무관)`:`${gL()}${rgL()}${S.q?' · 검색 “'+S.q+'”':''} · ${scopeU().length}개 대학 기준`;
   if(S.v==='rur'){const got=us.filter(u=>Array.isArray(u.rur)),rr=got.flatMap(u=>u.rur),sm=f=>rr.filter(f).reduce((a,r)=>a+q0(r),0),un=f=>got.filter(u=>u.rur.some(f)).length,nq=rr.filter(r=>!Number.isInteger(r.quota)).length;
