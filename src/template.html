@@ -75,6 +75,9 @@ header p{margin:0;color:var(--ink2);max-width:80ch}
 .seg button{border:0;background:none;padding:7px 12px;cursor:pointer;display:flex;gap:6px;align-items:baseline;white-space:nowrap}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+/* 지역·구분(menu2) 선택도 menu1·3처럼 옅은 음영 + 밑줄 */
+.filt .seg button[aria-pressed="true"]{background:color-mix(in srgb,var(--ink) 11%,var(--surface));color:var(--ink);font-weight:800;box-shadow:inset 0 -3px 0 var(--accent)}
+.filt .seg button:not([aria-pressed="true"]):hover{background:var(--sunk)}
 .seg small{font-family:var(--f-mono);font-size:11px;opacity:.75}
 .seg button.zero:not([aria-pressed="true"]){color:var(--muted)}
 .bar select,.bar input{font:inherit;border:1px solid var(--line2);border-radius:8px;background:var(--surface);color:var(--ink);padding:7px 10px;min-width:0}
@@ -139,6 +142,7 @@ tbody th{font-weight:600;text-align:left}
 .pips{display:flex;gap:2px}
 .pips i{width:6px;height:6px;border-radius:50%;background:currentColor;display:block}
 .na{color:var(--muted)}
+#ut .mini{width:100%;min-width:120px}
 .mini{display:flex;height:8px;width:120px;border-radius:2px;overflow:hidden;background:var(--sunk)}
 .mini i{display:block;height:100%}
 
@@ -510,6 +514,13 @@ td .chip,td .ssp{white-space:normal;max-width:100%;overflow-wrap:break-word;vert
 /* 빠른 조건·다중 필터 */
 .qf{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .qfl{font-size:12.5px;font-weight:700;color:var(--ink2);margin-right:2px}
+/* 표 위 도구 줄: 건수 · 빠른 조건 · 적용된 조건 · 기호 설명/CSV/인쇄를 한 줄에 */
+.trow{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap}#fchip:empty{display:none}
+.trow .count{font-weight:600;white-space:nowrap}
+.trow .qf{padding-left:12px;border-left:1px solid var(--line2)}
+.lgp{padding:10px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}.lgp[hidden]{display:none}
+#lgb[aria-expanded="true"]{border-color:var(--accent);background:var(--accent-soft)}
+@media (max-width:640px){.trow .qf{padding-left:0;border-left:0;flex-basis:100%}}
 .qfc{font:inherit;font-size:13px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
 .qfc:hover{border-color:var(--accent)}
 .qfc[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:700}
@@ -597,7 +608,6 @@ thead th .info{vertical-align:middle}
 .chip.rch{border-color:color-mix(in srgb,var(--t2) 55%,var(--line2));background:color-mix(in srgb,var(--t2) 12%,var(--surface));font-size:11.5px;padding:1px 7px}
 .chip.rch.p{background:var(--surface);border-style:dashed}
 .rw{display:block;margin-top:2px;font-size:11px;line-height:1.35}
-.rnote{margin:6px 0 10px;font-size:13px;color:var(--ink2)}
 /* 대학 상세 농어촌 묶음: 위 전형 열과 같은 폭이 되도록 상자 테두리·안쪽 여백 없이 */
 .rbox{padding:6px 0 0;border:0;border-top:2px solid color-mix(in srgb,var(--t2) 40%,var(--line));border-radius:0;background:none}
 .rbx{display:flex;flex-direction:column;gap:3px;font-size:12.5px;line-height:1.3}.rbx small{font-size:11.5px;color:var(--ink2)}
@@ -792,11 +802,9 @@ details[open]>summary .chev{transform:rotate(90deg)}
   <div class="sec-h"><h2 id="trh">전형별 비교</h2><p id="trp">전형별 통계를 펼쳐 분포 항목을 누르면 아래 표가 걸러집니다 · 행을 누르면 세부 항목</p></div>
   <button type="button" class="fold fold-d" id="dfold" aria-expanded="false" aria-controls="dist"></button>
   <div class="dist" id="dist" hidden></div>
-  <div class="qf" id="qf" role="group" aria-label="빠른 조건"></div>
-  <p class="rnote" id="rnote" hidden></p>
   <p class="ponly" id="pinfo"></p>
-  <div class="trow" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="count" id="tcount"></span><span id="fchip"></span><span class="thint" id="thint" hidden>표가 화면보다 넓어요 · 좌우로 밀어 보세요 ↔</span><span class="tact"><button type="button" class="abtn" id="csvb" data-tip="지금 걸러진 전형을 엑셀에서 열 수 있는 CSV로 저장">CSV 내려받기</button><button type="button" class="abtn" id="prtb" data-tip="메뉴·필터를 빼고 표만 인쇄(가로 방향 권장)">인쇄</button></span></div>
-  <div class="legend" id="tlegend"></div>
+  <div class="trow"><span class="count" id="tcount"></span><div class="qf" id="qf" role="group" aria-label="빠른 조건"></div><span id="fchip"></span><span class="thint" id="thint" hidden>표가 화면보다 넓어요 · 좌우로 밀어 보세요 ↔</span><span class="tact"><button type="button" class="abtn" id="lgb" aria-expanded="false" aria-controls="tlegend">기호 설명</button><button type="button" class="abtn" id="csvb" data-tip="지금 걸러진 전형을 엑셀에서 열 수 있는 CSV로 저장">CSV 내려받기</button><button type="button" class="abtn" id="prtb" data-tip="메뉴·필터를 빼고 표만 인쇄(가로 방향 권장)">인쇄</button></span></div>
+  <div class="legend lgp" id="tlegend" hidden></div>
   <div class="tvw" id="mtv"></div>
   <div class="tbox" id="mtbox"><table id="mt"></table></div>
   <div class="msort" id="msortw"><label for="msel">정렬</label><select id="msel"></select></div>
@@ -1139,7 +1147,7 @@ function renderTrack(){
   if(S.msort){const k=S.msort.i<0?(r=>r.quota??-1):C[S.msort.i].k;rows=[...rows].sort((a,b)=>{const x=k(a),y=k(b);if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return -1;return (x>y?1:x<y?-1:0)*S.msort.dir})}
   else rows=[...rows].sort(uCmp);
   VORD.track=[...new Set(rows.map(r=>r.u))];
-  $('tlegend').innerHTML=RV?RLEG:LEG[S.t];
+  $('tlegend').innerHTML=RV?RLEG:LEG[S.t];$('lgb').onclick=()=>{const o=$('tlegend').hidden;$('tlegend').hidden=!o;$('lgb').setAttribute('aria-expanded',o)};
   const th=(l,i)=>{const s=S.msort&&S.msort.i===i?(S.msort.dir>0?'ascending':'descending'):'none';const tt=i<0?'모집인원 순':(C[i].tt||'').replace('MKTT',`최종 ${MKW[S.t]} 반영 비율 순(단계형은 1단계 비중 환산)`);return `<th scope="col" aria-sort="${s}" class="${i<0?'r':''}" data-l="${l}"><button type="button" data-s="${i}" ${tt?`data-tip="정렬 기준: ${esc(tt)}"`:''}>${l}<span class="ar">${s==='ascending'?'▲':s==='descending'?'▼':'↕'}</span></button>${i>=0&&C[i].info?ifo(C[i].info):''}</th>`};
   let GZ=0;const FW=C.reduce((a,c)=>a+(c.w||0),0),AW=C.filter(c=>!c.w).length;$('mt').style.minWidth=(236+70+FW+AW*200)+'px';$('mt').innerHTML=`<colgroup><col style="width:236px"><col style="width:70px">${C.map(c=>`<col${c.w?` style="width:${c.w}px"`:''}>`).join('')}</colgroup><thead><tr><th scope="col">대학 · 전형</th>${th('인원',-1)}${C.map((c,i)=>th(c.h,i)).join('')}</tr></thead><tbody>${rows.map((r,i)=>{const same=!S.msort&&i>0&&rows[i-1].u===r.u;if(!same)GZ++;const cnt=S.msort?0:rows.filter(x=>x.u===r.u).length;
     return `<tr data-i="${SRC().indexOf(r)}" tabindex="0" aria-expanded="false" class="${S.t!=='교과'&&r.elig==='재학생'?'rj ':''}${r.dept?'dp ':''}${S.msort?'':same?'gc':'gs'}${!S.msort&&GZ%2===0?' gz':''}"><th scope="row">${same?'':`<span class="un">${hl(r.u)}</span>${cnt>1?`<span class="ucn">${cnt}개 전형</span>`:''}${S.msort?' ':'<br>'}`}<span class="jn">${hl(r.name)}</span>${dpb(r)}${cpb(r)}${rcb(r)} ${elig(r)} ${r.change?'<span class="eb c" data-tip="'+esc('2028 변경: '+r.change)+'">변경</span>':''} ${newb(r)} ${cmpBtn(r)}</th><td class="r num">${qn(r)}</td>${C.map(c=>`<td>${c.c(r)}</td>`).join('')}</tr>`}).join('')||`<tr><td colspan="${C.length+2}" class="none">조건에 맞는 전형이 없습니다.</td></tr>`}</tbody>`;
@@ -1197,8 +1205,9 @@ function RCOL(t){const R=[rurC],M=h=>pickC(t,h);
   if(t==='논술')return [...R,M('논술 비율 · 그 외'),M('수능최저')];
   return [...R,M('모집군'),M('전형방법'),M('반영 영역'),M('학생부')]}
 const RLEG=`<span><span class="chip rch">전용</span> 농어촌학생만 지원</span><span><span class="chip rch p">포함</span> 기회균형 등 여러 대상 중 하나(누르거나 올리면 함께 지원하는 대상)</span><span>6년·12년 = 농어촌 거주·재학 요건</span><span><i class="dot f"></i> 최저 있음 <i class="dot"></i> 없음</span><span><span class="eb c">변경</span> 2028 변경</span>`;
-function rNote(on){const el=$('rnote');el.hidden=!on;if(!on)return;const us=U.filter(inScope),got=us.filter(u=>Array.isArray(u.rur));
-  el.innerHTML=`<b>수집 ${got.length} / ${us.length}개 대학</b> · 원문 시행계획에서 수집한 대학만 표에 나옵니다${got.length<us.length?` · 아직 수집 전: ${us.length-got.length}곳`:''}${got.filter(u=>!u.rur.length).length?` · 농어촌 전형 없음: ${got.filter(u=>!u.rur.length).map(u=>esc(u.u)).join(', ')}`:''}`}
+// 농어촌 보기: 수집 현황을 제목 옆 설명 끝에 붙임(따로 한 줄을 차지하지 않게)
+function rNote(on){if(!on)return;const us=U.filter(inScope),got=us.filter(u=>Array.isArray(u.rur)),no=got.filter(u=>!u.rur.length),yet=us.filter(u=>!Array.isArray(u.rur));
+  $('trp').insertAdjacentHTML('beforeend',` · <b>원문 수집 ${got.length} / ${us.length}개 대학</b>${yet.length?` (수집 전: ${yet.map(u=>esc(u.u)).join(', ')})`:''}${no.length?` · 농어촌 전형 없음: ${no.map(u=>esc(u.u)).join(', ')}`:''}`)}
 const QF={교과:[['수능최저','없음','수능최저 없음'],['교과 외 요소','교과만','교과만(면접·서류 없음)'],['지원자격','제한 없음','졸업생도 지원 가능'],['학교장 추천','추천 없음','학교장 추천 없음']],
  종합:[['수능최저','없음','수능최저 없음'],['면접 비율','면접 없음','면접 없음'],['선발 구조','일괄','일괄 선발(단계 없음)']],
  논술:[['수능최저','없음','수능최저 없음'],['논술 반영 비율','100%','논술 100%'],['출제 형태','약술형 명시','약술형']],
