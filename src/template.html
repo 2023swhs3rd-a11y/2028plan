@@ -525,6 +525,7 @@ td .chip,td .ssp{white-space:normal;max-width:100%;overflow-wrap:break-word;vert
 .qfc{font:inherit;font-size:13px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
 .qfc:hover{border-color:var(--accent)}
 .qfc[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:700}
+.qxl{margin-left:6px}.qfc.qx{border-style:dashed}.qfc.qx small{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-left:5px}.qfc.qx[aria-pressed="true"]{border-style:solid;background:color-mix(in srgb,var(--ink) 9%,var(--surface));border-color:var(--ink2)}
 .fclr{font:inherit;font-size:12.5px;border:0;background:none;color:var(--accent);text-decoration:underline;cursor:pointer;padding:3px 4px}
 .card li button.zero{opacity:.45}
 #fchip{display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -1115,10 +1116,17 @@ const PAL=['var(--t1)','var(--t2)','var(--t3)','var(--t4)','var(--t5)','var(--in
 const DCOM=/^(수능최저|지원자격|학교장 추천)/;
 const dpal=(d,i)=>{const b=DCOM.test(d.t)?'var(--accent)':TC[S.t];const P=[100,78,60,46,34,24];return i<P.length?`color-mix(in srgb,${b} ${P[i]}%,var(--surface))`:['var(--ink2)','var(--muted)'][(i-P.length)%2]};
 function DS(){if(S.v==='rur')return RDIM(S.t);const b=dimsFor(S.t);return S.t==='정시'||(S.g.length&&S.g.every(g=>g==='교대'||g==='과기원'))?b:[...b,MINDIM()]}
-function tRows(){return SRC().filter(r=>r.track===S.t&&inScope(U.find(u=>u.u===r.u))&&qMatch(U.find(u=>u.u===r.u),r))}
+// 제외 필터: 의약학계열(의·치·한·약·수의·간호)만 모집하는 전형, 지역인재 전형(지역 고교 이수 요건·지역의사, 지역균형은 해당 없음)
+const MED=/^(의예|의학|치의예|치의학|한의예|한의학|약학|제약학|수의예|수의학|간호학?)(과|부)?$/;
+const isMed=r=>!!r.dept&&r.dept.split('·').every(d=>MED.test(d.trim()));
+const REG=/(대구|경북|부산|울산|경남|부울경|광주|전남|전북|호남|충청|충남|충북|대전|세종|강원|제주|진료권|광역권)[^,;]{0,40}(고교|고등학교|중학교)[^,;]{0,30}(입학|이수|졸업|재학)/;
+const isReg=r=>/지역인재|지역의사|지역의료/.test(r.name)||REG.test(r.elig_text||'');
+let XF={m:false,r:false};try{const x=JSON.parse(localStorage.getItem('xf28')||'{}');XF={m:!!x.m,r:!!x.r}}catch(e){}
+const xOK=r=>!(XF.m&&isMed(r))&&!(XF.r&&isReg(r));
+function tRows(){return SRC().filter(r=>r.track===S.t&&xOK(r)&&inScope(U.find(u=>u.u===r.u))&&qMatch(U.find(u=>u.u===r.u),r))}
 function renderTrack(){
   const RV=S.v==='rur';$('s-track').setAttribute('aria-labelledby',RV?'v-rur':'v-track');$('trh').textContent=RV?'농어촌 전형':'전형별 비교';$('trp').textContent=RV?'지원자격에 농어촌학생이 명시된 전형 · 전용은 농어촌학생만, 포함은 기회균형 등 여러 대상 중 하나 · 정원 내 합계에는 넣지 않음':'전형별 통계를 펼쳐 분포 항목을 누르면 아래 표가 걸러집니다 · 행을 누르면 세부 항목';
-  const cnt=t=>SRC().filter(r=>r.track===t&&inScope(U.find(u=>u.u===r.u))).length;
+  const cnt=t=>SRC().filter(r=>r.track===t&&xOK(r)&&inScope(U.find(u=>u.u===r.u))).length;
   if(!cnt(S.t)){const f=TR.find(t=>cnt(t));if(f)S.t=f}
   $('ttabs').innerHTML=TR.map(t=>{const n=cnt(t);return `<button role="tab" type="button" data-t="${t}" aria-selected="${S.t===t}" ${n?'':'disabled'} style="--tc:${TC[t]}">${TNAME[t]}<small>${n}</small></button>`}).join('');
   $('ttabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.t=b.dataset.t;S.f=null;S.msort=null;save();renderTrack()});
@@ -1137,7 +1145,9 @@ function renderTrack(){
   // 빠른 조건: 상담에서 자주 거르는 조건을 표 위에 칩으로
   rNote(RV);
   $('qf').innerHTML='<span class="qfl">빠른 조건</span>'+((RV?RQF:QF[S.t])||[]).filter(([t])=>DSL.some(d=>d.t===t)).map(([t,k,l])=>`<button type="button" class="qfc" aria-pressed="${fOn(t,k)}" data-t="${esc(t)}" data-k="${esc(k)}">${fOn(t,k)?'✓ ':''}${l}</button>`).join('');
-  $('qf').querySelectorAll('.qfc').forEach(b=>b.onclick=()=>fTog(b.dataset.t,b.dataset.k));
+  const xn=k=>SRC().filter(r=>r.track===S.t&&inScope(U.find(u=>u.u===r.u))&&(k==='m'?isMed(r):isReg(r))).length;
+  $('qf').insertAdjacentHTML('beforeend',`<span class="qfl qxl">제외</span>${[['m','의약학 전용','의예·치의예·한의예·약학·수의예·간호만 모집하는 전형'],['r','지역인재','지역 고교 이수 요건이 있는 지역인재·지역의사 전형(지역균형·학교장추천은 해당 없음)']].map(([k,l,t])=>`<button type="button" class="qfc qx" aria-pressed="${XF[k]}" data-x="${k}" data-tip="${esc(t)}">${XF[k]?'✕ ':''}${l} 제외<small>${xn(k)}</small></button>`).join('')}`);
+  $('qf').querySelectorAll('.qfc').forEach(b=>b.onclick=b.dataset.x?()=>{XF[b.dataset.x]=!XF[b.dataset.x];try{localStorage.setItem('xf28',JSON.stringify(XF))}catch(e){}renderTrack()}:()=>fTog(b.dataset.t,b.dataset.k));
   let rows=base.filter(r=>pass(r));
   $('fchip').innerHTML=FL0.map((f,i)=>`<span class="fchip">${esc(f.t.replace(/\(.*\)/,''))}: ${esc(f.k)}<button type="button" data-fx="${i}" aria-label="${esc(f.t)} ${esc(f.k)} 조건 해제">×</button></span>`).join('')+(FL0.length>1?'<button type="button" class="fclr" id="fxa">모두 해제</button>':'');
   $('fchip').querySelectorAll('[data-fx]').forEach(b=>b.onclick=()=>{const f=FL0[+b.dataset.fx];fTog(f.t,f.k)});
