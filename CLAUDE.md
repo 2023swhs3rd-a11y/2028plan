@@ -6,6 +6,7 @@ GitHub Pages로 배포하는 정적 단일 파일 대시보드. 빌드 도구·�
 - `index.html`·`CHANGELOG.md`는 생성물이다. 직접 고치지 말고 `data/`·`src/template.html`을 고친 뒤 `node scripts/build.mjs`로 다시 만들고 함께 커밋한다.
 - `data/universities/NN-대학명.json`: 대학 1곳 = 파일 1개. 파일명의 대학명은 `u` 값과 같아야 하고, 번호 순서가 화면 기본 순서다.
 - `data/versions.json`: 버전 기록 원본. 화면에는 당분간 표시하지 않고 빌드가 `CHANGELOG.md`로 만든다(대학별 `hu`의 수정 항목 포함). 데이터 내용을 고치면 새 버전 항목(`v`, `t`는 KST `YYYY-MM-DD HH:MM`, `note`)을 끝에 추가한다.
+- `mcp/`는 선생님용 MCP 서버(Cloudflare Workers, 런타임 의존성 없음)로, 배포 때 `scripts/export-data.mjs`가 만든 `data.json`을 읽는다. 데이터 필드 이름을 바꾸면 `mcp/src/mcp.js`도 함께 고치고 `node mcp/test.mjs`로 확인한다.
 - 허용값 목록(전형 `TR`, 대학 구분 `GR`, 변경 분류 `CATS`)은 `src/template.html`의 상수가 원본이고, 빌드 스크립트가 거기서 읽어 검증한다.
 - 정시 행의 `wt`는 반영 비율 막대 데이터다: 계열별 `{g, k·m·e·s·c·t(국·수·영·사·과·탐 고정 비율), rk:[{p 대상, v 순위별 비율}], en(영어 감점·가산·최저), n}`. 배점 그대로 적으면 화면이 %로 환산한다. `areas` 문구를 고치면 `wt`도 함께 고친다.
 - 교과 행의 `sb`는 반영 과목 구조다: `k`(전 과목/상위/일부), `n`(총 반영 과목 수, 상위면 필수), `kyo`(반영 교과), `g`(공통·일반·진로·융합 각각 반영/일부/가산/미반영/미기재), `add`(가산점 등 별도 반영), `d`(한 줄 요약). 표는 `n`을 먼저 보여 준다. `gv`는 등급·성취도 환산점수 숫자(`grade` 1~5등급 5개, `ach` A~E, `max`, `note`)로, 전형 상세·대학 상세의 그래프가 쓴다. `subjects`를 고치면 `sb`도 함께 고친다.

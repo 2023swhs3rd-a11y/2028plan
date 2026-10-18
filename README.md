@@ -71,6 +71,8 @@ https://2023swhs3rd-a11y.github.io/2028plan/
 | `src/og-card.html` → `og.png` | 링크 공유 미리보기 이미지(1200×630) |
 | `src/icons/` | 파비콘(64px)·홈 화면 아이콘(180px), 빌드 때 `index.html`에 넣음 |
 | `scripts/build.mjs` | 데이터 검증 후 `index.html`·`CHANGELOG.md` 생성 |
+| `scripts/export-data.mjs` | 대학별 JSON을 묶은 `data.json` 생성(배포 때 실행, MCP 서버가 읽음) |
+| `mcp/` | 선생님용 MCP 서버(Cloudflare Workers). 사용법은 [mcp/README.md](mcp/README.md) |
 
 ```sh
 node scripts/build.mjs          # 검증 + index.html·CHANGELOG.md 생성 (Node.js 18 이상, 설치할 패키지 없음)
@@ -80,6 +82,10 @@ node scripts/build.mjs --check  # 검증 + index.html·CHANGELOG.md 가 최신�
 데이터를 고친 뒤 빌드하고 `data/`, `index.html`, `CHANGELOG.md`를 함께 커밋합니다. 화면을 고칠 때는 `index.html`이 아니라 `src/template.html`을 고칩니다. 대학을 추가·삭제하면 이 README의 대학 수와 수록 대학 목록, `src/template.html` 머리글 문구, 공유 이미지(`og.png`)도 함께 바꿉니다. 전형 유형·대학 구분·변경 분류 같은 허용값이 틀리거나 수시+정시 인원 합계가 맞지 않으면 빌드가 실패하고 어느 파일의 어느 항목인지 알려 줍니다.
 
 `main`에 push하면 GitHub Actions가 검증 후 [GitHub Pages](https://2023swhs3rd-a11y.github.io/2028plan/)에 배포합니다(배포 기록: [Actions](https://github.com/2023swhs3rd-a11y/2028plan/actions/workflows/pages.yml)). Pull request에서는 검증만 실행합니다.
+
+## Claude에서 데이터 검색하기 (MCP)
+
+진학지도 선생님은 Claude 설정 › 커넥터에 MCP 서버 주소를 추가하면, 대화 중에 전형 검색·대학 상세·2028 변경사항·농어촌 전형·원문 쪽수를 바로 불러 쓸 수 있습니다. 배포와 설치 안내는 [mcp/README.md](mcp/README.md)에 있습니다. 묶음 데이터는 [`data.json`](https://2023swhs3rd-a11y.github.io/2028plan/data.json)으로도 받을 수 있습니다.
 
 ## 작성자
 
