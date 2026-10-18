@@ -1,0 +1,7 @@
+# Cloudflare Workers 배포 설정: mcp 폴더에서 `npx wrangler deploy`
+name = "admissions-2028-mcp"
+main = "src/worker.js"
+compatibility_date = "2025-10-01"
+
+[vars]
+DATA_URL = "https://2023swhs3rd-a11y.github.io/2028plan/data.json"
