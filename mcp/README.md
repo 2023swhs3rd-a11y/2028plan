@@ -2,6 +2,7 @@
 
 진학지도 선생님이 Claude(또는 MCP를 지원하는 다른 AI 도구)에서 대시보드 데이터를 바로 검색할 수 있게 하는 원격 MCP 서버입니다. 로그인 없이 공개 데이터만 읽고, 아무것도 저장하지 않습니다.
 
+- 운영 주소: `https://admissions-2028-mcp.jjbic.workers.dev/mcp` (Cloudflare Workers, `main`에 push하면 자동 배포)
 - 규격: [Model Context Protocol](https://modelcontextprotocol.io) Streamable HTTP 전송, 상태 없는(stateless) JSON 응답(프로토콜 2025-06-18·2025-03-26·2024-11-05)
 - 데이터: GitHub Pages에 함께 배포되는 `data.json`(`scripts/export-data.mjs`가 `data/universities/*.json`을 묶어 만듦). 서버는 10분마다 새로 읽으므로, 저장소에서 데이터를 고쳐 배포하면 따로 서버를 다시 배포할 필요가 없습니다.
 - 런타임 의존성 없음: `src/mcp.js`(JSON-RPC·도구), `src/worker.js`(Cloudflare Workers 진입점)
@@ -31,14 +32,15 @@
    npx wrangler deploy    # https://admissions-2028-mcp.<계정 이름>.workers.dev 로 배포됨
    ```
    또는 Cloudflare 대시보드 › Workers & Pages › 만들기 › Git 저장소 가져오기에서 이 저장소를 고르고 루트 디렉터리를 `mcp`로 지정하면, `main`에 push할 때마다 자동 배포됩니다.
+   이때 빌드 설정은 루트 디렉터리 `mcp`, 빌드 명령 비움, 배포 명령 `npx wrangler deploy`입니다. PR 브랜치 미리보기 빌드(Previews Base 탭)는 필요 없으면 꺼 둡니다. 켜 둔다면 `wrangler.toml`의 `[previews]` 블록이 있어야 `npx wrangler preview`가 동작합니다.
 3. 브라우저로 배포 주소를 열어 안내 문구가 보이면 성공입니다. 선생님들께 나눠 줄 주소는 그 뒤에 `/mcp`를 붙인 것입니다.
 
-서버 이름은 `wrangler.toml`의 `name`, 데이터 주소는 `DATA_URL`에서 바꿉니다.
+서버 이름은 `wrangler.toml`의 `name`, 데이터 주소는 `DATA_URL`에서 바꿉니다. 주소 가운데의 계정 하위 도메인(`jjbic`)은 Cloudflare 대시보드 › Workers & Pages › 하위 도메인에서 바꾸며, 바꾸면 이 문서의 주소도 함께 고치고 선생님들께 커넥터를 다시 추가하도록 안내합니다.
 
 ## 선생님 설치 안내 (나눠 드릴 문구)
 
 > 1. claude.ai(또는 Claude 앱) › 설정 › 커넥터 › **사용자 지정 커넥터 추가**
-> 2. 이름: `2028 대입전형`, 주소: `https://admissions-2028-mcp.<계정 이름>.workers.dev/mcp` → 추가(로그인 없음)
+> 2. 이름: `2028 대입전형`, 주소: `https://admissions-2028-mcp.jjbic.workers.dev/mcp` → 추가(로그인 없음)
 > 3. 새 대화의 도구 메뉴에서 커넥터를 켜고 질문합니다. 예) "경기 소재 대학 교과전형 중 수능최저와 면접이 없는 곳을 표로"
 >
 > 시행계획 기준 자료이며 입시 결과는 없습니다. 최종 내용은 각 대학 모집요강으로 확인하세요. 학생 이름·성적표 같은 개인정보는 넣지 마세요.

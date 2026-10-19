@@ -85,7 +85,7 @@ node scripts/build.mjs --check  # 검증 + index.html·CHANGELOG.md 가 최신�
 
 ## Claude에서 데이터 검색하기 (MCP)
 
-진학지도 선생님은 Claude 설정 › 커넥터에 MCP 서버 주소를 추가하면, 대화 중에 전형 검색·대학 상세·2028 변경사항·농어촌 전형·원문 쪽수를 바로 불러 쓸 수 있습니다. 배포와 설치 안내는 [mcp/README.md](mcp/README.md)에 있습니다. 묶음 데이터는 [`data.json`](https://2023swhs3rd-a11y.github.io/2028plan/data.json)으로도 받을 수 있습니다.
+진학지도 선생님은 Claude 설정 › 커넥터 › 사용자 지정 커넥터 추가에 MCP 서버 주소 `https://admissions-2028-mcp.jjbic.workers.dev/mcp`를 넣으면, 대화 중에 전형 검색·대학 상세·2028 변경사항·농어촌 전형·원문 쪽수를 바로 불러 쓸 수 있습니다. 배포와 설치 안내는 [mcp/README.md](mcp/README.md)에 있습니다. 묶음 데이터는 [`data.json`](https://2023swhs3rd-a11y.github.io/2028plan/data.json)으로도 받을 수 있습니다.
 
 ## 작성자
 
