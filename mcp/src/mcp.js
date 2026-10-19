@@ -2,7 +2,7 @@
 // 런타임 의존성 없음. Cloudflare Workers(src/worker.js)와 Node 시험(test.mjs)이 함께 쓴다.
 // 규격: Model Context Protocol, Streamable HTTP 전송의 상태 없는(stateless) JSON 응답 방식.
 
-export const SERVER = { name: '2028-admissions', title: '2028 대입전형 시행계획 요약', version: '1.0.0' };
+export const SERVER = { name: '2028-admissions', title: '2028 대입전형 시행계획 요약', version: '1.1.0' };
 const PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
 const INSTRUCTIONS = `2028학년도 대입전형 시행계획 요약 데이터(대학 약 95곳, 정원 내 학생부교과·학생부종합·논술·정시 수능위주 전형과 농어촌 전형)를 검색하는 서버입니다.
@@ -74,6 +74,17 @@ const page = (list, limit) => {
   return { 결과수: list.length, ...(list.length > n ? { 안내: `앞의 ${n}개만 보냅니다. 조건을 좁히거나 limit을 늘리세요(최대 100).` } : {}), 목록: list.slice(0, n) };
 };
 const arr = v => (v == null ? [] : Array.isArray(v) ? v : [v]).filter(x => x !== '' && x != null);
+const r1 = x => Math.round(x * 10) / 10;
+// 5등급제 평균 등급을 환산표(gv.grade: 1~5등급 점수)에 그대로 대입: 정수 등급 사이는 선형 보간
+const gradeScore = (g, x) => { const i = Math.min(Math.floor(x) - 1, 3), t = x - 1 - i; return g[i] + (g[i + 1] - g[i]) * t };
+// 정시 반영 비율(wt) 한 계열을 %로: 고정 비율(국·수·영·사·과·탐)과 우수순 택일(rk)을 모두 더한 값이 100
+const WK = { k: '국어', m: '수학', e: '영어', s: '사탐', c: '과탐', t: '탐구' };
+function wtShare(w) {
+  const total = Object.keys(WK).reduce((n, k) => n + (w[k] || 0), 0) + (w.rk || []).reduce((n, g) => n + g.v.reduce((a, b) => a + b, 0), 0);
+  const pct = Object.fromEntries(Object.entries(WK).filter(([k]) => w[k]).map(([k, n]) => [n, r1(w[k] / total * 100)]));
+  const inq = r1(((w.s || 0) + (w.c || 0) + (w.t || 0)) / total * 100);
+  return { pct, inq, rk: (w.rk || []).map(g => `${g.p} ${g.v.map(v => r1(v / total * 100)).join('·')}%`) };
+}
 
 // ── 도구 ──
 export const TOOLS = [
@@ -209,6 +220,92 @@ export const TOOLS = [
     },
   },
   {
+    name: 'convert_grade',
+    title: '내 등급 환산',
+    description: '5등급제 교과 평균 등급(예: 2.3)을 대학별 학생부교과 전형의 석차등급 환산표에 넣어 등급점수, 1등급 대비 비율·감점을 비교합니다. 성취도(A~E) 점수를 따로 더하는 대학은 그 사실만 표시합니다. 환산표가 공개된 전형만 나오며, 과목별 단위수·학년 가중치·반영 과목 선택은 반영하지 않은 단순 계산입니다. 합격 가능성 판단에 쓰지 마세요.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        grade: { type: 'number', minimum: 1, maximum: 5, description: '5등급제 교과 평균 등급(1~5, 소수 가능)' },
+        universities: { type: 'array', items: { type: 'string' } },
+        region: { type: 'array', items: { type: 'string', enum: REGIONS } },
+        group: { type: 'array', items: { type: 'string', enum: GROUPS } },
+        exclude_regional_talent: { type: 'boolean', description: '지역인재·지역의사 전형 제외' },
+        limit: { type: 'integer', minimum: 1, maximum: 100 },
+      },
+      required: ['grade'],
+    },
+    annotations: { readOnlyHint: true, openWorldHint: false },
+    run(data, a) {
+      const x = Number(a.grade);
+      if (!(x >= 1 && x <= 5)) return { 오류: 'grade 는 1~5 사이 숫자여야 합니다(5등급제 평균 등급).' };
+      const us = arr(a.universities).map(n => findUniv(data, n)).filter(Boolean);
+      const out = [];
+      for (const u of us.length ? us : data.universities) {
+        if (arr(a.region).length && !arr(a.region).includes(u.rg)) continue;
+        if (arr(a.group).length && !arr(a.group).includes(u.g)) continue;
+        for (const r of u.rows) {
+          const g = r.gv && r.gv.grade;
+          if (r.track !== '교과' || !Array.isArray(g) || g.length !== 5) continue;
+          if (a.exclude_regional_talent && isReg(r)) continue;
+          const sc = gradeScore(g, x);
+          out.push(clean({
+            대학: u.u, 지역: u.rg, 캠퍼스: r.campus, 전형명: r.name, 모집단위: r.dept, 지역요건: r.reg,
+            등급점수: r1(sc), '1등급점수': g[0], '1등급대비': `${r1(sc / g[0] * 100)}%`, '1등급대비감점': r1(g[0] - sc),
+            '1→2등급차': r1(g[0] - g[1]), 환산표: g.join('/'), 성취도점수: r.gv.ach ? `별도 합산(A~E ${Object.values(r.gv.ach).join('/')})` : undefined,
+            교과만점: r.gv.max, 환산표설명: r.gv.note, 반영과목: r.sb && r.sb.d, 수능최저: minOf(r), 원문: src(u, r), _p: sc / g[0],
+          }));
+        }
+      }
+      out.sort((p, q) => q._p - p._p);
+      out.forEach(o => delete o._p);
+      return { 입력등급: x, 계산: '평균 등급을 1~5등급 환산표에 선형 보간으로 대입한 석차등급 점수(성취도 점수·단위수·학년 가중치·과목 선택 미반영)', ...page(out, a.limit) };
+    },
+  },
+  {
+    name: 'search_csat_weights',
+    title: '정시 반영 비율 검색',
+    description: '정시 수능위주 전형을 영역별 반영 비율(%)로 찾습니다. 예: 수학 35% 이상, 탐구 25% 이상, 영어는 감점·가산 방식. 계열(인문·자연 등)이 나뉜 전형은 계열별로 나옵니다. 우수순 택일 비율은 따로 표시되고 최소 비율 조건에는 고정 비율만 씁니다.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        korean_min: { type: 'number', description: '국어 최소 %' },
+        math_min: { type: 'number', description: '수학 최소 %' },
+        inquiry_min: { type: 'number', description: '탐구(사·과 합) 최소 %' },
+        english: { type: 'string', enum: ['비율 반영', '우수순 택일', '감점', '가산', '최저'], description: '영어 반영 방식' },
+        track_group: { type: 'string', description: '계열 이름에 들어갈 말(예: 자연, 인문, 의예)' },
+        universities: { type: 'array', items: { type: 'string' } },
+        region: { type: 'array', items: { type: 'string', enum: REGIONS } },
+        gun: { type: 'array', items: { type: 'string', enum: ['가', '나', '다'] } },
+        limit: { type: 'integer', minimum: 1, maximum: 100 },
+      },
+    },
+    annotations: { readOnlyHint: true, openWorldHint: false },
+    run(data, a) {
+      const us = arr(a.universities).map(n => findUniv(data, n)).filter(Boolean);
+      const out = [], nowt = [];
+      for (const u of us.length ? us : data.universities) {
+        if (arr(a.region).length && !arr(a.region).includes(u.rg)) continue;
+        for (const r of u.rows) {
+          if (r.track !== '정시') continue;
+          if (arr(a.gun).length && !arr(a.gun).some(x => (r.gun || '').includes(x))) continue;
+          if (!r.wt) { nowt.push(`${u.u} ${r.name}`); continue }
+          for (const w of r.wt) {
+            if (a.track_group && !has(w.g, a.track_group)) continue;
+            const { pct, inq, rk } = wtShare(w);
+            if (a.korean_min && !((pct.국어 || 0) >= a.korean_min)) continue;
+            if (a.math_min && !((pct.수학 || 0) >= a.math_min)) continue;
+            if (a.inquiry_min && !(inq >= a.inquiry_min)) continue;
+            const en = w.en || (w.e ? '비율 반영' : (w.rk || []).some(g => /영/.test(g.p)) ? '우수순 택일' : '미기재');
+            if (a.english && en !== a.english) continue;
+            out.push(clean({ 대학: u.u, 지역: u.rg, 캠퍼스: r.campus, 전형명: r.name, 군: r.gun, 계열: w.g, 모집인원: r.quota, 비율: pct, 탐구합: inq, 우수순택일: rk.length ? rk.join(', ') : undefined, 영어: en, 비고: w.n, 반영영역원문: r.areas, 원문: src(u, r) }));
+          }
+        }
+      }
+      return { ...page(out, a.limit), ...(nowt.length ? { 비율자료없음: `정시 ${nowt.length}개 전형은 반영 비율 자료가 없어 빠졌습니다(수능 미반영·표준점수 배율만 공개 등).` } : {}) };
+    },
+  },
+  {
     name: 'get_source',
     title: '원문 찾기',
     description: '전형의 근거가 되는 원문 PDF 링크와 쪽수를 돌려줍니다. 쪽수는 PDF 뷰어의 쪽 번호 기준입니다(인쇄된 쪽 번호와 다를 수 있음).',
@@ -314,15 +411,17 @@ const CORS = {
 };
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS } });
 
+const info = url => new Response(`${SERVER.title} MCP 서버 (v${SERVER.version})\n\n이 주소는 Claude 같은 AI 도구가 쓰는 주소라 브라우저에서는 이 안내만 보입니다.\nClaude 설정 › 커넥터 › 사용자 지정 커넥터 추가에 아래 주소를 넣으세요.\n${url.origin}/mcp\n\n대시보드: https://2023swhs3rd-a11y.github.io/2028plan/\n`, { headers: { 'Content-Type': 'text/plain; charset=utf-8', ...CORS } });
+
 // HTTP 요청 처리: POST /mcp 가 MCP 엔드포인트. GET / 은 사람이 보는 안내.
 export async function handle(request, getData) {
   const url = new URL(request.url);
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
-  if (url.pathname === '/' && request.method === 'GET') {
-    return new Response(`${SERVER.title} MCP 서버 (v${SERVER.version})\n\nClaude 설정 › 커넥터 › 사용자 지정 커넥터 추가에 아래 주소를 넣으세요.\n${url.origin}/mcp\n\n대시보드: https://2023swhs3rd-a11y.github.io/2028plan/\n`, { headers: { 'Content-Type': 'text/plain; charset=utf-8', ...CORS } });
-  }
+  if (url.pathname === '/' && request.method === 'GET') return info(url);
   if (url.pathname !== '/mcp') return new Response('Not Found', { status: 404, headers: CORS });
   // 상태 없는 서버라 서버→클라이언트 SSE 스트림과 세션 종료는 지원하지 않는다(규격상 405).
+  // 브라우저로 주소를 연 사람에게는 오류 대신 안내를 보여 준다(MCP 클라이언트는 text/html 을 요청하지 않음).
+  if (request.method === 'GET' && (request.headers.get('Accept') || '').includes('text/html')) return info(url);
   if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST', ...CORS } });
   let body;
   try { body = await request.json() } catch { return json(fail(null, -32700, 'Parse error'), 400) }
