@@ -28,12 +28,13 @@ assert.equal((await post({ jsonrpc: '2.0', method: 'notifications/initialized' }
 assert.deepEqual((await call('ping')).result, {});
 assert.equal((await call('nope')).error.code, -32601);
 assert.equal((await handle(new Request('https://x.test/mcp'), getData)).status, 405);
+assert.equal((await handle(new Request('https://x.test/mcp', { headers: { Accept: 'text/html' } }), getData)).status, 200);
 assert.equal((await handle(new Request('https://x.test/'), getData)).status, 200);
 assert.equal((await handle(new Request('https://x.test/mcp', { method: 'POST', body: '{' }), getData)).status, 400);
 
 // 목록
 const tl = (await call('tools/list')).result.tools;
-assert.equal(tl.length, 6);
+assert.equal(tl.length, 8);
 for (const t of tl) assert.ok(t.name && t.description && t.inputSchema?.type === 'object' && !('run' in t), t.name);
 assert.equal((await call('prompts/list')).result.prompts.length, PROMPTS.length);
 
@@ -73,6 +74,21 @@ assert.ok(rur.out.결과수 > 0);
 for (const r of rur.out.목록) { assert.equal(r.대상, '전용'); assert.equal(r.정원, '정원 외'); assert.match(r.자격, /12년/) }
 const info = await tool('data_info', {});
 assert.equal(info.out.수록대학.length, data.universities.length);
+
+// 내 등급 환산·정시 비율
+const cg = await tool('convert_grade', { grade: 2.5, universities: ['서강대'] });
+const sg = cg.out.목록[0];
+assert.equal(sg.등급점수, 500); assert.equal(sg['1등급점수'], 800); assert.equal(sg['1등급대비감점'], 300); assert.match(sg.성취도점수, /별도/);
+assert.ok((await tool('convert_grade', { grade: 7 })).isError);
+const all2 = (await tool('convert_grade', { grade: 1, limit: 100 })).out;
+assert.ok(all2.결과수 > 50 && all2.목록.every(r => r['1등급대비'] === '100%'), '1등급은 모두 만점');
+const cw = await tool('search_csat_weights', { math_min: 35, track_group: '자연', limit: 100 });
+assert.ok(cw.out.결과수 > 0);
+for (const r of cw.out.목록) { assert.ok(r.비율.수학 >= 35); assert.match(r.계열, /자연/) }
+const yon = (await tool('search_csat_weights', { universities: ['연세대'], track_group: '인문' })).out.목록[0];
+assert.equal(yon.비율.국어, 33.3); assert.equal(yon.탐구합, 33.3);
+const en = await tool('search_csat_weights', { english: '감점', limit: 100 });
+assert.ok(en.out.목록.every(r => r.영어 === '감점'));
 
 // 프롬프트
 const p = await call('prompts/get', { name: 'consult_prep', arguments: { condition: '교과 위주, 수능 2개 합 7' } });
