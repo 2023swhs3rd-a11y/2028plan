@@ -24,21 +24,6 @@
 
 모든 결과에 원문 PDF 링크와 쪽수가 붙고, 서버 안내문(instructions)에서 Claude에게 원문 근거 제시·모집요강 확인 안내·합격 가능성 추측 금지를 요청합니다.
 
-## 배포 (처음 한 번, Cloudflare 무료 계정)
-
-1. [Cloudflare](https://dash.cloudflare.com/sign-up) 계정을 만듭니다(무료 플랜).
-2. 컴퓨터에 Node.js 18 이상이 있으면 이 폴더에서:
-   ```sh
-   cd mcp
-   npx wrangler login     # 브라우저에서 Cloudflare 로그인
-   npx wrangler deploy    # https://admissions-2028-mcp.<계정 이름>.workers.dev 로 배포됨
-   ```
-   또는 Cloudflare 대시보드 › Workers & Pages › 만들기 › Git 저장소 가져오기에서 이 저장소를 고르고 루트 디렉터리를 `mcp`로 지정하면, `main`에 push할 때마다 자동 배포됩니다.
-   이때 빌드 설정은 루트 디렉터리 `mcp`, 빌드 명령 비움, 배포 명령 `npx wrangler deploy`입니다. PR 브랜치 미리보기 빌드(Previews Base 탭)는 필요 없으면 꺼 둡니다. 켜 둔다면 `wrangler.toml`의 `[previews]` 블록이 있어야 `npx wrangler preview`가 동작합니다.
-3. 브라우저로 배포 주소를 열어 안내 문구가 보이면 성공입니다. 선생님들께 나눠 줄 주소는 그 뒤에 `/mcp`를 붙인 것입니다.
-
-서버 이름은 `wrangler.toml`의 `name`, 데이터 주소는 `DATA_URL`에서 바꿉니다. 주소 가운데의 계정 하위 도메인(`jjbic`)은 Cloudflare 대시보드 › Workers & Pages › 하위 도메인에서 바꾸며, 바꾸면 이 문서의 주소도 함께 고치고 선생님들께 커넥터를 다시 추가하도록 안내합니다.
-
 ## 선생님 설치 안내 (나눠 드릴 문구)
 
 > 1. claude.ai(또는 Claude 앱) › 설정 › 커넥터 › **사용자 지정 커넥터 추가**
