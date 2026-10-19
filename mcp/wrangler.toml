@@ -5,3 +5,6 @@ compatibility_date = "2025-10-01"
 
 [vars]
 DATA_URL = "https://2023swhs3rd-a11y.github.io/2028plan/data.json"
+
+# 미리보기 배포(main 이외 브랜치·PR)용. 비워 두면 위 설정을 그대로 쓴다.
+[previews]
