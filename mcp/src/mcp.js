@@ -45,7 +45,7 @@ function brief(u, r) {
     대학: u.u, 지역: u.rg, 구분: GNAME[u.g] || u.g, 캠퍼스: r.campus,
     전형: r.track, 전형명: r.name, 모집단위: r.dept, 모집인원: r.quota ?? '미기재',
     전형방법: r.method, 선발구조: r.structure, '1단계': r.stage1,
-    수능최저: minOf(r), 면접: r.interview === '있음' ? `있음${r.interview_ratio ? ` ${r.interview_ratio}` : ''}` : r.interview,
+    수능최저: minOf(r), 면접: r.interview === '없음' ? '없음' : `${r.interview === '일부' ? '일부 모집단위' : '있음'}${r.interview_ratio ? ` ${r.interview_ratio}` : ''}`,
     추천: r.recommend, 졸업생지원: GRAD[r.elig] || r.elig, 지역요건: r.reg, 군: r.gun, 원문: src(u, r),
   });
 }
@@ -100,7 +100,7 @@ export const TOOLS = [
         group: { type: 'array', items: { type: 'string', enum: GROUPS }, description: '대학 구분' },
         track: { type: 'array', items: { type: 'string', enum: TRACKS }, description: '전형 종류(정시 = 정시 수능위주)' },
         csat_min: { type: 'string', enum: ['있음', '없음'], description: "수능최저: '있음'은 일부 모집단위 적용 포함" },
-        interview: { type: 'string', enum: ['있음', '없음'] },
+        interview: { type: 'string', enum: ['있음', '없음'], description: "면접: '있음'은 일부 모집단위만 보는 전형 포함" },
         school_recommendation: { type: 'boolean', description: 'true: 학교장추천 필요 전형만, false: 추천 없는 전형만' },
         graduates_allowed: { type: 'boolean', description: 'true: 졸업생도 지원 가능한 전형만(재학생 전용 제외)' },
         gun: { type: 'array', items: { type: 'string', enum: ['가', '나', '다'] }, description: '정시 군' },
@@ -121,7 +121,7 @@ export const TOOLS = [
           if (arr(a.track).length && !arr(a.track).includes(r.track)) continue;
           if (a.csat_min === '있음' && r.min_flag === '없음') continue;
           if (a.csat_min === '없음' && r.min_flag !== '없음') continue;
-          if (a.interview && r.interview !== a.interview) continue;
+          if (a.interview && (r.interview === '없음') !== (a.interview === '없음')) continue;
           if (a.school_recommendation === true && !/추천/.test(r.recommend || '')) continue;
           if (a.school_recommendation === false && /추천/.test(r.recommend || '')) continue;
           if (a.graduates_allowed === true && r.elig === '재학생') continue;

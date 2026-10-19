@@ -28,7 +28,7 @@ const ENUM = {
   sq: ['high', 'medium', 'low'],
   structure: ['일괄', '단계형'],
   min_flag: ['있음', '일부', '없음'],
-  interview: ['있음', '없음'],
+  interview: ['있음', '일부', '없음'],
   elig: ['제한 없음', '재학생', '졸업연도 제한', '졸업생 전용', '확인 불가'],
 };
 const isStr = v => typeof v === 'string' && v.trim() !== '';
@@ -36,6 +36,12 @@ const isInt = v => Number.isInteger(v) && v >= 0;
 
 // 정시 반영비율(wt): 계열별 [{g, k·m·e·s·c·t(국·수·영·사·과·탐 고정 비율), rk:[{p, v:[순위별 비율]}], en(영어 감점·가산·최저), n}]
 const WK = ['k', 'm', 'e', 's', 'c', 't'], WEN = ['감점', '가산', '최저'];
+// rows·rur 공통: 면접 없음인데 면접 비율·유형이 있거나, 국·수·영·사·과를 모두 반영하는데 영역 수가 5개가 아닌 행
+function checkCommon(r, w) {
+  if (r.interview === '없음' && (r.interview_ratio != null || r.interview_type != null)) err(w, "면접이 '없음'이면 interview_ratio·interview_type 을 두지 않습니다(일부 모집단위만 면접이면 interview='일부')");
+  if (/^[FD]{5}$/.test(r.smap || '') && !['5개', '계열별'].includes(r.n_areas)) err(w, `smap=${r.smap} 는 5개 영역 반영이라 n_areas 는 '5개'(또는 '계열별')여야 합니다`);
+}
+
 function checkWt(wt, w) {
   if (!Array.isArray(wt) || !wt.length) return err(w, 'wt 는 계열이 1개 이상인 배열이어야 합니다');
   wt.forEach((x, i) => {
@@ -89,6 +95,7 @@ function checkUniv(u, file) {
     if (!isStr(c.t)) err(file, `ch[${i}].t 가 비어 있습니다`);
     if (!Array.isArray(c.c) || !c.c.length) err(file, `ch[${i}].c 에 분류가 1개 이상 있어야 합니다`);
     else c.c.filter(k => !CATS.includes(k)).forEach(k => err(file, `ch[${i}] 분류 '${k}' 는 ${CATS.join('/')} 중 하나여야 합니다`));
+    if (/^\S.* 2027: /.test(c.t || '')) err(file, `ch[${i}] 2027 값은 따로 항목을 두지 말고 해당 변경 항목 끝에 '(2027: …)'로 붙입니다`);
   });
   if (u.chNA !== (Array.isArray(u.ch) && u.ch.length === 0)) err(file, 'chNA 는 변경사항(ch)이 비었을 때만 true 여야 합니다');
   if (!Array.isArray(u.notes) || !u.notes.every(isStr)) err(file, 'notes 는 문자열 배열이어야 합니다');
@@ -115,6 +122,7 @@ function checkUniv(u, file) {
     if (r.wt != null) checkWt(r.wt, w);
     if ((r.fid != null || r.ft != null) && !(isStr(r.fid) && isStr(r.ft))) err(w, '행별 출처는 fid·ft 를 함께 적어야 합니다');
     if (r.track === '교과') checkSb(r, w);
+    checkCommon(r, w);
   });
 }
 
@@ -155,6 +163,7 @@ function checkRur(u, file) {
     if (r.track === '교과') checkSb(r, w);
     if (r.track === '종합' && !['서류형', '면접형'].includes(r.type)) err(w, `type='${r.type}' 는 서류형/면접형 중 하나여야 합니다`);
     if (r.wt != null) checkWt(r.wt, w);
+    checkCommon(r, w);
   });
 }
 
