@@ -52,7 +52,9 @@ const med = (await tool('search_admissions', { track: ['교과'], limit: 100 }))
 const noMed = (await tool('search_admissions', { track: ['교과'], exclude_medical_only: true, exclude_regional_talent: true, limit: 100 })).out.결과수;
 assert.ok(noMed < med);
 const gr = await tool('search_admissions', { graduates_allowed: true, school_recommendation: true, limit: 100 });
-for (const r of gr.out.목록) { assert.notEqual(r.지원자격, '재학생'); assert.match(r.추천, /추천/) }
+for (const r of gr.out.목록) { assert.doesNotMatch(r.졸업생지원, /재학생만/); assert.match(r.추천, /추천/) }
+const jb = await tool('search_admissions', { universities: ['중부대'], keyword: '충청권' });
+assert.ok(jb.out.목록.length > 0 && jb.out.목록.every(r => r.지역요건));
 const g = await tool('search_admissions', { track: ['정시'], gun: ['가'], region: ['서울'] });
 for (const r of g.out.목록) assert.equal(r.군, '가');
 

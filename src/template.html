@@ -875,7 +875,7 @@ const hv=location.hash.slice(1);if(VIEWS.includes(hv))S.v=hv;if(isTV())TT[S.v]=S
 function save(){try{localStorage.setItem('dash28',JSON.stringify({g:S.g,v:S.v,t:S.t,rg:S.rg}))}catch(e){}}
 
 /* ── 버전·변경 표시 ── */
-const FL={quota:'모집인원',method:'전형방법',structure:'선발 구조',stage1:'1단계 배수',min_flag:'수능최저 여부',min_text:'수능최저',interview:'면접',interview_ratio:'면접 비율',interview_type:'면접 유형',elig:'지원자격 구분',elig_text:'지원자격',recommend:'추천',stage:'교과 평가방식',stage_desc:'교과 반영방법',doc_ratio:'서류평가',attendance:'출결',subjects:'반영 과목',grade_scale:'등급 환산',type:'유형',essay_ratio:'논술 비율',other:'논술 외 요소',essay_type:'논술 출제',gun:'모집군',gyogwa:'학생부(정시)',gyogwa_ratio:'학생부 비율',areas:'수능 반영',smap:'반영 영역',index:'활용 지표',n_areas:'영역 수',change:'2028 변경'};
+const FL={quota:'모집인원',method:'전형방법',structure:'선발 구조',stage1:'1단계 배수',min_flag:'수능최저 여부',min_text:'수능최저',interview:'면접',interview_ratio:'면접 비율',interview_type:'면접 유형',elig:'지원자격 구분',elig_text:'지원자격',reg:'지역 요건',recommend:'추천',stage:'교과 평가방식',stage_desc:'교과 반영방법',doc_ratio:'서류평가',attendance:'출결',subjects:'반영 과목',grade_scale:'등급 환산',type:'유형',essay_ratio:'논술 비율',other:'논술 외 요소',essay_type:'논술 출제',gun:'모집군',gyogwa:'학생부(정시)',gyogwa_ratio:'학생부 비율',areas:'수능 반영',smap:'반영 영역',index:'활용 지표',n_areas:'영역 수',change:'2028 변경'};
 const vt=v=>{const x=VERS.find(z=>z.v===v);return x?`v${v} (${x.t.slice(5)})`:'v'+v};
 // 버전은 점으로 나눈 숫자로 비교(0.10 > 0.9)
 const vge=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d>0}return true};
@@ -894,7 +894,7 @@ document.addEventListener('scroll',hideTip,true);
 // ⓘ 설명: 터치 기기(마우스 없음)에서도 누르면 보이게, 다른 곳을 누르면 닫힘
 document.addEventListener('click',e=>{const el=e.target.closest('.info');if(el){e.preventDefault();e.stopPropagation();showTip(el)}else if(!e.target.closest('[data-tip]'))hideTip()},true);
 function hl(s){s=esc(s);if(!S.q)return s;const q=esc(S.q);const i=s.toLowerCase().indexOf(q.toLowerCase());return i<0?s:s.slice(0,i)+'<mark>'+s.slice(i,i+q.length)+'</mark>'+s.slice(i+q.length)}
-function elc(r){const t=esc(r.elig_text||'');return r.elig==='재학생'?`<span class="ej" data-tip="${t}">재학생만</span><span class="sub">2028 졸업예정</span>`:r.elig==='제한 없음'||!r.elig?'<span class="na">제한 없음</span>':`<span class="mt" data-tip="${t}">${esc(r.elig)}</span>`}
+function elc(r){const t=esc(r.elig_text||''),rg=r.reg?`<span class="mt" data-tip="${esc(r.reg)}">지역 요건</span>`:'';return r.elig==='재학생'?rg+`<span class="ej" data-tip="${t}">재학생만</span><span class="sub">2028 졸업예정</span>`:r.elig==='제한 없음'||!r.elig?(rg||'<span class="na">제한 없음</span>'):rg+`<span class="mt" data-tip="${t}">${esc(r.elig)}</span>`}
 function rcc(t){t=t||'—';const m=t.match(/^([^(]+)\((.+)\)$/);return m?`<span class="mt">${esc(m[1])}</span><span class="sub">${esc(m[2])}</span>`:`<span class="${/^없음/.test(t)?'na':'mt'}">${esc(t)}</span>`}
 function rcb(r){const t=r.recommend||'';if(r.track==='교과'||!/^(학교장|교육감)추천/.test(t))return '';return `<span class="rcb" data-tip="${esc(t)}">추천형</span>`}
 // 교과 반영 과목(sb): 과목 수 우선 · 전 과목 · 일부 + 공통·일반·진로·융합 반영 여부(반영/일부/가산/미반영/미기재)
@@ -1119,8 +1119,7 @@ function DS(){if(S.v==='rur')return RDIM(S.t);const b=dimsFor(S.t);return S.t===
 // 제외 필터: 의약학계열(의·치·한·약·수의·간호)만 모집하는 전형, 지역인재 전형(지역 고교 이수 요건·지역의사, 지역균형은 해당 없음)
 const MED=/^(의예|의학|치의예|치의학|한의예|한의학|약학|제약학|수의예|수의학|간호학?)(과|부)?$/;
 const isMed=r=>!!r.dept&&r.dept.split('·').every(d=>MED.test(d.trim()));
-const REG=/(대구|경북|부산|울산|경남|부울경|광주|전남|전북|호남|충청|충남|충북|대전|세종|강원|제주|진료권|광역권)[^,;]{0,40}(고교|고등학교|중학교)[^,;]{0,30}(입학|이수|졸업|재학)/;
-const isReg=r=>/지역인재|지역의사|지역의료/.test(r.name)||REG.test(r.elig_text||'');
+const isReg=r=>!!r.reg;
 let XF={m:false,r:false};try{const x=JSON.parse(localStorage.getItem('xf28')||'{}');XF={m:!!x.m,r:!!x.r}}catch(e){}
 const xOK=r=>!(XF.m&&isMed(r))&&!(XF.r&&isReg(r));
 function tRows(){return SRC().filter(r=>r.track===S.t&&xOK(r)&&inScope(U.find(u=>u.u===r.u))&&qMatch(U.find(u=>u.u===r.u),r))}
@@ -1173,7 +1172,7 @@ function renderTrack(){
 }
 let TROWS=[];
 function csvOut(rows){const q=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
-  const C0=[['대학',r=>r.u],['구분',r=>GNAME[r.g]],['지역',r=>(U.find(u=>u.u===r.u)||{}).rg],['전형',r=>r.name],['모집인원',r=>r.quota],['전형방법',r=>r.method],[MKW[S.t]+' 실질 비율(%)',r=>S.t==='논술'?r.essay_ratio:kShare(r)],['선발 구조',r=>r.structure],['1단계',r=>r.stage1],['수능최저',r=>r.min_flag==='없음'?'없음':r.min_text],['최저 평균 등급',r=>minScore(r)],['면접',r=>r.interview==='있음'?[r.interview_ratio,r.interview_type].filter(Boolean).join(' '):'없음'],['지원자격',r=>r.elig],['지원자격 상세',r=>r.elig_text],['추천',r=>r.recommend]];
+  const C0=[['대학',r=>r.u],['구분',r=>GNAME[r.g]],['지역',r=>(U.find(u=>u.u===r.u)||{}).rg],['전형',r=>r.name],['모집인원',r=>r.quota],['전형방법',r=>r.method],[MKW[S.t]+' 실질 비율(%)',r=>S.t==='논술'?r.essay_ratio:kShare(r)],['선발 구조',r=>r.structure],['1단계',r=>r.stage1],['수능최저',r=>r.min_flag==='없음'?'없음':r.min_text],['최저 평균 등급',r=>minScore(r)],['면접',r=>r.interview==='있음'?[r.interview_ratio,r.interview_type].filter(Boolean).join(' '):'없음'],['지원자격',r=>r.elig],['지원자격 상세',r=>r.elig_text],['지역 요건',r=>r.reg],['추천',r=>r.recommend]];
   const CT={교과:[['교과 평가방식',r=>r.stage!=null?STG[r.stage]:''],['평가방식 상세',r=>r.stage_desc],['반영 과목 요약',r=>sbTxt(r)],['반영 과목',r=>r.subjects],['등급 환산',r=>r.grade_scale],['출결',r=>r.attendance]],
    종합:[['유형',r=>r.type]],논술:[['논술 외',r=>r.other],['출제 형태',r=>r.essay_type]],
    정시:[['모집군',r=>r.gun],['반영 영역',r=>r.areas],['활용 지표',r=>r.index],['학생부',r=>r.gyogwa&&r.gyogwa!=='미반영'?r.gyogwa+' '+(r.gyogwa_ratio||''):'미반영']]};
@@ -1249,11 +1248,11 @@ const LEG={
  논술:`<span><span class="shb" style="--c:${TC.논술};margin:0;display:inline-flex"><span class="tr" style="width:36px"><i style="width:70%"></i></span></span> 논술 반영 비율(회색 = 교과·출결 등 그 외 요소) ${ifo('essay')}</span><span><i class="dot f"></i> 최저 있음 <i class="dot p"></i> 일부 <i class="dot"></i> 없음</span><span><span class="eb c">변경</span> 2028 변경</span><span><i class="dpsw" aria-hidden="true"></i>일부 학과만 모집</span>`,
  정시:`<span><span class="shb" style="--c:${TC.정시};margin:0;display:inline-flex"><span class="tr" style="width:36px"><i style="width:70%"></i></span></span> 수능 실질 반영 비율 ${ifo('share')}</span><span>${sj('FSDN?')} 반영 · 선택 · 감점/가산 · 미반영 · 미공개 ${ifo('area')}</span><span class="wleg">반영 비율 ${WKS.map(k=>`<span><i style="background:var(--s${k})"></i>${WL[k]}</span>`).join('')}<span><i class="rk" style="background:repeating-linear-gradient(135deg,var(--sunk) 0 3px,var(--line2) 3px 5px);box-shadow:inset 0 0 0 1px var(--line2)"></i>우수순·택일</span></span><span>${gun('나')} 모집군</span><span><span class="eb c">변경</span> 2028 변경</span><span><i class="dpsw" aria-hidden="true"></i>일부 학과만 모집</span>`};
 function kvRows(r){const L=[...(r.rur?[['지원 대상',AUDL(r)+(r.aud_with?' · '+r.aud_with:'')],['자격 요건',(r.rq||'미기재')+(r.rq_text?' — '+r.rq_text:'')],['정원',CAPL(r)],[r.track==='정시'?'정시 모집':'정시 이월',CYL(r)]]:[]),['전형방법',r.method],['전형 유형',r.track==='종합'?r.type:''],['선발 구조',r.structure==='단계형'?`단계형 · 1단계 ${r.stage1||''}`:r.structure],['수능최저',r.min_flag==='없음'?'없음':r.min_text],['면접',r.interview==='있음'?[r.interview_ratio,r.interview_type].filter(Boolean).join(' · '):/면접/.test(r.method||'')?'없음 (일부 모집단위는 전형방법 참고)':'없음'],
-  ['지원자격',(r.elig&&r.elig!=='제한 없음'?r.elig+' · ':'')+(r.elig_text||'')],['추천',r.recommend],
+  ['지원자격',(r.elig&&r.elig!=='제한 없음'?r.elig+' · ':'')+(r.elig_text||'')],['지역 요건',r.reg],['추천',r.recommend],
   ['교과 평가방식',r.stage!=null?`${STG[r.stage]}${r.stage_desc?' — '+r.stage_desc:''}`:''],['서류평가',r.doc_ratio],['출결',r.attendance],['반영 과목',r.subjects],['등급 환산',r.grade_scale],
   ['논술 외 요소',r.other],['논술 출제',r.essay_type],['모집군',r.gun],['수능 반영',r.areas],['활용 지표',r.index],['학생부(정시)',r.gyogwa&&r.gyogwa!=='미반영'?`${r.gyogwa} ${r.gyogwa_ratio||''}`:r.track==='정시'?'미반영':'']];
   return L.filter(([,v])=>v!=null&&String(v).trim()!=='')}
-const KVF={'지원 대상':['aud','aud_with'],'정원':'cap','자격 요건':['rq','rq_text'],'정시 모집':'carry','정시 이월':'carry','전형방법':'method','전형 유형':'type','선발 구조':['structure','stage1'],'수능최저':['min_flag','min_text'],'면접':['interview','interview_ratio','interview_type'],'지원자격':['elig','elig_text'],'추천':'recommend','교과 평가방식':['stage','stage_desc'],'서류평가':'doc_ratio','출결':'attendance','반영 과목':'subjects','등급 환산':'grade_scale','논술 외 요소':'other','논술 출제':'essay_type','모집군':'gun','수능 반영':['areas','smap'],'활용 지표':'index','학생부(정시)':['gyogwa','gyogwa_ratio']};
+const KVF={'지원 대상':['aud','aud_with'],'정원':'cap','자격 요건':['rq','rq_text'],'정시 모집':'carry','정시 이월':'carry','전형방법':'method','전형 유형':'type','선발 구조':['structure','stage1'],'수능최저':['min_flag','min_text'],'면접':['interview','interview_ratio','interview_type'],'지원자격':['elig','elig_text'],'지역 요건':'reg','추천':'recommend','교과 평가방식':['stage','stage_desc'],'서류평가':'doc_ratio','출결':'attendance','반영 과목':'subjects','등급 환산':'grade_scale','논술 외 요소':'other','논술 출제':'essay_type','모집군':'gun','수능 반영':['areas','smap'],'활용 지표':'index','학생부(정시)':['gyogwa','gyogwa_ratio']};
 function detHTML(r,cols){const g=gvAll(r);return `<div class="kv"><div><b>모집인원</b><span>${qn(r)}${r.pg?' · '+pgl(r):''}</span></div>${kvRows(r).map(([k,v])=>`<div><b>${k}</b><span>${dv(r,KVF[k]||[],esc(v))}</span></div>`).join('')}${g?`<div class="gvk"><b>환산점수 그래프</b>${g}</div>`:''}${r.change?`<div class="w chg"><b>2028 변경</b><span>${esc(r.change)}</span></div>`:''}${r.note?`<div class="w"><b>비고</b><span>${esc(r.note)}</span></div>`:''}</div>`}
 // 상세의 환산점수 칸은 '등급 환산' 다음 칸부터 그 줄 끝까지 채움(남은 폭이 좁으면 다음 줄 전체)
 function fitGv(){document.querySelectorAll('.kv .gvk').forEach(c=>{const kv=c.parentNode;if(!kv.offsetParent)return;c.style.gridColumn='';const cols=getComputedStyle(kv).gridTemplateColumns.split(' ').length;if(cols<2){c.style.gridColumn='1/-1';return}

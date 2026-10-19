@@ -107,6 +107,7 @@ function checkUniv(u, file) {
     for (const k of ['structure', 'min_flag', 'interview', 'elig'])
       if (!ENUM[k].includes(r[k])) err(w, `${k}='${r[k]}' 는 ${ENUM[k].join('/')} 중 하나여야 합니다`);
     if (r.min_flag !== '없음' && !isStr(r.min_text)) err(w, '수능최저가 있으면 min_text 가 필요합니다');
+    if (r.reg != null && !isStr(r.reg)) err(w, 'reg(지역 요건)는 빈 문자열이 아니어야 합니다');
     if (!isStr(r.recommend)) err(w, 'recommend 가 비어 있습니다');
     if (r.pg != null && !(Number.isInteger(r.pg) && r.pg > 0)) err(w, `pg=${JSON.stringify(r.pg)} 는 양의 정수 또는 null 이어야 합니다`);
     if (r.stage != null && !(Number.isInteger(r.stage) && r.stage >= 0 && r.stage <= 6)) err(w, `stage=${JSON.stringify(r.stage)} 는 0~6 이어야 합니다`);
