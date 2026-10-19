@@ -22,8 +22,9 @@ const GNAME = { 일반: '일반대학', 지방국립: '지방국립대학', 교�
 // 대시보드의 '제외' 필터와 같은 규칙
 const MED = /^(의예|의학|치의예|치의학|한의예|한의학|약학|제약학|수의예|수의학|간호학?)(과|부)?$/;
 const isMed = r => !!r.dept && r.dept.split('·').every(d => MED.test(d.trim()));
-const REG = /(대구|경북|부산|울산|경남|부울경|광주|전남|전북|호남|충청|충남|충북|대전|세종|강원|제주|진료권|광역권)[^,;]{0,40}(고교|고등학교|중학교)[^,;]{0,30}(입학|이수|졸업|재학)/;
-const isReg = r => /지역인재|지역의사|지역의료/.test(r.name) || REG.test(r.elig_text || '');
+const isReg = r => !!r.reg;
+// elig 는 졸업 연도 기준 구분이다(지역 요건은 reg)
+const GRAD = { '제한 없음': '가능', 재학생: '불가(재학생만)', '졸업연도 제한': '일부(졸업연도 제한)', '졸업생 전용': '졸업생만', '확인 불가': '확인 불가' };
 
 const norm = s => String(s ?? '').replace(/\s+/g, '').toLowerCase();
 const has = (hay, needle) => norm(hay).includes(norm(needle));
@@ -45,7 +46,7 @@ function brief(u, r) {
     전형: r.track, 전형명: r.name, 모집단위: r.dept, 모집인원: r.quota ?? '미기재',
     전형방법: r.method, 선발구조: r.structure, '1단계': r.stage1,
     수능최저: minOf(r), 면접: r.interview === '있음' ? `있음${r.interview_ratio ? ` ${r.interview_ratio}` : ''}` : r.interview,
-    추천: r.recommend, 지원자격: r.elig, 군: r.gun, 원문: src(u, r),
+    추천: r.recommend, 졸업생지원: GRAD[r.elig] || r.elig, 지역요건: r.reg, 군: r.gun, 원문: src(u, r),
   });
 }
 
@@ -92,9 +93,9 @@ export const TOOLS = [
         school_recommendation: { type: 'boolean', description: 'true: 학교장추천 필요 전형만, false: 추천 없는 전형만' },
         graduates_allowed: { type: 'boolean', description: 'true: 졸업생도 지원 가능한 전형만(재학생 전용 제외)' },
         gun: { type: 'array', items: { type: 'string', enum: ['가', '나', '다'] }, description: '정시 군' },
-        keyword: { type: 'string', description: '전형명·모집단위·전형방법·지원자격·비고에서 찾을 말(예: 면접, 교과우수, 지역균형)' },
+        keyword: { type: 'string', description: '전형명·모집단위·전형방법·지원자격·지역 요건·비고에서 찾을 말(예: 면접, 교과우수, 지역균형, 충청권)' },
         exclude_medical_only: { type: 'boolean', description: '의·치·한·약·수의·간호 학과만 모집하는 전형 제외' },
-        exclude_regional_talent: { type: 'boolean', description: '지역인재·지역의사 전형 제외(지역균형은 남김)' },
+        exclude_regional_talent: { type: 'boolean', description: '지역 고교 이수 요건이 있는 지역인재·지역의사 전형 제외(지역균형은 남김)' },
         limit: { type: 'integer', minimum: 1, maximum: 100, description: '최대 결과 수(기본 30)' },
       },
     },
@@ -116,7 +117,7 @@ export const TOOLS = [
           if (arr(a.gun).length && !arr(a.gun).includes(r.gun)) continue;
           if (a.exclude_medical_only && isMed(r)) continue;
           if (a.exclude_regional_talent && isReg(r)) continue;
-          if (a.keyword && ![r.name, r.dept, r.method, r.elig_text, r.note, r.min_text].some(x => has(x, a.keyword))) continue;
+          if (a.keyword && ![r.name, r.dept, r.method, r.elig_text, r.reg, r.note, r.min_text].some(x => has(x, a.keyword))) continue;
           out.push(brief(u, r));
         }
       }
