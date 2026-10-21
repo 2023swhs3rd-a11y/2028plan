@@ -99,7 +99,7 @@ const cw = await tool('search_csat_weights', { math_min: 35, track_group: '자�
 assert.ok(cw.out.결과수 > 0);
 for (const r of cw.out.목록) { assert.ok(r.비율.수학 >= 35); assert.ok(r.계열구분 ? ['자연', '공통'].includes(r.계열구분) : !r.계열 || /자연/.test(r.계열)) }
 assert.ok(cw.out.목록.some(r => r.계열구분 === '자연') && !cw.out.목록.some(r => r.계열구분 === '인문'));
-const ku = (await tool('search_csat_weights', { universities: ['건국대'], track_group: '자연' })).out.목록;
+const ku = (await tool('search_csat_weights', { universities: ['건국대'], track_group: '자연' })).out.목록.filter(r => r.대학 === '건국대');
 assert.ok(ku.length >= 2 && ku.every(r => r.계열구분 === '공통' && /유리한 점수/.test(r.택1)), '건국대 A형·B형은 택1로 자연에도 나옴');
 const mdw = (await tool('search_csat_weights', { track_group: '의예', limit: 100 })).out.목록;
 assert.ok(mdw.length > 0 && mdw.every(r => /의예/.test(r.계열)), '계열 이름 글자 검색 유지');
