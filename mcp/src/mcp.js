@@ -11,6 +11,7 @@ const INSTRUCTIONS = `2028학년도 대입전형 시행계획 요약 데이터(�
 - 입시 결과(합격선·경쟁률)는 없습니다. 합격 가능성을 추측하지 마세요.
 - 값이 '미기재'이면 원문에 없거나 판독할 수 없는 것입니다. 추측으로 채우지 마세요.
 - 고른기회·특기자·재외국민·정원 외 전형은 대학 상세의 비고(notes)에만 있습니다.
+- 소재 지역이 다른 캠퍼스(홍익대(세종)·단국대(천안)·을지대(대전))는 따로 항목이 있고 '본교' 필드로 본 항목과 이어집니다. 대학명으로 찾으면 캠퍼스 항목도 함께 나옵니다.
 - 라이선스: CC BY-NC 4.0 (봉일천고등학교 진로진학부). 대시보드: https://2023swhs3rd-a11y.github.io/2028plan/`;
 
 const TRACKS = ['교과', '종합', '논술', '정시'];
@@ -26,7 +27,7 @@ const isReg = r => !!r.reg;
 // elig 는 졸업 연도 기준 구분이다(지역 요건은 reg)
 const GRAD = { '제한 없음': '가능', 재학생: '불가(재학생만)', '졸업연도 제한': '일부(졸업연도 제한)', '졸업생 전용': '졸업생만', '확인 불가': '확인 불가' };
 
-const norm = s => String(s ?? '').replace(/\s+/g, '').toLowerCase();
+const norm = s => String(s ?? '').replace(/[\s()]+/g, '').toLowerCase();
 const has = (hay, needle) => norm(hay).includes(norm(needle));
 const pdf = (u, r) => `https://drive.google.com/file/d/${(r && r.fid) || u.fid}/view`;
 const src = (u, r) => ({ 'PDF': pdf(u, r), '파일': (r && r.ft) || u.ft, '쪽': r ? r.pg ?? null : null });
@@ -38,6 +39,12 @@ function findUniv(data, name) {
   const U = data.universities;
   return U.find(u => norm(u.u) === n) || U.find(u => norm(u.u).includes(n) || n.includes(norm(u.u)));
 }
+// 같은 대학의 캠퍼스 항목(parent): 본 항목 이름으로 찾으면 캠퍼스 항목까지, 캠퍼스 이름으로 찾으면 그 항목만
+const campuses = (data, u) => data.universities.filter(x => x !== u && (x.parent || x.u) === (u.parent || u.u));
+const findUnivs = (data, names) => [...new Set(arr(names).flatMap(n => {
+  const u = findUniv(data, n);
+  return !u ? [] : u.parent ? [u] : [u, ...data.universities.filter(x => x.parent === u.u)];
+}))];
 
 // 전형 행 요약(목록용)
 function brief(u, r) {
@@ -123,7 +130,7 @@ export const TOOLS = [
     },
     annotations: { readOnlyHint: true, openWorldHint: false },
     run(data, a) {
-      const us = arr(a.universities).map(n => findUniv(data, n)).filter(Boolean);
+      const us = findUnivs(data, a.universities);
       const out = [];
       for (const u of us.length ? us : data.universities) {
         if (arr(a.region).length && !arr(a.region).includes(u.rg)) continue;
@@ -156,8 +163,10 @@ export const TOOLS = [
     run(data, a) {
       const u = findUniv(data, a.name);
       if (!u) return { 오류: `'${a.name}' 대학을 찾지 못했습니다.`, 수록대학: data.universities.map(x => x.u) };
+      const other = campuses(data, u);
       return clean({
-        대학: u.u, 지역: u.rg, 구분: GNAME[u.g] || u.g,
+        대학: u.u, 지역: u.rg, 구분: GNAME[u.g] || u.g, 본교: u.parent,
+        다른캠퍼스: other.length ? other.map(x => clean({ 대학: x.u, 지역: x.rg, 모집인원합계: x.tot && x.tot.total_in, 전형수: x.rows.length, 안내: `get_university로 '${x.u}' 조회` })) : undefined,
         모집인원: u.tot && { 수시정원내: u.tot.susi_in, 정시정원내: u.tot.jeongsi_in, 합계: u.tot.total_in },
         원문: u.ft, 원문PDF: pdf(u),
         '2028주요변경': (u.ch || []).map(c => `${c.t} [${(c.c || []).join(', ')}]`),
@@ -183,7 +192,7 @@ export const TOOLS = [
     },
     annotations: { readOnlyHint: true, openWorldHint: false },
     run(data, a) {
-      const us = arr(a.universities).map(n => findUniv(data, n)).filter(Boolean);
+      const us = findUnivs(data, a.universities);
       const out = [];
       for (const u of us.length ? us : data.universities) {
         if (arr(a.region).length && !arr(a.region).includes(u.rg)) continue;
@@ -214,7 +223,7 @@ export const TOOLS = [
     },
     annotations: { readOnlyHint: true, openWorldHint: false },
     run(data, a) {
-      const us = arr(a.universities).map(n => findUniv(data, n)).filter(Boolean);
+      const us = findUnivs(data, a.universities);
       const out = [], none = [];
       for (const u of us.length ? us : data.universities) {
         if (arr(a.region).length && !arr(a.region).includes(u.rg)) continue;
@@ -250,7 +259,7 @@ export const TOOLS = [
     run(data, a) {
       const x = Number(a.grade);
       if (!(x >= 1 && x <= 5)) return { 오류: 'grade 는 1~5 사이 숫자여야 합니다(5등급제 평균 등급).' };
-      const us = arr(a.universities).map(n => findUniv(data, n)).filter(Boolean);
+      const us = findUnivs(data, a.universities);
       const out = [];
       for (const u of us.length ? us : data.universities) {
         if (arr(a.region).length && !arr(a.region).includes(u.rg)) continue;
@@ -293,7 +302,7 @@ export const TOOLS = [
     },
     annotations: { readOnlyHint: true, openWorldHint: false },
     run(data, a) {
-      const us = arr(a.universities).map(n => findUniv(data, n)).filter(Boolean);
+      const us = findUnivs(data, a.universities);
       const out = [], nowt = [];
       for (const u of us.length ? us : data.universities) {
         if (arr(a.region).length && !arr(a.region).includes(u.rg)) continue;
@@ -342,7 +351,7 @@ export const TOOLS = [
     inputSchema: { type: 'object', properties: {} },
     annotations: { readOnlyHint: true, openWorldHint: false },
     run(data) {
-      return { ...data.meta, 수록대학: data.universities.map(u => ({ 대학: u.u, 지역: u.rg, 구분: GNAME[u.g] || u.g })) };
+      return { ...data.meta, 수록대학: data.universities.map(u => clean({ 대학: u.u, 본교: u.parent, 지역: u.rg, 구분: GNAME[u.g] || u.g })) };
     },
   },
 ];

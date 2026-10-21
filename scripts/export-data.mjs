@@ -26,7 +26,8 @@ export function exportData() {
       dashboard: 'https://2023swhs3rd-a11y.github.io/2028plan/',
       source: '각 대학이 공개한 2028학년도 대입전형 시행계획 PDF(fid = Google Drive 파일 ID, pg = 원문 쪽수)',
       license: 'CC BY-NC 4.0 (봉일천고등학교 진로진학부)',
-      universities: universities.length,
+      universities: new Set(universities.map(u => u.parent || u.u)).size, // 캠퍼스 분리 항목(parent)은 본교와 한 곳으로 셈
+      entries: universities.length,
     },
     universities,
   };
@@ -37,5 +38,5 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   mkdirSync(dirname(out), { recursive: true });
   const data = exportData();
   writeFileSync(out, JSON.stringify(data));
-  console.log(`${out} 생성 (대학 ${data.universities.length}곳 · v${data.meta.version})`);
+  console.log(`${out} 생성 (대학 ${data.meta.universities}곳 · 항목 ${data.meta.entries} · v${data.meta.version})`);
 }
