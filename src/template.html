@@ -183,6 +183,19 @@ tbody th{font-weight:600;text-align:left}
 .wtb .wx{display:flex;flex-wrap:wrap;gap:2px 8px;font-size:11px;color:var(--muted)}
 .wtb .wx b{font-weight:600;color:var(--ink2)}
 .wts.cp{gap:3px;margin-top:5px}
+/* 정시 계열별 막대: 왼쪽 이름 칸(최대 2줄, 전체 이름은 title) + 얇은 막대 */
+.wgr{display:grid;grid-template-columns:minmax(0,84px) minmax(0,1fr);gap:3px 7px;align-items:center;min-width:0}
+.wgr[hidden]{display:none}
+.wgl{font-size:11px;line-height:1.25;color:var(--ink2);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.wg2 .wbar{height:13px}
+.wg2 .wbar i{font-size:9.5px}
+.wmb{font:inherit;font-size:11.5px;align-self:flex-start;background:none;border:0;padding:2px 0;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.wmb:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.wno{font-size:11.5px}.wno small{display:block;font-size:10.5px}
+.wg2 .wft{white-space:normal}
+.wcl{font-weight:400;color:var(--muted);margin-left:5px;font-size:10.5px}
+.wgs button{padding:4px 10px;font-size:12.5px}
+.wgw{display:inline-flex;align-items:center;gap:6px}
 .mt .mx{display:block;font-size:11px;color:var(--muted)}
 .wft{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wft .wmore{border-bottom:1px dotted var(--line2)}
@@ -883,7 +896,8 @@ const VIEWS=['univ','track','quota','change','about','rur'];
 const isTV=()=>S.v==='track'||S.v==='rur',SRC=()=>S.v==='rur'?RALL:ALL;
 let TT={track:'교과',rur:'교과'};
 const MOB=matchMedia('(max-width: 640px)');
-let S={g:[],rg:[],q:'',v:'univ',t:'교과',f:null,cat:null,sort:null,msort:null,trend:null,tv:'table'};try{const _tv=localStorage.getItem('tv28');if(_tv==='card'||_tv==='table')S.tv=_tv}catch(e){}
+const WGL=['전체','인문','자연','예체능'];// 정시 반영 비율 계열 선택
+let S={g:[],rg:[],q:'',v:'univ',t:'교과',f:null,cat:null,sort:null,msort:null,trend:null,tv:'table',wg:'전체'};try{const _tv=localStorage.getItem('tv28');if(_tv==='card'||_tv==='table')S.tv=_tv}catch(e){}
 const MID=matchMedia('(min-width: 641px) and (max-width: 1179px)');
 let FOLD={k:false,d:false};
 const KTV=['univ','quota','track','rur'];
@@ -892,15 +906,15 @@ const cardMode=()=>MOB.matches||(MID.matches&&S.tv==='card');
 function tvSeg(id){return MID.matches?`<div class="seg tvseg" id="${id}" role="group" aria-label="보기 형식"><button type="button" data-tv="table" aria-pressed="${S.tv==='table'}">표</button><button type="button" data-tv="card" aria-pressed="${S.tv==='card'}">카드</button></div>`:''}
 function bindTv(id,f){const el=$(id);if(!el)return;el.querySelectorAll('button').forEach(b=>b.onclick=()=>{S.tv=b.dataset.tv;try{localStorage.setItem('tv28',S.tv)}catch(e){}f()})}
 try{const s=JSON.parse(localStorage.getItem('dash28')||'{}');['g','v','t','rg'].forEach(k=>{if(s[k])S[k]=s[k]});if(S.v==='gyo')S.v='univ';const ar=(v,ok)=>(Array.isArray(v)?v:[v]).filter(x=>ok.includes(x));S.g=ar(S.g,GR);S.rg=ar(S.rg,RGS.map(x=>x[0]).filter(Boolean))}catch(e){}
-// 주소 해시: 보기와 조건을 #보기?t=전형&rg=지역,…&g=구분,…&q=검색어&f=항목:값,…&x=m,r&c=cat:분류 로 남겨 그대로 공유. 대학 상세는 #u/대학명. 해시가 있으면 저장된 조건보다 우선
+// 주소 해시: 보기와 조건을 #보기?t=전형&rg=지역,…&g=구분,…&q=검색어&f=항목:값,…&x=m,r&wg=계열(정시)&c=cat:분류 로 남겨 그대로 공유. 대학 상세는 #u/대학명. 해시가 있으면 저장된 조건보다 우선
 const dc=s=>{try{return decodeURIComponent(s)}catch(e){return s}},hE=s=>String(s).replace(/[%&=#,:+?]/g,c=>encodeURIComponent(c)),hL=s=>s?s.split(',').map(dc):[];
 const HS=(()=>{const h=location.hash.slice(1),i=h.indexOf('?'),v=i<0?h:h.slice(0,i);if(!VIEWS.includes(v))return null;const p={};if(i>=0)h.slice(i+1).split('&').forEach(kv=>{const j=kv.indexOf('=');if(j>0)p[kv.slice(0,j)]=kv.slice(j+1)});return {v,p}})();
 if(HS){const p=HS.p,ok=(a,l)=>a.filter(x=>l.includes(x));S.v=HS.v;S.g=ok(hL(p.g),GR);S.rg=ok(hL(p.rg),RGS.map(x=>x[0]).filter(Boolean));S.q=dc(p.q||'').trim();$('q').value=S.q;
-  if(isTV()){const t=dc(p.t||'');S.t=TR.includes(t)?t:'교과';const f=(p.f||'').split(',').map(x=>x.split(':')).filter(a=>a.length===2&&a[0]&&a[1]).map(([t,k])=>({t:dc(t),k:dc(k)}));S.f=f.length?f:null}}
+  if(isTV()){const t=dc(p.t||'');S.t=TR.includes(t)?t:'교과';const f=(p.f||'').split(',').map(x=>x.split(':')).filter(a=>a.length===2&&a[0]&&a[1]).map(([t,k])=>({t:dc(t),k:dc(k)}));S.f=f.length?f:null;const wg=dc(p.wg||'');S.wg=WGL.includes(wg)?wg:'전체'}}
 if(isTV())TT[S.v]=S.t;
 function save(){try{localStorage.setItem('dash28',JSON.stringify({g:S.g,v:S.v,t:S.t,rg:S.rg}))}catch(e){}}
 function hashStr(){const tv=isTV(),p=[];if(tv)p.push('t='+hE(S.t));if(S.rg.length)p.push('rg='+S.rg.map(hE).join(','));if(S.g.length)p.push('g='+S.g.map(hE).join(','));if(S.q)p.push('q='+hE(S.q));
-  if(tv&&S.f&&S.f.length)p.push('f='+S.f.map(f=>hE(f.t)+':'+hE(f.k)).join(','));if(tv&&(XF.m||XF.r))p.push('x='+['m','r'].filter(k=>XF[k]).join(','));if(S.v==='change'&&CF)p.push('c='+CF.t+':'+hE(CF.k));
+  if(tv&&S.f&&S.f.length)p.push('f='+S.f.map(f=>hE(f.t)+':'+hE(f.k)).join(','));if(tv&&(XF.m||XF.r))p.push('x='+['m','r'].filter(k=>XF[k]).join(','));if(tv&&S.t==='정시'&&S.wg!=='전체')p.push('wg='+hE(S.wg));if(S.v==='change'&&CF)p.push('c='+CF.t+':'+hE(CF.k));
   return S.v==='univ'&&!p.length?'':S.v+(p.length?'?'+p.join('&'):'')}
 const hURL=()=>{const h=hashStr();return h?'#'+h:location.pathname+location.search};
 // 조건이 바뀌면 주소를 고치고(대학 상세가 열려 있으면 그대로 둠), 결과 수가 바뀌면 화면 낭독기에 알림. 검색어 입력 중에는 잠시 기다렸다가 한 번만
@@ -910,7 +924,7 @@ function syncHash(){clearTimeout(hT);hT=setTimeout(()=>{if(!sheet&&!location.has
 // 결과가 없을 때: 조건 초기화(지역·구분·검색어·세부 조건·제외 조건, 보기와 전형은 그대로) · 검색어 지우기
 const nAct=()=>`<span class="nact"><button type="button" class="abtn" data-nreset>조건 초기화</button>${S.q?'<button type="button" class="abtn" data-nq>검색어 지우기</button>':''}</span>`;
 document.addEventListener('click',e=>{const b=e.target.closest('[data-nreset],[data-nq]');if(!b)return;e.stopPropagation();S.q='';$('q').value='';
-  if(b.hasAttribute('data-nreset')){Object.assign(S,{g:[],rg:[],f:null});XF={m:false,r:false};try{localStorage.setItem('xf28',JSON.stringify(XF))}catch(e){}CF=null;save()}renderAll();if(!MOB.matches)$('q').focus()});
+  if(b.hasAttribute('data-nreset')){Object.assign(S,{g:[],rg:[],f:null,wg:'전체'});XF={m:false,r:false};try{localStorage.setItem('xf28',JSON.stringify(XF))}catch(e){}CF=null;save()}renderAll();if(!MOB.matches)$('q').focus()});
 
 /* ── 버전·변경 표시 ── */
 // 표 칸의 비율: 숫자만 굵게, 학과별 예외·설명은 마우스를 올리면 보이게
@@ -1003,12 +1017,26 @@ function wtBar(x,cp){const segs=[];WKS.forEach((k,i)=>{if(x[k])segs.push({k,v:x[
   const bar=segs.map(sg=>{const p=pc(sg.v);if(sg.k)return `<i style="flex:${p};background:var(--s${sg.k});color:var(--s${sg.k}f)" title="${WN[sg.k]} ${rd(sg.v)}%">${p>=9?WL[sg.k]+rd(sg.v):p>=5?WL[sg.k]:''}</i>`;
     const lab=sg.rk.v.length>1?`${sg.j+1}순위 `:'';return `<i class="rk" style="flex:${p}" title="${esc(sg.rk.p)} ${lab}${rd(sg.v)}%">${p>=9?rd(sg.v):''}</i>`}).join('');
   const ex=[...(x.rk||[]).map(g=>`<span>빗금 <b>${esc(g.p)}</b> ${g.v.map(rd).join('·')}</span>`),x.en?`<span>영어 <b>${esc(x.en==='최저'?'최저기준만':x.en)}</b></span>`:'',x.n?`<span>${esc(x.n)}</span>`:''].filter(Boolean).join('');
-  if(cp)return `<span class="wbar" role="img" data-tip="${esc([(x.rk||[]).map(g=>'빗금: '+g.p+' '+g.v.map(rd).join('·')).join(', '),x.en?'영어 '+(x.en==='최저'?'최저기준만':x.en):'',x.n||''].filter(Boolean).join(' / ')||'반영 비율')}">${bar}</span>`;
-  return `<span class="wtb">${x.g?`<span class="wg" title="${esc(x.g)}">${esc(x.g)}</span>`:''}<span class="wbar" role="img" aria-label="${esc((x.g?x.g+': ':'')+segs.map(sg=>(sg.k?WL[sg.k]:sg.rk.p+(sg.rk.v.length>1?' '+(sg.j+1)+'순위':''))+' '+rd(sg.v)+'%').join(', '))}">${bar}</span>${ex?`<span class="wx">${ex}</span>`:''}</span>`}
+  const al=esc((x.g?x.g+': ':'')+segs.map(sg=>(sg.k?WL[sg.k]:sg.rk.p+(sg.rk.v.length>1?' '+(sg.j+1)+'순위':''))+' '+rd(sg.v)+'%').join(', '));
+  if(cp)return `<span class="wbar" role="img" aria-label="${al}" data-tip="${esc([(x.rk||[]).map(g=>'빗금: '+g.p+' '+g.v.map(rd).join('·')).join(', '),x.en?'영어 '+(x.en==='최저'?'최저기준만':x.en):'',x.n||''].filter(Boolean).join(' / ')||'반영 비율')}">${bar}</span>`;
+  return `<span class="wtb">${x.g?`<span class="wg" title="${esc(x.g)}">${esc(x.g)}${x.cl&&x.cl!=='공통'&&x.cl!==x.g?`<small class="wcl">${esc(x.cl)}</small>`:''}</span>`:''}<span class="wbar" role="img" aria-label="${esc((x.g?x.g+': ':'')+segs.map(sg=>(sg.k?WL[sg.k]:sg.rk.p+(sg.rk.v.length>1?' '+(sg.j+1)+'순위':''))+' '+rd(sg.v)+'%').join(', '))}">${bar}</span>${ex?`<span class="wx">${ex}</span>`:''}</span>`}
 // 정시 비교 표: 괄호 속 학과별 예외(10자 이상)는 생략하고 대학 상세에서 전체를 보여 줌
 function mShort(r){const m=r.method||'',t=m.replace(/\s+\([^)]{10,}\)/g,'').trim();return t===m?`<span class="mt">${esc(m)}</span>`:`<span class="mt" title="${esc(m)}">${esc(t)}<small class="mx">일부 학과 별도</small></span>`}
-function wtCell(r,cp){const w=r.wt;if(!w||!w.length)return '';if(cp){const ft=[w[0].g?esc(w[0].g):'',w.length>1?`<span class="wmore" tabindex="0" data-tip="${esc('다른 계열: '+w.slice(1).map(x=>x.g).join(', ')+' (대학 상세에서 모두 보기)')}">+${w.length-1}계열</span>`:'',w[0].en?'영어 '+esc(w[0].en==='최저'?'최저만':w[0].en):'',w[0].rk?'빗금 우수순·택일':''].filter(Boolean);return `<span class="wts cp">${wtBar(w[0],1)}${ft.length?`<span class="wft">${ft.join(' · ')}</span>`:''}</span>`}return `<span class="wts">${wtBar(w[0])}${w.length>1?`<span class="wmore" tabindex="0" data-tip="${esc('다른 계열: '+w.slice(1).map(x=>x.g).join(', ')+' (대학 상세에서 모두 보기)')}">외 ${w.length-1}개 계열</span>`:''}</span>`}
-function wtAll(r){const w=r.wt;return w&&w.length?`<div class="wts">${w.map(x=>wtBar(x)).join('')}</div>`:''}
+// 정시 반영 비율 계열: 계열 선택(S.wg)에 맞는 막대만, 비율이 같은 계열은 한 줄로. 유리한 방식 택1(wt_alt)은 항상 모두
+function wtSel(r){const w=r.wt||[];return w.length<2||r.wt_alt||S.wg==='전체'?w:w.filter(x=>!x.cl||x.cl===S.wg||x.cl==='공통')}
+function wtKey(x){const t=[...WKS.map(k=>x[k]||0),...(x.rk||[]).flatMap(g=>g.v)].reduce((a,b)=>a+b,0)||1,p=v=>Math.round(v/t*1000);return JSON.stringify([WKS.map(k=>p(x[k]||0)),(x.rk||[]).map(g=>[g.p,g.v.map(p)]),x.en||'',x.n||''])}
+function wtMerge(ws){const m=new Map();ws.forEach(x=>{const k=wtKey(x),o=m.get(k);if(o)o.gs.push(x.g);else m.set(k,{x,gs:[x.g]})});return [...m.values()].map(({x,gs})=>({...x,g:gs.filter(Boolean).join(' · ')}))}
+let WMID=0;
+function wtCell(r,cp){const w=r.wt;if(!w||!w.length)return '';const sel=wtSel(r);
+  if(!sel.length)return `<span class="wts cp"><span class="na wno">해당 계열 없음<small>(${esc(w.map(x=>x.g).join(', '))})</small></span></span>`;
+  const L=wtMerge(sel),one=w.length===1,lab=x=>x.g||(one?'전 모집단위 공통':'');
+  const row=x=>{const g=lab(x);return `<span class="wgl" title="${esc(g)}">${esc(g)}</span>${wtBar(x,1)}`};
+  const ft=[r.wt_alt?'<b>두 방식 중 유리한 점수</b>':'',...[...new Set(L.map(x=>x.en).filter(Boolean))].map(e=>'영어 '+esc(e==='최저'?'최저만':e)),L.some(x=>x.rk)?'빗금 우수순·택일':''].filter(Boolean);
+  const N=4,more=L.length>N&&cp,id='wm'+(++WMID);const vis=more?L.slice(0,N):cp?L:L.slice(0,N);
+  const rest=!cp&&L.length>N?`<span class="wmore">계열 ${L.length-N}개 더 · 누르면 상세</span>`:'';
+  return `<span class="wts cp wg2">${ft.length?`<span class="wft">${ft.join(' · ')}</span>`:''}<span class="wgr">${vis.map(row).join('')}</span>${more?`<span class="wgr" id="${id}" hidden>${L.slice(N).map(row).join('')}</span><button type="button" class="wmb" aria-expanded="false" aria-controls="${id}" data-n="${L.length-N}">계열 ${L.length-N}개 더 보기</button>`:''}${rest}</span>`}
+document.addEventListener('click',e=>{const b=e.target.closest('.wmb');if(!b)return;e.stopPropagation();const t=document.getElementById(b.getAttribute('aria-controls'));if(!t)return;t.hidden=!t.hidden;b.setAttribute('aria-expanded',String(!t.hidden));b.textContent=t.hidden?`계열 ${b.dataset.n}개 더 보기`:'접기'});
+function wtAll(r){const w=r.wt;return w&&w.length?`<div class="wts">${r.wt_alt?'<span class="wft"><b>두 방식 중 유리한 점수</b> · 모든 지원자에게 같은 방식 적용</span>':''}${w.map(x=>wtBar(x)).join('')}</div>`:''}
 function sj(m){m=(m||'?????').padEnd(5,'?');const L=['국','수','영','사','과'],K=['k','m','e','s','c'],D={F:'반영',S:'선택 반영',D:'감점·가산',N:'미반영','?':'미공개'};return `<span class="sj">${L.map((x,i)=>`<b class="${m[i]}" style="--c:var(--s${K[i]});--f:var(--s${K[i]}f)" title="${x}: ${D[m[i]]||m[i]}">${x}</b>`).join('')}</span>`}
 function stg(r){const k=r.stage;if(k==null)return '<span class="na">—</span>';return `<span class="stg" title="${esc(STGL[k]||'')}"><i style="--k:${k||0}">${k||'–'}</i><span>${STG[k]||''}${r.stage_note&&k===5?`<small>${esc(r.stage_note)}</small>`:''}</span></span>`}
 function qn(r){return dv(r,'quota',Number.isInteger(r.quota)?fmt(r.quota):r.rur&&r.carry==='이월'?'<span class="na">수시 이월분</span>':'<span class="na">미기재</span>')}
@@ -1188,6 +1216,8 @@ function renderTrack(){
   $('qf').innerHTML='<span class="qfl">빠른 조건</span>'+((RV?RQF:QF[S.t])||[]).filter(([t])=>DSL.some(d=>d.t===t)).map(([t,k,l])=>`<button type="button" class="qfc" aria-pressed="${fOn(t,k)}" data-t="${esc(t)}" data-k="${esc(k)}">${fOn(t,k)?'✓ ':''}${l}</button>`).join('');
   const xn=k=>SRC().filter(r=>r.track===S.t&&inScope(U.find(u=>u.u===r.u))&&(k==='m'?isMed(r):isReg(r))).length;
   $('qf').insertAdjacentHTML('beforeend',`<span class="qfl qxl">제외</span>${[['m','의약학 전용','의예·치의예·한의예·약학·수의예·간호만 모집하는 전형'],['r','지역인재','지역 고교 이수 요건이 있는 지역인재·지역의사 전형(지역균형·학교장추천은 해당 없음)']].map(([k,l,t])=>`<button type="button" class="qfc qx" aria-pressed="${XF[k]}" data-x="${k}" data-tip="${esc(t)}">${XF[k]?'✕ ':''}${l} 제외<small>${xn(k)}</small></button>`).join('')}`);
+  if(S.t==='정시')$('qf').insertAdjacentHTML('beforeend',`<span class="wgw"><span class="qfl qxl" id="wgl">계열</span><span class="seg wgs" role="group" aria-labelledby="wgl" data-tip="반영 비율 막대를 고른 계열(공통 포함)만 보여 줌 · 전체는 모든 계열">${WGL.map(g=>`<button type="button" data-wg="${g}" aria-pressed="${S.wg===g}">${g}</button>`).join('')}</span></span>`);
+  $('qf').querySelectorAll('[data-wg]').forEach(b=>b.onclick=()=>{S.wg=b.dataset.wg;renderTrack();const n=$('qf').querySelector(`[data-wg="${S.wg}"]`);if(n)n.focus()});
   $('qf').querySelectorAll('.qfc').forEach(b=>b.onclick=b.dataset.x?()=>{XF[b.dataset.x]=!XF[b.dataset.x];try{localStorage.setItem('xf28',JSON.stringify(XF))}catch(e){}renderTrack()}:()=>fTog(b.dataset.t,b.dataset.k));
   let rows=base.filter(r=>pass(r));
   $('fchip').innerHTML=FL0.map((f,i)=>`<span class="fchip">${esc(f.t.replace(/\(.*\)/,''))}: ${esc(f.k)}<button type="button" data-fx="${i}" aria-label="${esc(f.t)} ${esc(f.k)} 조건 해제">×</button></span>`).join('')+(FL0.length>1?'<button type="button" class="fclr" id="fxa">모두 해제</button>':'');
@@ -1204,7 +1234,7 @@ function renderTrack(){
   let GZ=0;const FW=C.reduce((a,c)=>a+(c.w||0),0),AW=C.filter(c=>!c.w).length;$('mt').style.minWidth=(236+70+FW+AW*200)+'px';$('mt').innerHTML=`<colgroup><col style="width:236px"><col style="width:70px">${C.map(c=>`<col${c.w?` style="width:${c.w}px"`:''}>`).join('')}</colgroup><thead><tr><th scope="col">대학 · 전형</th>${th('인원',-1)}${C.map((c,i)=>th(c.h,i)).join('')}</tr></thead><tbody>${rows.map((r,i)=>{const same=!S.msort&&i>0&&rows[i-1].u===r.u;if(!same)GZ++;const cnt=S.msort?0:rows.filter(x=>x.u===r.u).length;
     return `<tr data-i="${SRC().indexOf(r)}" tabindex="0" aria-expanded="false" class="${S.t!=='교과'&&r.elig==='재학생'?'rj ':''}${r.dept?'dp ':''}${S.msort?'':same?'gc':'gs'}${!S.msort&&GZ%2===0?' gz':''}"><th scope="row">${same?'':`<span class="un">${hl(r.u)}</span>${cnt>1?`<span class="ucn">${cnt}개 전형</span>`:''}${S.msort?' ':'<br>'}`}<span class="jn">${hl(r.name)}</span>${dpb(r)}${cpb(r)}${rcb(r)} ${elig(r)} ${r.change?'<span class="eb c" data-tip="'+esc('2028 변경: '+r.change)+'">변경</span>':''} ${newb(r)} ${cmpBtn(r)}</th><td class="r num">${qn(r)}</td>${C.map(c=>`<td>${c.c(r)}</td>`).join('')}</tr>`}).join('')||`<tr><td colspan="${C.length+2}" class="none">조건에 맞는 전형이 없습니다.${nAct()}</td></tr>`}</tbody>`;
   $('mt').querySelectorAll('thead button').forEach(b=>b.onclick=()=>{const i=+b.dataset.s;const d0=i<0?-1:(C[i].d||-1);S.msort=!S.msort||S.msort.i!==i?{i,dir:d0}:S.msort.dir===d0?{i,dir:-d0}:null;renderTrack()});
-  $('mt').querySelectorAll('tbody tr[data-i]').forEach(tr=>{const t=()=>toggleDet(tr);tr.onclick=e=>{if(e.target.closest('.cmpb,a'))return;t()};tr.onkeydown=e=>{if(e.key==='Enter')t()}});
+  $('mt').querySelectorAll('tbody tr[data-i]').forEach(tr=>{const t=()=>toggleDet(tr);tr.onclick=e=>{if(e.target.closest('.cmpb,a,.wmb'))return;t()};tr.onkeydown=e=>{if(e.key==='Enter'&&!e.target.closest('.wmb'))t()}});
   bindCmp($('mt'));
   $('mtv').innerHTML=tvSeg('mtvs');bindTv('mtvs',renderTrack);
   const mob=cardMode();$('mtbox').hidden=mob;$('msortw').hidden=!mob;$('mlist').hidden=!mob;if(mob)renderMList(rows,C);
@@ -1230,7 +1260,7 @@ const INFO={
  stage:'학생부 교과 성적을 점수로 바꾸는 방식을 6단계로 나눔. ① 석차등급만 → ⑥ 성취도(A~E)만, 숫자가 클수록 성취도 비중이 큼. 정성·미공개는 단계 없음',
  share:'막대 = 핵심 요소(교과·서류·논술·수능)가 최종 점수에서 차지하는 비율. 교과 단계형은 2단계 반영 비율 그대로 보여 줌(1단계 성적은 교과로 봄, 회색은 면접·서류 등). 종합 단계형은 1단계 점수가 2단계에 들어가는 비중으로 환산(예: 1단계 서류 100 → 2단계 1단계 70 + 면접 30 이면 서류 70%)',
  min:"'평균 N' = 수능최저 합산 기준 ÷ 영역 수(예: 3개 합 6 → 평균 2). 숫자가 작을수록 기준이 높음. 일반 모집단위 첫 기준, 한국사·영어 별도 조건 제외",
- area:'왼쪽 숫자 = 반영 영역 수(≤3은 3개 이하, 계열은 계열별 다름). 국·수·영·사·과 칸: 진한 칸 반영, 옅은 칸 선택 반영, 점선 감점·가산, 빈 칸 미반영. 막대 = 반영 비율(첫 계열, 나머지는 대학 상세). 색: 국·수·영·사·과, 탐은 통합사회·통합과학 묶음. 빗금은 우수순·택일(어느 영역에 들어갈지 학생마다 다름). 점수 배점은 %로 환산',
+ area:'왼쪽 숫자 = 반영 영역 수(≤3은 3개 이하, 계열은 계열별 다름). 국·수·영·사·과 칸: 진한 칸 반영, 옅은 칸 선택 반영, 점선 감점·가산, 빈 칸 미반영. 막대 = 계열별 반영 비율(왼쪽은 계열 이름, 비율이 같은 계열은 한 줄로 합침). 표 위 계열 버튼에서 인문·자연·예체능을 고르면 그 계열과 공통 막대만 보임. 색: 국·수·영·사·과, 탐은 통합사회·통합과학 묶음. 빗금은 우수순·택일(어느 영역에 들어갈지 학생마다 다름). 점수 배점은 %로 환산',
  essay:'주황 = 논술 점수가 최종 점수에서 차지하는 비율, 이어진 회색 = 교과·출결 등 그 외 요소의 비율'};
 const ifo=k=>`<span class="info" tabindex="0" role="note" aria-label="설명: ${esc(INFO[k])}" data-tip="${esc(INFO[k])}">ⓘ</span>`;
 /* ── 농어촌 보기: 전형별 비교와 같은 틀에 농어촌 전용 분류·열을 씀 ── */
@@ -1495,7 +1525,7 @@ function setPrintBoxes(){const d=new Date(),p=n=>String(n).padStart(2,'0');const
 addEventListener('beforeprint',setPrintBoxes);matchMedia('print').addEventListener?.('change',e=>{if(e.matches)setPrintBoxes()});
 
 /* ── 제목: 첫 화면으로 ── */
-$('home').onclick=e=>{e.preventDefault();realClose();DEEP=false;Object.assign(S,{g:[],rg:[],q:'',v:'univ',t:'교과',f:null,cat:null,sort:null,msort:null,trend:null});CF=null;FOLD={k:false,d:false};CMP=[];$('q').value='';save();history.replaceState(null,'',location.pathname+location.search);renderAll();scrollTo(0,0)};
+$('home').onclick=e=>{e.preventDefault();realClose();DEEP=false;Object.assign(S,{g:[],rg:[],q:'',v:'univ',t:'교과',f:null,cat:null,sort:null,msort:null,trend:null,wg:'전체'});CF=null;FOLD={k:false,d:false};CMP=[];$('q').value='';save();history.replaceState(null,'',location.pathname+location.search);renderAll();scrollTo(0,0)};
 
 /* ── 화면 테마 ── */
 (function(){const de=document.documentElement,g=k=>{try{return localStorage.getItem(k)}catch(e){return null}},p=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};

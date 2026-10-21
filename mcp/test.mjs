@@ -84,7 +84,12 @@ const all2 = (await tool('convert_grade', { grade: 1, limit: 100 })).out;
 assert.ok(all2.결과수 > 50 && all2.목록.every(r => r['1등급대비'] === '100%'), '1등급은 모두 만점');
 const cw = await tool('search_csat_weights', { math_min: 35, track_group: '자연', limit: 100 });
 assert.ok(cw.out.결과수 > 0);
-for (const r of cw.out.목록) { assert.ok(r.비율.수학 >= 35); assert.match(r.계열, /자연/) }
+for (const r of cw.out.목록) { assert.ok(r.비율.수학 >= 35); assert.ok(r.계열구분 ? ['자연', '공통'].includes(r.계열구분) : !r.계열 || /자연/.test(r.계열)) }
+assert.ok(cw.out.목록.some(r => r.계열구분 === '자연') && !cw.out.목록.some(r => r.계열구분 === '인문'));
+const ku = (await tool('search_csat_weights', { universities: ['건국대'], track_group: '자연' })).out.목록;
+assert.ok(ku.length >= 2 && ku.every(r => r.계열구분 === '공통' && /유리한 점수/.test(r.택1)), '건국대 A형·B형은 택1로 자연에도 나옴');
+const mdw = (await tool('search_csat_weights', { track_group: '의예', limit: 100 })).out.목록;
+assert.ok(mdw.length > 0 && mdw.every(r => /의예/.test(r.계열)), '계열 이름 글자 검색 유지');
 const yon = (await tool('search_csat_weights', { universities: ['연세대'], track_group: '인문' })).out.목록[0];
 assert.equal(yon.비율.국어, 33.3); assert.equal(yon.탐구합, 33.3);
 const en = await tool('search_csat_weights', { english: '감점', limit: 100 });

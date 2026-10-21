@@ -34,21 +34,26 @@ const ENUM = {
 const isStr = v => typeof v === 'string' && v.trim() !== '';
 const isInt = v => Number.isInteger(v) && v >= 0;
 
-// 정시 반영비율(wt): 계열별 [{g, k·m·e·s·c·t(국·수·영·사·과·탐 고정 비율), rk:[{p, v:[순위별 비율]}], en(영어 감점·가산·최저), n}]
-const WK = ['k', 'm', 'e', 's', 'c', 't'], WEN = ['감점', '가산', '최저'];
+// 정시 반영비율(wt): 계열별 [{g, cl(계열 구분), k·m·e·s·c·t(국·수·영·사·과·탐 고정 비율), rk:[{p, v:[순위별 비율]}], en(영어 감점·가산·최저), n}]
+const WK = ['k', 'm', 'e', 's', 'c', 't'], WEN = ['감점', '가산', '최저'], WCL = ['인문', '자연', '예체능', '공통'];
 // rows·rur 공통: 면접 없음인데 면접 비율·유형이 있거나, 국·수·영·사·과를 모두 반영하는데 영역 수가 5개가 아닌 행
 function checkCommon(r, w) {
   if (r.interview === '없음' && (r.interview_ratio != null || r.interview_type != null)) err(w, "면접이 '없음'이면 interview_ratio·interview_type 을 두지 않습니다(일부 모집단위만 면접이면 interview='일부')");
   if (/^[FD]{5}$/.test(r.smap || '') && !['5개', '계열별'].includes(r.n_areas)) err(w, `smap=${r.smap} 는 5개 영역 반영이라 n_areas 는 '5개'(또는 '계열별')여야 합니다`);
 }
 
-function checkWt(wt, w) {
+function checkWt(wt, w, alt) {
+  if (alt != null && alt !== true) err(w, 'wt_alt 는 true 로만 적습니다(유리한 방식 택1이 아니면 키를 두지 않음)');
   if (!Array.isArray(wt) || !wt.length) return err(w, 'wt 는 계열이 1개 이상인 배열이어야 합니다');
+  if (alt && wt.length < 2) err(w, 'wt_alt 는 반영 방식(계열)이 2개 이상일 때만 둡니다');
+  if (alt && wt.some(x => x.cl !== '공통')) err(w, "wt_alt 전형은 모든 방식이 지원자 전원에게 적용되므로 cl 을 모두 '공통'으로 둡니다");
   wt.forEach((x, i) => {
     const at = `${w} wt[${i}]`;
-    const bad = Object.keys(x).filter(k => ![...WK, 'g', 'rk', 'en', 'n'].includes(k));
+    const bad = Object.keys(x).filter(k => ![...WK, 'g', 'cl', 'rk', 'en', 'n'].includes(k));
     if (bad.length) err(at, `알 수 없는 키 ${bad.join(',')}`);
     if (wt.length > 1 && !isStr(x.g)) err(at, '계열이 여럿이면 g(계열 이름)가 필요합니다');
+    if (wt.length > 1 && !WCL.includes(x.cl)) err(at, `계열이 여럿이면 cl(계열 구분)이 ${WCL.join('/')} 중 하나여야 합니다${x.cl == null ? '' : ` (지금 '${x.cl}')`}`);
+    if (wt.length === 1 && x.cl != null && !WCL.includes(x.cl)) err(at, `cl='${x.cl}' 는 ${WCL.join('/')} 중 하나여야 합니다`);
     let sum = 0;
     for (const k of WK) if (x[k] != null) { if (!(typeof x[k] === 'number' && x[k] > 0)) err(at, `${k} 는 양수여야 합니다`); else sum += x[k] }
     if (x.rk != null) {
@@ -119,7 +124,8 @@ function checkUniv(u, file) {
     if (r.pg != null && !(Number.isInteger(r.pg) && r.pg > 0)) err(w, `pg=${JSON.stringify(r.pg)} 는 양의 정수 또는 null 이어야 합니다`);
     if (r.stage != null && !(Number.isInteger(r.stage) && r.stage >= 0 && r.stage <= 6)) err(w, `stage=${JSON.stringify(r.stage)} 는 0~6 이어야 합니다`);
     if (r.h != null && !Array.isArray(r.h)) err(w, 'h 는 배열이어야 합니다');
-    if (r.wt != null) checkWt(r.wt, w);
+    if (r.wt != null) checkWt(r.wt, w, r.wt_alt);
+    else if (r.wt_alt != null) err(w, 'wt_alt 는 wt 와 함께 적어야 합니다');
     if ((r.fid != null || r.ft != null) && !(isStr(r.fid) && isStr(r.ft))) err(w, '행별 출처는 fid·ft 를 함께 적어야 합니다');
     if (r.track === '교과') checkSb(r, w);
     checkCommon(r, w);
@@ -162,7 +168,8 @@ function checkRur(u, file) {
     if (r.stage != null && !(Number.isInteger(r.stage) && r.stage >= 0 && r.stage <= 6)) err(w, `stage=${JSON.stringify(r.stage)} 는 0~6 이어야 합니다`);
     if (r.track === '교과') checkSb(r, w);
     if (r.track === '종합' && !['서류형', '면접형'].includes(r.type)) err(w, `type='${r.type}' 는 서류형/면접형 중 하나여야 합니다`);
-    if (r.wt != null) checkWt(r.wt, w);
+    if (r.wt != null) checkWt(r.wt, w, r.wt_alt);
+    else if (r.wt_alt != null) err(w, 'wt_alt 는 wt 와 함께 적어야 합니다');
     checkCommon(r, w);
   });
 }

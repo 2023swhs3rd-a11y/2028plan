@@ -86,6 +86,17 @@ function wtShare(w) {
   return { pct, inq, rk: (w.rk || []).map(g => `${g.p} ${g.v.map(v => r1(v / total * 100)).join('·')}%`) };
 }
 
+// 계열 거르기: 인문·자연·예체능·공통은 계열구분(cl)으로(공통 계열·계열 하나뿐인 전형 포함), 그 밖의 말은 계열 이름 글자로
+const CL = ['인문', '자연', '예체능', '공통'];
+function groupOK(r, w, tg) {
+  tg = String(tg).trim().replace(/계열$/, '');
+  if (CL.includes(tg)) {
+    if (w.cl) return w.cl === tg || (tg !== '공통' && w.cl === '공통');
+    if (r.wt.length === 1) return !w.g || has(w.g, tg) || tg === '공통';
+  }
+  return has(w.g, tg);
+}
+
 // ── 도구 ──
 export const TOOLS = [
   {
@@ -265,7 +276,7 @@ export const TOOLS = [
   {
     name: 'search_csat_weights',
     title: '정시 반영 비율 검색',
-    description: '정시 수능위주 전형을 영역별 반영 비율(%)로 찾습니다. 예: 수학 35% 이상, 탐구 25% 이상, 영어는 감점·가산 방식. 계열(인문·자연 등)이 나뉜 전형은 계열별로 나옵니다. 우수순 택일 비율은 따로 표시되고 최소 비율 조건에는 고정 비율만 씁니다.',
+    description: '정시 수능위주 전형을 영역별 반영 비율(%)로 찾습니다. 예: 수학 35% 이상, 탐구 25% 이상, 영어는 감점·가산 방식. 계열(인문·자연 등)이 나뉜 전형은 계열별로 나오고, 계열구분(인문/자연/예체능/공통)이 붙습니다. 두 방식 중 유리한 점수를 쓰는 전형(건국대 A형·B형 등)은 택1로 표시됩니다. 우수순 택일 비율은 따로 표시되고 최소 비율 조건에는 고정 비율만 씁니다.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -273,7 +284,7 @@ export const TOOLS = [
         math_min: { type: 'number', description: '수학 최소 %' },
         inquiry_min: { type: 'number', description: '탐구(사·과 합) 최소 %' },
         english: { type: 'string', enum: ['비율 반영', '우수순 택일', '감점', '가산', '최저'], description: '영어 반영 방식' },
-        track_group: { type: 'string', description: '계열 이름에 들어갈 말(예: 자연, 인문, 의예)' },
+        track_group: { type: 'string', description: '계열. 인문·자연·예체능·공통이면 계열구분으로 거름(인문·자연·예체능에는 공통 계열과 계열이 하나뿐인 전형도 포함). 그 밖의 말(예: 의예, 경영)은 계열 이름에 들어간 글자로 거름' },
         universities: { type: 'array', items: { type: 'string' } },
         region: { type: 'array', items: { type: 'string', enum: REGIONS } },
         gun: { type: 'array', items: { type: 'string', enum: ['가', '나', '다'] } },
@@ -291,14 +302,14 @@ export const TOOLS = [
           if (arr(a.gun).length && !arr(a.gun).some(x => (r.gun || '').includes(x))) continue;
           if (!r.wt) { nowt.push(`${u.u} ${r.name}`); continue }
           for (const w of r.wt) {
-            if (a.track_group && !has(w.g, a.track_group)) continue;
+            if (a.track_group && !groupOK(r, w, a.track_group)) continue;
             const { pct, inq, rk } = wtShare(w);
             if (a.korean_min && !((pct.국어 || 0) >= a.korean_min)) continue;
             if (a.math_min && !((pct.수학 || 0) >= a.math_min)) continue;
             if (a.inquiry_min && !(inq >= a.inquiry_min)) continue;
             const en = w.en || (w.e ? '비율 반영' : (w.rk || []).some(g => /영/.test(g.p)) ? '우수순 택일' : '미기재');
             if (a.english && en !== a.english) continue;
-            out.push(clean({ 대학: u.u, 지역: u.rg, 캠퍼스: r.campus, 전형명: r.name, 군: r.gun, 계열: w.g, 모집인원: r.quota, 비율: pct, 탐구합: inq, 우수순택일: rk.length ? rk.join(', ') : undefined, 영어: en, 비고: w.n, 반영영역원문: r.areas, 원문: src(u, r) }));
+            out.push(clean({ 대학: u.u, 지역: u.rg, 캠퍼스: r.campus, 전형명: r.name, 군: r.gun, 계열: w.g, 계열구분: w.cl, 택1: r.wt_alt ? '두 방식 중 유리한 점수 반영(모든 지원자 공통)' : undefined, 모집인원: r.quota, 비율: pct, 탐구합: inq, 우수순택일: rk.length ? rk.join(', ') : undefined, 영어: en, 비고: w.n, 반영영역원문: r.areas, 원문: src(u, r) }));
           }
         }
       }
