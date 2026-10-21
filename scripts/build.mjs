@@ -174,7 +174,7 @@ function checkRur(u, file) {
   });
 }
 
-// 대학 파일: data/universities/NN-대학명.json, 파일명 순서 = 화면 기본 순서
+// 대학 파일: data/universities/NNN-대학명.json, 파일명 순서 = 화면 기본 순서
 const UDIR = P('data/universities');
 const files = readdirSync(UDIR).filter(f => f.endsWith('.json')).sort();
 const U = [], names = new Map();
