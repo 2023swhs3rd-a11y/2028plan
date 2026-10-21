@@ -679,6 +679,7 @@ section.view{scroll-margin-top:calc(var(--sth,0px) + 12px)}section.view:focus{ou
 .sheet-h .back{border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:8px;height:36px;padding:0 12px;cursor:pointer;font-weight:700}
 .unav{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
 .unav .chip{height:32px;cursor:pointer}
+.ocamp{margin:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}.ocamp .chip{cursor:pointer;height:28px}
 .unav .chip:disabled{opacity:.4;cursor:default}
 .unav+.x{margin-left:6px}
 @media (max-width:640px){.unav{order:5;width:100%;margin-left:0}.unav .chip{flex:1;justify-content:center}.sheet-h h2{font-size:19px}}
@@ -875,6 +876,8 @@ const GR=['일반','지방국립','교대','과기원'];const GNAME={일반:'일
 // 지역 필터: 수도권은 시·도별, 나머지(지방국립대·교대·과기원 소재지)는 비수도권으로 묶음. S.rg·S.g 는 복수 선택 배열, 빈 배열이 전체
 const RGS=[['','전체'],['서울','서울'],['경기','경기'],['인천','인천'],['지방','비수도권']];const RGNAME=Object.fromEntries(RGS);
 const uCmp=(a,b)=>a.u.localeCompare(b.u,'ko');
+// 캠퍼스 분리 항목(parent)은 본 항목과 같은 대학으로 센다
+const UK=u=>u.parent||u.u,nU=us=>new Set(us.map(UK)).size;
 const rgOf=u=>['서울','경기','인천'].includes(u.rg)?u.rg:'지방';const rgL=()=>S.rg.length?' · '+S.rg.map(r=>RGNAME[r]).join('·'):'';
 const gL=()=>S.g.length?S.g.map(g=>GNAME[g]).join('·'):'전체',G1=()=>S.g.length===1?S.g[0]:null;
 const inG=(u,gs=S.g)=>!gs.length||gs.includes(u.g),inR=(u,rs=S.rg)=>!rs.length||rs.includes(rgOf(u));
@@ -1050,13 +1053,13 @@ function scopeU(){return U.filter(u=>inScope(u)&&qMatch(u))}
 /* ── 필터 바 ── */
 function renderVer(){
   $('vb').textContent='v'+LV.v;$('lt').textContent=`(${LV.t} KST 기준)`;
-  const gc=GR.map(g=>`${GNAME[g]} ${U.filter(u=>u.g===g).length}`).join(' · ');
-  $('foot').innerHTML=`<p><span class="vb">v${LV.v}</span> ${LV.t} KST 기준 · ${U.length}개 대학(${gc}) · 각 대학이 발표한 2028학년도 대학입학전형 시행계획 기준 · v0.5 이후 바뀐 값은 <span class="dv" data-tip="예시: 마우스를 올리면 이전 값이 표시됩니다">점선 밑줄</span>로 표시</p>
+  const gc=GR.map(g=>`${GNAME[g]} ${nU(U.filter(u=>u.g===g))}`).join(' · ');
+  $('foot').innerHTML=`<p><span class="vb">v${LV.v}</span> ${LV.t} KST 기준 · ${nU(U)}개 대학(${gc}) · 각 대학이 발표한 2028학년도 대학입학전형 시행계획 기준 · v0.5 이후 바뀐 값은 <span class="dv" data-tip="예시: 마우스를 올리면 이전 값이 표시됩니다">점선 밑줄</span>로 표시</p>
    <p class="auth">작성 <b>봉일천고등학교 진로진학부장 전중수</b> · <span class="mono">jungsooj@korea.kr</span> · <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.ko" target="_blank" rel="noopener license">CC BY-NC 4.0</a> 저작자표시-비영리</p>`;
 }
 function renderBar(){
   // 두 필터는 '그리고'로 겹친다. 각 버튼의 숫자는 다른 쪽 선택을 적용한 대학 수
-  const cnt=g=>U.filter(u=>(g==='all'||u.g===g)&&inR(u)).length,rcnt=r=>U.filter(u=>inG(u)&&(!r||rgOf(u)===r)).length;
+  const cnt=g=>nU(U.filter(u=>(g==='all'||u.g===g)&&inR(u))),rcnt=r=>nU(U.filter(u=>inG(u)&&(!r||rgOf(u)===r)));
   $('grp').innerHTML=[['all','전체'],['일반','일반대'],['지방국립','지방국립대'],['교대','교대'],['과기원','과기원']].map(([k,l])=>{const n=cnt(k);return `<button type="button" data-g="${k}" aria-pressed="${k==='all'?!S.g.length:S.g.includes(k)}"${n?'':' class="zero"'}>${l}<small>${n}</small></button>`}).join('');
   $('grp').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.g=tog(S.g,b.dataset.g==='all'?'':b.dataset.g,GR);S.f=null;save();renderAll()});
   $('rgn').innerHTML=RGS.map(([k,l])=>{const n=rcnt(k);return `<button type="button" data-r="${k}" aria-pressed="${k?S.rg.includes(k):!S.rg.length}"${n?'':' class="zero"'}>${l}<small>${n}</small></button>`}).join('');
@@ -1073,29 +1076,29 @@ MOB.addEventListener('change',kPlace);
 function renderKpis(){const ab=S.v==='about',sh=kShow();
   const kt=$('ktog');kt.hidden=!KTV.includes(S.v);kt.setAttribute('aria-expanded',FOLD.k);kPlace();kt.innerHTML=`<span class="chev" aria-hidden="true">›</span><span class="kl2">모집 </span>요약<span class="fhint">${FOLD.k?'접기':'펼치기'}</span>`;kt.setAttribute('aria-label',`모집 요약 ${FOLD.k?'접기':'펼치기'}`);kt.onclick=()=>{FOLD.k=!FOLD.k;renderKpis()};
   $('kh').hidden=$('kpis').hidden=!sh;if(!sh)return;
-  const us=ab?U:U.filter(inScope);$('kscope').textContent=ab?`전체 · ${U.length}개 대학 기준(대학 구분·지역 선택과 무관)`:`${gL()}${rgL()}${S.q?' · 검색 “'+S.q+'”':''} · ${scopeU().length}개 대학 기준`;
+  const us=ab?U:U.filter(inScope);$('kscope').textContent=ab?`전체 · ${nU(U)}개 대학 기준(대학 구분·지역 선택과 무관)`:`${gL()}${rgL()}${S.q?' · 검색 “'+S.q+'”':''} · ${nU(scopeU())}개 대학 기준`;
   if(S.v==='rur'){const got=us.filter(u=>Array.isArray(u.rur)),rr=got.flatMap(u=>u.rur),sm=f=>rr.filter(f).reduce((a,r)=>a+q0(r),0),un=f=>got.filter(u=>u.rur.some(f)).length,nq=rr.filter(r=>!Number.isInteger(r.quota)).length;
    // 인원 통계: 지원 대상(전용·포함) × 전형 종류 교차표, 정원 구분·자격 요건은 인원 비율 막대
    const TS=TR.filter(t=>rr.some(r=>r.track===t)),ra=a=>r=>r.aud===a,rt=t=>r=>r.track===t,and=(f,g)=>r=>f(r)&&g(r);
    const cell=f=>{const n=rr.filter(f).length;return n?`${fmt(sm(f))}<small>${n}개</small>`:'<span class="na">—</span>'};
    const mix=(l,ks,f,note,ga)=>{const tot=ks.reduce((a,k)=>a+sm(r=>f(r)===k),0),P=[100,62,36,18];return `<div class="kpi mix ${ga}"><span class="l">${l}</span><span class="mixbar">${ks.map((k,i)=>sm(r=>f(r)===k)?`<i style="flex:${sm(r=>f(r)===k)};background:color-mix(in srgb,var(--accent) ${P[i]}%,var(--surface))" title="${k} ${fmt(sm(r=>f(r)===k))}명"></i>`:'').join('')}</span><span class="leg">${ks.filter(k=>rr.some(r=>f(r)===k)).map(k=>`<span><i style="background:color-mix(in srgb,var(--accent) ${P[ks.indexOf(k)]}%,var(--surface))"></i>${k} ${fmt(sm(r=>f(r)===k))}명 (${tot?Math.round(sm(r=>f(r)===k)/tot*100):0}%) · ${rr.filter(r=>f(r)===k).length}개</span>`).join('')}</span>${note?`<span class="s">${note}</span>`:''}</div>`};
-   $('kpis').className='kpis rk';$('kpis').innerHTML=`<div class="kpi ka"><span class="l">농어촌 전형 (수집 ${got.length} / ${us.length}개 대학)</span><span class="v">${rr.length}<small>개</small></span><span class="s">전용 ${rr.filter(ra('전용')).length} · 포함 ${rr.filter(ra('포함')).length}</span><span class="s">${TS.map(t=>`${t} ${rr.filter(rt(t)).length}`).join(' · ')}</span></div>
+   $('kpis').className='kpis rk';$('kpis').innerHTML=`<div class="kpi ka"><span class="l">농어촌 전형 (수집 ${nU(got)} / ${nU(us)}개 대학)</span><span class="v">${rr.length}<small>개</small></span><span class="s">전용 ${rr.filter(ra('전용')).length} · 포함 ${rr.filter(ra('포함')).length}</span><span class="s">${TS.map(t=>`${t} ${rr.filter(rt(t)).length}`).join(' · ')}</span></div>
    <div class="kpi rx"><span class="l">지원 대상별 모집인원 (명 · 전형 수)</span><table class="rxt"><thead><tr><th></th>${TS.map(t=>`<th scope="col"><i style="background:${TC[t]}"></i>${t}</th>`).join('')}<th scope="col">합계</th></tr></thead><tbody>${[['전용','농어촌 전용'],['포함','농어촌 포함']].map(([a,l])=>`<tr><th scope="row"><span class="chip rch${a==='전용'?'':' p'}">${a}</span></th>${TS.map(t=>`<td>${cell(and(ra(a),rt(t)))}</td>`).join('')}<td class="tt">${cell(ra(a))}</td></tr>`).join('')}<tr class="tt"><th scope="row">합계</th>${TS.map(t=>`<td>${cell(rt(t))}</td>`).join('')}<td>${cell(()=>1)}</td></tr></tbody></table><span class="s">포함 전형 인원은 기회균형 등 여러 대상이 함께 쓰는 인원입니다(농어촌만의 몫 아님).${nq?` 인원 미기재 ${nq}개(대부분 수시 이월분만 뽑는 정시)는 0명으로 셈.`:''}</span></div>
    ${mix('정원 구분별 모집인원',['정원 외','정원 내','미기재'],CAPL,'','kc')}
    ${mix('자격 요건별 모집인원',['6년·12년','12년','6년','미기재'],r=>r.rq||'미기재','6년 = 중·고 6년, 12년 = 초·중·고 12년 거주·재학','kq')}
    <div class="kpi last kj"><span class="l">정시 농어촌 모집</span><span class="v">${un(r=>r.track==='정시'&&r.carry==='별도')}<small>곳 별도 모집</small></span><span class="s">정시 별도 인원 ${fmt(sm(r=>r.track==='정시'&&r.carry==='별도'))}명</span><span class="s">수시 이월분만 ${un(r=>r.track==='정시'&&r.carry==='이월')}곳 · 수시 미충원 이월 ${un(r=>r.track!=='정시'&&r.carry==='이월')}곳</span></div>`;$('kpis').prepend($('kpis').querySelector('.rx'));return}
   $('kpis').className='kpis';const _x=0,rs=us.flatMap(u=>u.rows);
   const by=t=>rs.filter(r=>r.track===t).reduce((a,r)=>a+q0(r),0),tot=TR.reduce((a,t)=>a+by(t),0);
-  const susi=tot-by('정시');const jae=rs.filter(r=>r.elig==='재학생').length;const chu=us.filter(u=>u.ch.length).length;
+  const susi=tot-by('정시');const jae=rs.filter(r=>r.elig==='재학생').length;const chu=nU(us.filter(u=>u.ch.length));
   $('kpis').innerHTML=`
-   <div class="kpi"><span class="l">대학</span><span class="v">${us.length}<small>개</small></span><span class="s">${GR.map(g=>`${GNAME[g].replace('대학','').replace('과학기술원','과기원')} ${us.filter(u=>u.g===g).length}`).filter(s=>!/ 0$/.test(s)).join(' · ')}</span></div>
+   <div class="kpi"><span class="l">대학</span><span class="v">${nU(us)}<small>개</small></span><span class="s">${GR.map(g=>`${GNAME[g].replace('대학','').replace('과학기술원','과기원')} ${nU(us.filter(u=>u.g===g))}`).filter(s=>!/ 0$/.test(s)).join(' · ')}</span></div>
    <div class="kpi"><span class="l">분석 전형</span><span class="v">${rs.length}<small>개</small></span><span class="s">${TR.map(t=>`${t} ${rs.filter(r=>r.track===t).length}`).join(' · ')}</span></div>
    <div class="kpi mix"><span class="l">정원 내 모집인원 (분석 전형 합계)</span><span class="v">${fmt(tot)}<small>명</small></span>
      <span class="mixbar">${TR.map(t=>by(t)?`<i style="flex:${by(t)};background:${TC[t]}" title="${TNAME[t]} ${fmt(by(t))}명"></i>`:'').join('')}</span>
      <span class="leg">${TR.map(t=>`<span><i style="background:${TC[t]}"></i>${t} ${fmt(by(t))} (${tot?Math.round(by(t)/tot*100):0}%)</span>`).join('')}</span></div>
    <div class="kpi"><span class="l">수시 : 정시</span><span class="v">${tot?Math.round(susi/tot*100):0}<small>:</small>${tot?100-Math.round(susi/tot*100):0}</span><span class="s">수시 ${fmt(susi)} · 정시 ${fmt(by('정시'))}</span></div>
    <div class="kpi"><span class="l">재학생 한정 전형</span><span class="v">${jae}<small>개</small></span><span class="s">졸업예정자만 지원 가능</span></div>
-   <div class="kpi last"><span class="l">2028 변경 기재 대학</span><span class="v">${chu}<small>/ ${us.length}</small></span><span class="s">변경 항목 ${us.reduce((a,u)=>a+u.ch.length,0)}건</span></div>`;
+   <div class="kpi last"><span class="l">2028 변경 기재 대학</span><span class="v">${chu}<small>/ ${nU(us)}</small></span><span class="s">변경 항목 ${us.reduce((a,u)=>a+u.ch.length,0)}건</span></div>`;
 }
 
 /* ── 대학별 ── */
@@ -1422,11 +1425,11 @@ function jc(r){return `<div class="jc${r.dept?' dp':''}"><div class="jc-h"><b>${
    ...(r.rur?[r.track==='종합'?['유형',r.type,'type']:null,r.recommend&&r.recommend!=='없음'?['추천',r.recommend,'recommend']:null,r.track!=='논술'&&r.attendance&&r.attendance!=='없음'?['출결',r.attendance,'attendance']:null,
      r.track==='교과'&&r.grade_scale?['등급',r.grade_scale,'grade_scale']:null,r.track==='정시'?['지표',r.index,'index']:null,r.track==='정시'?['학생부',r.gyogwa&&r.gyogwa!=='미반영'?r.gyogwa+' '+(r.gyogwa_ratio||''):'미반영',['gyogwa','gyogwa_ratio']]:null]:[])].filter(x=>x&&x[1]).map(([k,v,f])=>`<dt>${k}</dt><dd>${dv(r,f,esc(v))}</dd>`).join('')}</dl>${r.track==='정시'?wtAll(r):''}${gvAll(r)}
   ${r.change?`<div class="chg"><b>2028</b> ${dv(r,'change',esc(r.change))}</div>`:''}${r.note?`<div class="rg">${esc(r.note)}</div>`:''}<div style="display:flex;gap:8px;align-items:center">${cmpBtn(r)}${pgl(r)}</div></div>`}
-function openU(name,mode='push'){const u=U.find(x=>x.u===name);if(!u)return;const s=uStat(u);if(!sheet||!sheet.dataset.u)lastF=document.activeElement;realClose();
+function openU(name,mode='push'){const u=U.find(x=>x.u===name);if(!u)return;const s=uStat(u),sib=U.filter(x=>x!==u&&UK(x)===UK(u));if(!sheet||!sheet.dataset.u)lastF=document.activeElement;realClose();
   const ord=uOrder(),oi=ord.indexOf(name),pv=oi>0?ord[oi-1]:null,nx=oi>=0&&oi<ord.length-1?ord[oi+1]:null;
   sheet=document.createElement('div');sheet.className='sheet-bg full';sheet.dataset.u=name;
   sheet.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t"><div class="sheet-h"><button type="button" class="back" data-close aria-label="목록으로">‹ 목록</button><h2 id="sh-t">${esc(u.u)}</h2><span class="gtag">${GNAME[u.g]}</span><span class="rg">${esc(u.rg)}</span>${qual(u)}<span class="rg num">${s.n}개 전형 · ${fmt(s.tot)}명</span><span class="unav"><button type="button" class="chip" data-go="${esc(pv||'')}" ${pv?'':'disabled'} aria-label="이전 대학">‹ ${esc(pv||'이전')}</button><button type="button" class="chip" data-go="${esc(nx||'')}" ${nx?'':'disabled'} aria-label="다음 대학">${esc(nx||'다음')} ›</button><button type="button" class="chip" data-copy>링크 복사</button></span><button type="button" class="x" aria-label="닫기">×</button></div>
-   <div class="sheet-b"><div><span class="mixbar" style="height:12px">${TR.map(t=>s[t].p?`<i style="flex:${s[t].p};background:${TC[t]}"></i>`:'').join('')}</span><span class="leg">${TR.map(t=>`<span><i style="background:${TC[t]}"></i>${TNAME[t]} ${s[t].n}개 · ${s[t].p?fmt(s[t].p)+'명':s[t].n?'인원 미기재':'없음'}</span>`).join('')}</span></div>
+   <div class="sheet-b">${sib.length?`<p class="src ocamp">다른 캠퍼스 ${sib.map(x=>`<button type="button" class="chip" data-go="${esc(x.u)}">${esc(x.u)} · ${esc(x.rg)}</button>`).join(' ')}</p>`:''}<div><span class="mixbar" style="height:12px">${TR.map(t=>s[t].p?`<i style="flex:${s[t].p};background:${TC[t]}"></i>`:'').join('')}</span><span class="leg">${TR.map(t=>`<span><i style="background:${TC[t]}"></i>${TNAME[t]} ${s[t].n}개 · ${s[t].p?fmt(s[t].p)+'명':s[t].n?'인원 미기재':'없음'}</span>`).join('')}</span></div>
    <div class="pcols">${TR.map(t=>{const rs=u.rows.filter(r=>r.track===t);return `<section class="pcol" style="--tc:${TC[t]}"><h3>${TNAME[t]}<small>${rs.length?rs.length+'개 · '+fmt(s[t].p)+'명':''}</small></h3>${rs.length?rs.map(jc).join(''):'<p class="pempty">해당 전형 없음</p>'}</section>`}).join('')}</div>
    ${Array.isArray(u.rur)?`<div class="box rbox"><h3>농어촌 전형 <small>${u.rur.length?u.rur.length+'개 · 정원 내 합계·전형 수에는 넣지 않음':''}</small></h3>${u.rur.length?`<div class="pcols">${TR.map(t=>{const rs=u.rur.filter(r=>r.track===t);return `<section class="pcol" style="--tc:${TC[t]}"><h3>${TNAME[t]}<small>${rs.length?rs.length+'개':''}</small></h3>${rs.length?rs.map(jc).join(''):'<p class="pempty">해당 전형 없음</p>'}</section>`}).join('')}</div>`:''}${u.rur_note?`<p class="src" style="margin:6px 0 0">${esc(u.rur_note)}</p>`:''}</div>`:''}
    <div class="box"><h3>2027 대비 2028 변경사항</h3>${u.ch.length?`<ol>${u.ch.map(c=>`<li>${esc(c.t)} <span class="ct">${c.c.map(k=>`<span>${k}</span>`).join('')}</span></li>`).join('')}</ol>`:'<p class="none" style="margin:0">시행계획에 변경사항 미기재 또는 판독 불가</p>'}</div>
@@ -1460,9 +1463,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeU()});
 function renderAbout(){
   const low=U.filter(u=>u.sq!=='high');
   $('about').innerHTML=`
-  <div class="box"><h3>출처와 범위</h3><p>Google Drive 'claude workbook' 폴더의 대학별 2028학년도 대학입학전형 시행계획 PDF ${U.length}개(일반대학 ${U.filter(u=>u.g==='일반').length} · 지방국립대학 ${U.filter(u=>u.g==='지방국립').length} · 교육대학 ${U.filter(u=>u.g==='교대').length} · 과학기술원 ${U.filter(u=>u.g==='과기원').length}). 외부 사교육 자료는 쓰지 않았습니다.</p>
+  <div class="box"><h3>출처와 범위</h3><p>Google Drive 'claude workbook' 폴더의 대학별 2028학년도 대학입학전형 시행계획 PDF ${nU(U)}개(일반대학 ${nU(U.filter(u=>u.g==='일반'))} · 지방국립대학 ${nU(U.filter(u=>u.g==='지방국립'))} · 교육대학 ${nU(U.filter(u=>u.g==='교대'))} · 과학기술원 ${nU(U.filter(u=>u.g==='과기원'))}). 외부 사교육 자료는 쓰지 않았습니다.</p>
    <p>대상: 정원 내 학생부교과·학생부종합·논술·정시 수능위주 전형. 지역균형·지역인재·학교장추천 포함. 고른기회, 실기·실적(특기자), 재외국민, 정원 외 전형은 제외하고 대학 상세의 '참고'에 적었습니다.</p>
-   <p>모집인원은 분석 전형의 합계라 대학 입학정원과 다를 수 있습니다. 여러 캠퍼스는 전형명 뒤에 캠퍼스를 붙였습니다.</p></div>
+   <p>모집인원은 분석 전형의 합계라 대학 입학정원과 다를 수 있습니다. 여러 캠퍼스는 전형명 뒤에 캠퍼스를 붙였습니다. 소재 지역이 다른 캠퍼스(${U.filter(u=>u.parent).map(u=>esc(u.u)).join(' · ')})는 따로 항목을 두어 지역 필터를 따르게 했고, 대학 수는 본교와 합쳐 한 곳으로 셉니다.</p></div>
   <div class="box"><h3>교과 평가방식 6단계</h3><div class="tbox" style="border:0"><table><tbody>${[1,2,3,4,5,6,0].map(k=>`<tr><td>${stg({stage:k})}</td><td class="src">${STGL[k]}</td></tr>`).join('')}</tbody></table></div></div>
   <div class="box"><h3>표기</h3><ul>
    <li>${elig({elig:'재학생'})} 졸업예정자만 지원 · ${elig({elig:'졸업연도 제한'})} 졸업생도 가능하나 졸업연도 제한 · ${elig({elig:'졸업생 전용'})} 졸업자만</li>

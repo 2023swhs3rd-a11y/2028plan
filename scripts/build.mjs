@@ -192,6 +192,18 @@ for (const f of files) {
   U.push(u);
 }
 
+// 캠퍼스 분리 항목: parent 는 수록된 다른 대학(본 항목)의 u 이고, 본 항목은 parent 를 갖지 않는다(한 단계만)
+for (const u of U) {
+  if (u.parent == null) continue;
+  const w = names.get(u.u), p = U.find(x => x.u === u.parent);
+  if (!isStr(u.parent) || !p) err(w, `parent='${u.parent}' 는 수록된 대학명이어야 합니다`);
+  else if (p === u || p.parent != null) err(w, `parent='${u.parent}' 는 parent 가 없는 본 항목이어야 합니다`);
+  else {
+    if (!u.u.startsWith(p.u + '(')) err(w, `캠퍼스 항목 이름은 '${p.u}(캠퍼스)' 형식이어야 합니다`);
+    if (p.g !== u.g) err(w, `대학 구분 g 가 본 항목(${p.u})과 같아야 합니다`);
+  }
+}
+
 let V = [];
 try { V = JSON.parse(readFileSync(P('data/versions.json'), 'utf8')) } catch (e) { err('data/versions.json', 'JSON 문법 오류 - ' + e.message) }
 if (!Array.isArray(V) || !V.length) err('data/versions.json', '버전 기록이 1개 이상 있어야 합니다');
@@ -230,7 +242,8 @@ const changelog = ['# 버전 기록', '',
   })].join('\n');
 const rows = U.reduce((a, u) => a + u.rows.length, 0);
 const rur = U.filter(u => Array.isArray(u.rur)), rurN = rur.reduce((a, u) => a + u.rur.length, 0);
-const summary = `대학 ${U.length}곳 · 전형 ${rows}개${rur.length ? ` · 농어촌 ${rur.length}곳 ${rurN}개` : ''} · v${V[V.length - 1].v}`;
+const schools = new Set(U.map(u => u.parent || u.u)).size;
+const summary = `대학 ${schools}곳(항목 ${U.length}) · 전형 ${rows}개${rur.length ? ` · 농어촌 ${rur.length}곳 ${rurN}개` : ''} · v${V[V.length - 1].v}`;
 if (CHECK) {
   const cur = existsSync(P('index.html')) ? readFileSync(P('index.html'), 'utf8') : '';
   if (cur !== html) {

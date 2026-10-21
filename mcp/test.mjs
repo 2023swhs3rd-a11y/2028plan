@@ -74,6 +74,19 @@ assert.ok(rur.out.결과수 > 0);
 for (const r of rur.out.목록) { assert.equal(r.대상, '전용'); assert.equal(r.정원, '정원 외'); assert.match(r.자격, /12년/) }
 const info = await tool('data_info', {});
 assert.equal(info.out.수록대학.length, data.universities.length);
+assert.equal(info.out.universities, new Set(data.universities.map(x => x.parent || x.u)).size);
+
+// 캠퍼스 분리 항목(parent): 대학명으로 찾으면 함께, 지역 필터는 항목 지역을 따름
+const hk = await tool('get_university', { name: '홍익대' });
+assert.equal(hk.out.대학, '홍익대');
+assert.deepEqual(hk.out.다른캠퍼스.map(x => x.대학), ['홍익대(세종)']);
+const hs = await tool('get_university', { name: '홍익대 세종' });
+assert.equal(hs.out.대학, '홍익대(세종)'); assert.equal(hs.out.본교, '홍익대'); assert.equal(hs.out.지역, '세종');
+const hkAll = await tool('search_admissions', { universities: ['홍익대'], limit: 100 });
+assert.deepEqual([...new Set(hkAll.out.목록.map(r => r.대학))], ['홍익대', '홍익대(세종)']);
+const seoul = await tool('search_admissions', { universities: ['홍익대', '단국대', '을지대'], region: ['서울', '경기'], limit: 100 });
+assert.ok(seoul.out.결과수 > 0 && seoul.out.목록.every(r => ['홍익대', '단국대', '을지대'].includes(r.대학)), '서울·경기 필터에 세종·천안·대전 캠퍼스 없음');
+assert.deepEqual([...new Set((await tool('search_admissions', { universities: ['한양대'], limit: 100 })).out.목록.map(r => r.대학))], ['한양대'], 'parent 없는 한양대ERICA는 따로');
 
 // 내 등급 환산·정시 비율
 const cg = await tool('convert_grade', { grade: 2.5, universities: ['서강대'] });
@@ -102,4 +115,4 @@ assert.equal((await call('prompts/get', { name: 'consult_prep', arguments: {} })
 
 // 응답 크기: 기본 검색 결과가 대화에 부담되지 않는지
 assert.ok(JSON.stringify(all.out).length < 120000);
-console.log(`MCP 시험 통과 (도구 ${TOOLS.length}개 · 프롬프트 ${PROMPTS.length}개 · 대학 ${data.universities.length}곳 · 전형 ${rows}개)`);
+console.log(`MCP 시험 통과 (도구 ${TOOLS.length}개 · 프롬프트 ${PROMPTS.length}개 · 대학 ${data.meta.universities}곳(항목 ${data.universities.length}) · 전형 ${rows}개)`);
