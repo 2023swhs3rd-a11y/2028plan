@@ -1,0 +1,40 @@
+# data/versions.json 에 새 버전이 추가된 채로 main 에 들어오면 태그(v버전)와 GitHub 릴리스를 만든다.
+# 릴리스 본문은 CHANGELOG.md 의 해당 버전 절, 첨부는 그 버전의 data.json.
+# 이 파일이 바뀌어도 실행되며(처음 합칠 때 현재 버전 릴리스 생성), 이미 있는 버전은 건너뛰므로 다시 실행해도 안전하다. 수동 실행(workflow_dispatch)으로 빠진 버전을 만들 수 있다.
+name: 릴리스
+
+on:
+  push:
+    branches: [main]
+    paths: [data/versions.json, .github/workflows/release.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: 데이터 검증
+        run: node scripts/build.mjs --check
+      - name: 릴리스 만들기
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER="v$(node -p "const v=require('./data/versions.json'); v[v.length-1].v")"
+          if gh release view "$VER" >/dev/null 2>&1; then
+            echo "$VER 릴리스가 이미 있어 건너뜁니다."
+            exit 0
+          fi
+          node scripts/release-notes.mjs > notes.md
+          node scripts/export-data.mjs data.json
+          gh release create "$VER" data.json --target "$GITHUB_SHA" --title "$VER" --notes-file notes.md --latest

@@ -11,7 +11,7 @@ https://2023swhs3rd-a11y.github.io/2028plan/
 - 대학 상세 바로가기: 주소 뒤에 `#u/대학명`을 붙입니다. 예) [`#u/한국항공대`](https://2023swhs3rd-a11y.github.io/2028plan/#u/한국항공대) · 대학 상세의 '링크 복사' 버튼으로도 만들 수 있습니다.
 - 내려받아 보기: 저장소의 [`index.html`](index.html) 한 파일만 있으면 인터넷 연결 없이도 열립니다(웹폰트만 기본 글꼴로 바뀜).
 - 출처: 각 대학이 공개한 2028학년도 대입전형 시행계획 PDF. 외부 사교육 자료는 참고하지 않았습니다.
-- 버전 기록: [`CHANGELOG.md`](CHANGELOG.md)(화면에서는 당분간 생략)
+- 버전 기록: [`CHANGELOG.md`](CHANGELOG.md)(화면에서는 당분간 생략), 버전별 데이터 내려받기: [Releases](https://github.com/2023swhs3rd-a11y/2028plan/releases)
 - 주의: 요약 과정에서 누락이나 오기가 있을 수 있습니다. 지원 전에는 반드시 대학별 시행계획과 모집요강 원문을 확인하세요.
 
 ## 화면 구성
@@ -73,6 +73,7 @@ https://2023swhs3rd-a11y.github.io/2028plan/
 | `src/icons/` | 파비콘(64px)·홈 화면 아이콘(180px), 빌드 때 `index.html`에 넣음 |
 | `scripts/build.mjs` | 데이터 검증 후 `index.html`·`CHANGELOG.md` 생성 |
 | `scripts/export-data.mjs` | 대학별 JSON을 묶은 `data.json` 생성(배포 때 실행, MCP 서버가 읽음) |
+| `scripts/release-notes.mjs` | 릴리스 본문 생성(`CHANGELOG.md`의 해당 버전 절) |
 | `mcp/` | 선생님용 MCP 서버(Cloudflare Workers). 사용법은 [mcp/README.md](mcp/README.md) |
 
 ```sh
