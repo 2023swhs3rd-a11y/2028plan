@@ -33,7 +33,7 @@ jobs:
           cp index.html og.png sitemap.xml LICENSE .nojekyll _site/
           cp -r fonts _site/
           node scripts/export-data.mjs _site/data.json
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         if: github.event_name != 'pull_request'
         with:
           path: _site
