@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// data/ 의 JSON을 검증한 뒤 src/template.html 에 넣어 단일 파일 index.html 을 만들고, 버전 기록 CHANGELOG.md 를 만든다.
+// data/ 의 JSON을 검증한 뒤 src/template.html 에 넣어 단일 파일 index.html 을 만들고, 버전 기록 CHANGELOG.md 와 sitemap.xml 날짜를 만든다.
 //   node scripts/build.mjs           → index.html·CHANGELOG.md 생성
 //   node scripts/build.mjs --check   → 검증 + index.html 이 최신인지 확인(CI용, 파일은 쓰지 않음)
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
@@ -240,6 +240,8 @@ const changelog = ['# 버전 기록', '',
     });
     return [`## v${v.v} (${v.t} KST)`, '', v.note, '', ...(us.length ? [...us, ''] : [])];
   })].join('\n');
+// sitemap.xml: 마지막 수정일을 최신 버전 날짜로(검색엔진이 다시 읽어 가게)
+const sitemap = readFileSync(P('sitemap.xml'), 'utf8').replace(/<lastmod>[^<]*<\/lastmod>/, `<lastmod>${V[V.length - 1].t.slice(0, 10)}</lastmod>`);
 const rows = U.reduce((a, u) => a + u.rows.length, 0);
 const rur = U.filter(u => Array.isArray(u.rur)), rurN = rur.reduce((a, u) => a + u.rur.length, 0);
 const schools = new Set(U.map(u => u.parent || u.u)).size;
@@ -254,9 +256,14 @@ if (CHECK) {
     console.error('CHANGELOG.md 가 data/ 와 다릅니다. node scripts/build.mjs 를 실행한 뒤 CHANGELOG.md 도 커밋하세요.');
     process.exit(1);
   }
+  if (readFileSync(P('sitemap.xml'), 'utf8') !== sitemap) {
+    console.error('sitemap.xml 날짜가 최신 버전과 다릅니다. node scripts/build.mjs 를 실행한 뒤 sitemap.xml 도 커밋하세요.');
+    process.exit(1);
+  }
   console.log(`검증 통과, index.html 최신 (${summary})`);
 } else {
   writeFileSync(P('index.html'), html);
   writeFileSync(P('CHANGELOG.md'), changelog);
+  writeFileSync(P('sitemap.xml'), sitemap);
   console.log(`index.html 생성 (${summary}, ${(Buffer.byteLength(html) / 1024).toFixed(0)}KB)`);
 }

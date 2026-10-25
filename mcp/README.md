@@ -5,6 +5,7 @@
 - 운영 주소: `https://admissions-2028-mcp.jjbic.workers.dev/mcp` (Cloudflare Workers, `main`에 push하면 자동 배포)
 - 규격: [Model Context Protocol](https://modelcontextprotocol.io) Streamable HTTP 전송, 상태 없는(stateless) JSON 응답(프로토콜 2025-06-18·2025-03-26·2024-11-05)
 - 데이터: GitHub Pages에 함께 배포되는 `data.json`(`scripts/export-data.mjs`가 `data/universities/*.json`을 묶어 만듦). 서버는 10분마다 새로 읽으므로, 저장소에서 데이터를 고쳐 배포하면 따로 서버를 다시 배포할 필요가 없습니다.
+- 남용 방지: 요청 본문 64KB, 한 번에 묶어 보내는 요청 20개까지. 넘으면 오류로 답합니다.
 - 런타임 의존성 없음: `src/mcp.js`(JSON-RPC·도구), `src/worker.js`(Cloudflare Workers 진입점)
 
 ## 도구

@@ -25,9 +25,10 @@
 <meta name="theme-color" content="#bf3036">
 <link rel="icon" type="image/png" sizes="64x64" href="@@ICON:icon-64.png@@">
 <link rel="apple-touch-icon" sizes="180x180" href="@@ICON:icon-180.png@@">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<!-- 보안: 외부 스크립트·플러그인·폼 전송을 막는다(GitHub Pages는 응답 헤더를 못 바꿔 meta로 둠). 글꼴은 저장소의 fonts/ 에서 -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="stylesheet" href="fonts/fonts.css">
 <style>
 /* 레이아웃: 상단 고정 필터(대학 구분·지역·검색) → 요약 수치 → 4개 보기(대학별 · 전형별 · 2028 변경 · 자료 기준). OMR 답안지 적색을 유일한 강조색으로 사용 */
 :root{
@@ -124,7 +125,7 @@ section.view[hidden]{display:none}
 table{border-collapse:collapse;width:100%}
 th,td{padding:9px 10px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
 thead th{position:sticky;top:0;background:var(--sunk);font-size:12px;color:var(--ink2);font-weight:600;white-space:nowrap;z-index:1}
-thead th button{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center}
+thead th button{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center;padding:4px 0;margin:-4px 0} /* 누르는 영역은 24px, 표 높이는 그대로 */
 thead th button:focus-visible{outline:2px solid var(--accent)}
 thead th .ar{opacity:.35;font-size:10px}
 thead th[aria-sort="ascending"] .ar,thead th[aria-sort="descending"] .ar{opacity:1;color:var(--accent)}
@@ -360,6 +361,24 @@ body.lock{overflow:hidden}
 .thw{position:relative}
 .thb{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border:1px solid var(--line2);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer;padding:0}
 .thb:hover,.thb[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+/* 오류 제보: 머리글 버튼과 대화상자 */
+.rpb{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 11px;border:1px solid var(--line2);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none}
+.rpb:hover{border-color:var(--accent);color:var(--accent)}
+#rpd{width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px);border:1px solid var(--line2);border-radius:12px;background:var(--bg);color:var(--ink);padding:18px 18px 16px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+#rpd::backdrop{background:rgba(0,0,0,.4)}
+#rpd h2{font-family:var(--f-display);font-size:18px;margin:0 0 6px}
+#rpd p{margin:0 0 12px;color:var(--ink2);font-size:13.5px;line-height:1.55}
+#rpd label{display:block;font-size:13px;font-weight:700;margin:10px 0 4px}
+#rpd select,#rpd input,#rpd textarea{width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line2);border-radius:8px;padding:8px 10px}
+#rpd textarea{min-height:110px;resize:vertical}
+#rpd .rpi{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+#rpd .rpa{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+#rpd .rpa button{min-height:38px;padding:0 14px;border-radius:8px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+#rpd .rpa .pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+#rpd .rpa .cl{margin-left:auto}
+#rpd .rps{min-height:1.4em;font-size:13px;color:var(--accent);margin:10px 0 0}
+.sheet .rpu{margin-left:6px}
+@media print{.rpb,.sheet .rpu{display:none}}
 #thp{position:absolute;right:0;top:calc(100% + 6px);z-index:40;background:var(--surface);border:1px solid var(--line2);border-radius:10px;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);flex-direction:column;align-items:flex-end;gap:10px}
 #thp:not([hidden]){display:flex}
 .foot{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--ink2)}
@@ -583,6 +602,7 @@ thead th .info{vertical-align:middle}
   .theme .seg button{padding:0 8px;font-size:12.5px}
   .fold.ktog{padding:0 8px;font-size:12.5px;height:32px;min-height:32px}
   .thb{width:32px;height:32px}
+  .rpb{height:32px;padding:0 8px}.rpb .rpl{display:none}
   .fold.ktog .fhint,.fold.ktog .kl2{display:none}
   .sw{gap:5px}.sw button{width:18px;height:18px}
 }
@@ -779,6 +799,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
 
 </head>
 <body>
+<noscript><p style="margin:16px;padding:12px 14px;border:1px solid #c9cfca;border-radius:8px;background:#fff;color:#1b2127;font:15px/1.6 sans-serif">이 페이지는 자바스크립트가 켜져 있어야 보입니다. 브라우저 설정에서 자바스크립트를 켜 주세요.</p></noscript>
 <a class="skip" id="skip" href="#s-univ">본문 바로가기</a>
 <div class="wrap">
 <header>
@@ -786,6 +807,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
     <h1><a href="./" class="home" id="home" title="첫 화면으로">2028 대입전형 시행계획 요약</a></h1><span class="vb" id="vb"></span><span class="dday" id="dday" hidden></span>
     <div class="hact">
       <button type="button" class="fold ktog" id="ktog" aria-controls="kpis" aria-expanded="false"></button>
+      <button type="button" class="rpb" id="rpb" aria-haspopup="dialog" aria-label="데이터 오류 제보" data-tip="잘못된 값 알리기"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M4.5 17.5V3m0 .8h9.2l-1.8 3.4 1.8 3.4H4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg><span class="rpl">오류 제보</span></button>
       <div class="thw"><button type="button" class="thb" id="thb" aria-expanded="false" aria-controls="thp" aria-label="화면 테마·강조색" data-tip="화면 테마·강조색"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg></button>
       <div class="theme" id="thp" role="group" aria-label="화면 테마" hidden>
     <div class="seg" id="thm" role="group" aria-label="밝기"><button type="button" data-m="auto" aria-pressed="true">자동</button><button type="button" data-m="light" aria-pressed="false">라이트</button><button type="button" data-m="dark" aria-pressed="false">다크</button></div>
@@ -867,6 +889,16 @@ details[open]>summary .chev{transform:rotate(90deg)}
 <footer class="foot" id="foot"></footer>
 </div>
 
+<dialog id="rpd" aria-labelledby="rpt">
+  <h2 id="rpt">데이터 오류 제보</h2>
+  <p>원문(대학 시행계획)과 다른 값을 알려 주시면 확인해서 고칩니다. 원문 쪽수를 함께 적어 주시면 빠릅니다.</p>
+  <label for="rpu2">대학</label><select id="rpu2"></select>
+  <label for="rpr">전형·항목</label><input id="rpr" maxlength="200" placeholder="예: 학교장추천전형 · 수능최저">
+  <label for="rpm">내용</label><textarea id="rpm" maxlength="2000" placeholder="화면 값과 원문 값, 원문 쪽수(예: p.12)"></textarea>
+  <p class="rpi" id="rpi"></p>
+  <div class="rpa"><button type="button" class="pri" id="rps">메일로 보내기</button><button type="button" id="rpc">내용 복사</button><button type="button" class="cl" id="rpx">닫기</button></div>
+  <p class="rps" id="rpst" role="status" aria-live="polite"></p>
+</dialog>
 <script>
 const D=/*@@DATA@@*/;const U=[...D.U].sort((a,b)=>a.u.localeCompare(b.u,'ko')),VERS=D.V,LV=VERS[VERS.length-1];
 const TR=['교과','종합','논술','정시'];
@@ -905,6 +937,7 @@ const MID=matchMedia('(min-width: 641px) and (max-width: 1179px)');
 let FOLD={k:false,d:false};
 const KTV=['univ','quota','track','rur'];
 const kShow=()=>S.v==='about'||(KTV.includes(S.v)&&FOLD.k);
+let PRT=false; // 인쇄 중: 카드 모드에서도 대학별 표를 그린다
 const cardMode=()=>MOB.matches||(MID.matches&&S.tv==='card');
 function tvSeg(id){return MID.matches?`<div class="seg tvseg" id="${id}" role="group" aria-label="보기 형식"><button type="button" data-tv="table" aria-pressed="${S.tv==='table'}">표</button><button type="button" data-tv="card" aria-pressed="${S.tv==='card'}">카드</button></div>`:''}
 function bindTv(id,f){const el=$(id);if(!el)return;el.querySelectorAll('button').forEach(b=>b.onclick=()=>{S.tv=b.dataset.tv;try{localStorage.setItem('tv28',S.tv)}catch(e){}f()})}
@@ -1054,7 +1087,7 @@ function scopeU(){return U.filter(u=>inScope(u)&&qMatch(u))}
 function renderVer(){
   $('vb').textContent='v'+LV.v;$('lt').textContent=`(${LV.t} KST 기준)`;
   const gc=GR.map(g=>`${GNAME[g]} ${nU(U.filter(u=>u.g===g))}`).join(' · ');
-  $('foot').innerHTML=`<p><span class="vb">v${LV.v}</span> ${LV.t} KST 기준 · ${nU(U)}개 대학(${gc}) · 각 대학이 발표한 2028학년도 대학입학전형 시행계획 기준 · v0.5 이후 바뀐 값은 <span class="dv" data-tip="예시: 마우스를 올리면 이전 값이 표시됩니다">점선 밑줄</span>로 표시</p>
+  $('foot').innerHTML=`<p><span class="vb">v${LV.v}</span> ${LV.t} KST 기준 · ${nU(U)}개 대학(${gc}) · 각 대학이 발표한 2028학년도 대학입학전형 시행계획 기준 · v0.5 이후 바뀐 값은 <span class="dv" data-tip="예시: 마우스를 올리면 이전 값이 표시됩니다">점선 밑줄</span>로 표시 · <a href="https://github.com/2023swhs3rd-a11y/2028plan/releases" target="_blank" rel="noopener">버전별 변경 기록·데이터 내려받기</a></p>
    <p class="auth">작성 <b>봉일천고등학교 진로진학부장 전중수</b> · <span class="mono">jungsooj@korea.kr</span> · <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.ko" target="_blank" rel="noopener license">CC BY-NC 4.0</a> 저작자표시-비영리</p>`;
 }
 function renderBar(){
@@ -1066,7 +1099,7 @@ function renderBar(){
   $('rgn').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.rg=tog(S.rg,b.dataset.r,RGS.map(x=>x[0]).filter(Boolean));S.f=null;save();renderAll()});
   document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===S.v));document.querySelector('.filt').hidden=S.v==='about';$('ttabs').hidden=$('trw').hidden=!isTV();
 }
-$('q').oninput=e=>{S.q=e.target.value.trim();renderMain()};
+let qT;$('q').oninput=e=>{clearTimeout(qT);qT=setTimeout(()=>{S.q=e.target.value.trim();renderMain()},150)}; // 글자마다 다시 그리지 않게 잠깐 기다림
 document.querySelectorAll('.views button').forEach(b=>b.onclick=()=>{if(S.v!==b.dataset.v){CMP=[];if(isTV())TT[S.v]=S.t;S.f=null;S.msort=null}S.v=b.dataset.v;if(isTV())S.t=TT[S.v];save();history.replaceState(null,'',hURL());renderAll();if(MOB.matches){const h=document.querySelector('header'),y=h.offsetTop+h.offsetHeight;if(scrollY>y)scrollTo(0,y)}});
 
 /* ── 요약 수치 ── */
@@ -1111,6 +1144,9 @@ function renderUniv(){
   VORD.univ=list.map(u=>u.u);
   const th=(l,i,cls='')=>{const s=S.sort&&S.sort.i===i?(S.sort.dir>0?'ascending':'descending'):'none';return `<th scope="col" class="${cls}" aria-sort="${s}"><button type="button" data-s="${i}">${l}<span class="ar">${s==='ascending'?'▲':s==='descending'?'▼':'↕'}</span></button></th>`};
   $('ulegend').innerHTML=TR.map(t=>`<span><i class="dot" style="border-color:${TC[t]};background:${TC[t]};width:9px;height:9px;border-width:0"></i> ${TNAME[t]}</span>`).join('')+`<span>${elig({elig:'재학생'})} 졸업예정자만 지원하는 전형 수</span><span>${qual({sq:'medium'})} PDF 일부 판독 불가</span>`;
+  const cm=cardMode();
+  // 카드 모드(모바일)에서는 보이지 않는 표를 그리지 않는다(인쇄할 때만 그림). 화면 요소 수를 줄여 첫 화면을 가볍게
+  if(cm&&!PRT)$('ut').innerHTML='';else{
   $('ut').innerHTML=`<thead><tr>${th('대학',0)}${th('구분·지역',1,'hm')}${TR.map((t,i)=>th(t,i+2,'r')).join('')}${th('합계',6,'r')}${th('수시·정시 구성',7,'hm')}${th('2028 변경',8,'r')}${th('재학생',9,'r')}</tr></thead><tbody>${list.map(u=>{const s=st.get(u.u);
     return `<tr data-u="${esc(u.u)}" tabindex="0"><th scope="row"><span class="un">${hl(u.u)}</span> ${qual(u)}</th><td class="hm"><span class="gtag">${GNAME[u.g]}</span> <span class="rg">${esc(u.rg)}</span></td>
     ${TR.map(t=>{const c=s[t];return `<td class="r">${c.n?`<span class="cellq"><span class="n">${c.p?fmt(c.p):'<span class="na">미기재</span>'}</span><span class="pips" style="color:${TC[t]}" aria-label="${c.n}개 전형">${'<i></i>'.repeat(c.n)}</span></span>`:'<span class="na">—</span>'}</td>`}).join('')}
@@ -1118,20 +1154,23 @@ function renderUniv(){
     <td class="hm"><span class="mini" title="정시 ${Math.round(s.js*100)}%">${TR.map(t=>s[t].p?`<i style="flex:${s[t].p};background:${TC[t]}"></i>`:'').join('')}</span><span class="rg num">정시 ${s.tot?Math.round(s.js*100)+'%':'—'}</span></td>
     <td class="r num">${u.ch.length||'<span class="na">미기재</span>'}</td><td class="r">${s.jae?`<span class="eb j">${s.jae}</span>`:'<span class="na">—</span>'}</td></tr>`}).join('')||`<tr><td colspan="10" class="none">조건에 맞는 대학이 없습니다. 검색어나 지역을 바꿔 보세요.${nAct()}</td></tr>`}</tbody>`;
   $('ut').querySelectorAll('thead button').forEach(b=>b.onclick=()=>{const i=+b.dataset.s;S.sort=!S.sort||S.sort.i!==i?{i,dir:i<2?1:-1}:S.sort.dir===(i<2?1:-1)?{i,dir:-S.sort.dir}:null;renderUniv()});
-  $('ut').querySelectorAll('tbody tr[data-u]').forEach(tr=>{tr.onclick=()=>openU(tr.dataset.u);tr.onkeydown=e=>{if(e.key==='Enter')openU(tr.dataset.u)}});
+  $('ut').querySelectorAll('tbody tr[data-u]').forEach(tr=>{tr.onclick=()=>openU(tr.dataset.u);tr.onkeydown=e=>{if(e.key==='Enter')openU(tr.dataset.u)}});}
   $('utv').innerHTML=tvSeg('utvs');bindTv('utvs',renderUniv);
-  const cm=cardMode();$('utbox').hidden=cm;$('uacc').hidden=!cm;if(!cm)return;
+  $('utbox').hidden=cm;$('uacc').hidden=!cm;if(!cm)return;
   const open=!!S.q;
   $('uacc').innerHTML=`<div class="msort"><label for="usel">정렬</label><select id="usel">${cols.map((c,i)=>`<option value="${i}:${i<2?1:-1}">${['대학 가나다순','구분·지역순','교과 많은 순','종합 많은 순','논술 많은 순','정시 많은 순','합계 많은 순','정시 비중 높은 순','2028 변경 많은 순','재학생 한정 많은 순'][i]}</option>`).join('')}</select></div>`+
    (list.map(u=>{const s=st.get(u.u);const rs=u.rows;
-    return `<details class="ua"${open?' open':''}><summary><span class="ua1"><b class="mu">${hl(u.u)}</b><span class="mn">${GNAME[u.g]}${u.rg?' · '+esc(u.rg):''}</span><span class="mq num">${s.tot?fmt(s.tot):'—'}</span><span class="chev" aria-hidden="true">›</span></span><span class="mini ua-bar">${TR.map(t=>s[t].p?`<i style="flex:${s[t].p};background:${TC[t]}"></i>`:'').join('')}</span><span class="ua2">${TR.map(t=>s[t].n?`<span class="mf"><i class="sw" style="background:${TC[t]}"></i>${TNAME[t].replace('학생부','').replace(' 수능위주','')} ${s[t].n}</span>`:'').join('')}${s.jae?`<span class="mf">재학생 ${s.jae}</span>`:''}<span class="mf">정시 ${s.tot?Math.round(s.js*100)+'%':'—'}</span></span></summary>
-    <div class="ub">${TR.filter(t=>s[t].n).map(t=>`<div class="ubt"><p class="ubh"><i class="sw" style="background:${TC[t]}"></i>${TNAME[t]} <span class="num">${fmt(s[t].p)}명</span></p><ul>${rs.filter(r=>r.track===t).map(r=>`<li><button type="button" data-i="${ALL.indexOf(r)}"><span class="mn">${hl(r.name)}</span>${dpb(r)}${rcb(r)}${elig(r)}<span class="mq num">${Number.isInteger(r.quota)?fmt(r.quota):'—'}</span></button></li>`).join('')}</ul></div>`).join('')}
-    <button type="button" class="chip ugo" data-u="${esc(u.u)}">${esc(u.u)} 상세 ›</button></div></details>`}).join('')||`<p class="none">조건에 맞는 대학이 없습니다.${nAct()}</p>`);
+    return `<details class="ua" data-u="${esc(u.u)}"${open?' open':''}><summary><span class="ua1"><b class="mu">${hl(u.u)}</b><span class="mn">${GNAME[u.g]}${u.rg?' · '+esc(u.rg):''}</span><span class="mq num">${s.tot?fmt(s.tot):'—'}</span><span class="chev" aria-hidden="true">›</span></span><span class="mini ua-bar">${TR.map(t=>s[t].p?`<i style="flex:${s[t].p};background:${TC[t]}"></i>`:'').join('')}</span><span class="ua2">${TR.map(t=>s[t].n?`<span class="mf"><i class="sw" style="background:${TC[t]}"></i>${TNAME[t].replace('학생부','').replace(' 수능위주','')} ${s[t].n}</span>`:'').join('')}${s.jae?`<span class="mf">재학생 ${s.jae}</span>`:''}<span class="mf">정시 ${s.tot?Math.round(s.js*100)+'%':'—'}</span></span></summary>
+    ${open?ub(u,s):''}</details>`}).join('')||`<p class="none">조건에 맞는 대학이 없습니다.${nAct()}</p>`);
   const us2=$('usel');us2.value=S.sort?`${S.sort.i}:${S.sort.dir}`:'0:1';if(![...us2.options].some(o=>o.value===us2.value)){us2.value=S.sort?`${S.sort.i}:${S.sort.i<2?1:-1}`:'0:1'}
   us2.onchange=()=>{const [i,d]=us2.value.split(':').map(Number);S.sort=(i===0&&d===1)?null:{i,dir:d};renderUniv()};
-  $('uacc').querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>openRow(ALL[+b.dataset.i]));
-  $('uacc').querySelectorAll('.ugo').forEach(b=>b.onclick=()=>openU(b.dataset.u));
+  // 펼친 대학만 전형 목록을 그린다(검색 중에는 모두 펼쳐 바로 그림)
+  const bindUb=el=>{el.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>openRow(ALL[+b.dataset.i]));el.querySelectorAll('.ugo').forEach(b=>b.onclick=()=>openU(b.dataset.u))};
+  bindUb($('uacc'));
+  $('uacc').querySelectorAll('details.ua').forEach(d=>d.addEventListener('toggle',()=>{if(!d.open||d.querySelector('.ub'))return;const u=list.find(x=>x.u===d.dataset.u);d.insertAdjacentHTML('beforeend',ub(u,st.get(u.u)));bindUb(d)}));
 }
+function ub(u,s){const rs=u.rows;return `<div class="ub">${TR.filter(t=>s[t].n).map(t=>`<div class="ubt"><p class="ubh"><i class="sw" style="background:${TC[t]}"></i>${TNAME[t]} <span class="num">${fmt(s[t].p)}명</span></p><ul>${rs.filter(r=>r.track===t).map(r=>`<li><button type="button" data-i="${ALL.indexOf(r)}"><span class="mn">${hl(r.name)}</span>${dpb(r)}${rcb(r)}${elig(r)}<span class="mq num">${Number.isInteger(r.quota)?fmt(r.quota):'—'}</span></button></li>`).join('')}</ul></div>`).join('')}
+    <button type="button" class="chip ugo" data-u="${esc(u.u)}">${esc(u.u)} 상세 ›</button></div>`}
 
 /* ── 전형별 비교 ── */
 const SBK=['10과목 이하','11~15과목','16~20과목','21과목 이상','일부(지정)','전 과목','미기재'],SBV=['반영','일부','가산','미반영','미기재'];
@@ -1434,10 +1473,11 @@ function openU(name,mode='push'){const u=U.find(x=>x.u===name);if(!u)return;cons
    ${Array.isArray(u.rur)?`<div class="box rbox"><h3>농어촌 전형 <small>${u.rur.length?u.rur.length+'개 · 정원 내 합계·전형 수에는 넣지 않음':''}</small></h3>${u.rur.length?`<div class="pcols">${TR.map(t=>{const rs=u.rur.filter(r=>r.track===t);return `<section class="pcol" style="--tc:${TC[t]}"><h3>${TNAME[t]}<small>${rs.length?rs.length+'개':''}</small></h3>${rs.length?rs.map(jc).join(''):'<p class="pempty">해당 전형 없음</p>'}</section>`}).join('')}</div>`:''}${u.rur_note?`<p class="src" style="margin:6px 0 0">${esc(u.rur_note)}</p>`:''}</div>`:''}
    <div class="box"><h3>2027 대비 2028 변경사항</h3>${u.ch.length?`<ol>${u.ch.map(c=>`<li>${esc(c.t)} <span class="ct">${c.c.map(k=>`<span>${k}</span>`).join('')}</span></li>`).join('')}</ol>`:'<p class="none" style="margin:0">시행계획에 변경사항 미기재 또는 판독 불가</p>'}</div>
    ${u.notes.length?`<div class="box"><h3>참고 · 분석 제외 전형</h3><ul>${u.notes.map(n=>`<li class="src">${esc(n)}</li>`).join('')}</ul></div>`:''}
-   <p class="src">출처: ${srcs(u)} (Google Drive · claude workbook)</p></div></div>`;
+   <p class="src">출처: ${srcs(u)} (대학 공개 시행계획 PDF 사본)<button type="button" class="chip rpu" data-rp="${esc(u.u)}">이 대학 오류 제보</button></p></div></div>`;
   document.body.appendChild(sheet);document.body.classList.add('lock');bindCmp(sheet);
   sheet.addEventListener('click',e=>{if(e.target===sheet)closeU()});sheet.querySelector('.x').onclick=closeU;sheet.querySelector('[data-close]').onclick=closeU;
   sheet.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{if(b.dataset.go)openU(b.dataset.go,'replace')});
+  sheet.querySelector('[data-rp]').onclick=()=>openReport(name);
   sheet.querySelector('[data-copy]').onclick=e=>{const url=location.href.split('#')[0]+'#u/'+encodeURIComponent(name);try{navigator.clipboard.writeText(url);e.target.textContent='복사됨'}catch(x){prompt('링크',url)}};
   const hs='#u/'+encodeURIComponent(name);if(mode==='push'&&history.state&&history.state.r)history.replaceState({u:name},'',hs);else if(mode==='push'&&location.hash!==hs)history.pushState({u:name},'',hs);else if(mode==='replace')history.replaceState({u:name},'',hs);
   sheet.scrollTop=0;sheet.querySelector('.sheet').focus?.();sheet.querySelector('.x').focus();
@@ -1525,7 +1565,7 @@ function printHead(){if(sheet&&sheet.dataset.u)return `${sheet.dataset.u} 대학
 function setPrintBoxes(){const d=new Date(),p=n=>String(n).padStart(2,'0');const ts=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
   const q=t=>'"'+String(t).replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,' ')+'"';const st=$('pboxes')||document.head.appendChild(Object.assign(document.createElement('style'),{id:'pboxes'}));
   st.textContent=`@media print{@page{@top-left{content:${q('2028 대입전형 시행계획 요약 · '+printHead())};font-size:9pt;color:#333;vertical-align:bottom;padding-bottom:3mm}@top-right{content:${q('인쇄 '+ts)};font-size:9pt;color:#333;vertical-align:bottom;padding-bottom:3mm}@bottom-left{content:${q('v'+LV.v+' · 2023swhs3rd-a11y.github.io/2028plan')};font-size:8pt;color:#777}@bottom-right{content:counter(page) " / " counter(pages) "쪽";font-size:9pt;color:#333}}}`}
-addEventListener('beforeprint',setPrintBoxes);matchMedia('print').addEventListener?.('change',e=>{if(e.matches)setPrintBoxes()});
+addEventListener('beforeprint',setPrintBoxes);addEventListener('beforeprint',()=>{if(S.v==='univ'&&cardMode()&&!PRT){PRT=true;renderUniv()}});addEventListener('afterprint',()=>{if(PRT){PRT=false;if(S.v==='univ')renderUniv()}});matchMedia('print').addEventListener?.('change',e=>{if(e.matches)setPrintBoxes()});
 
 /* ── 제목: 첫 화면으로 ── */
 $('home').onclick=e=>{e.preventDefault();realClose();DEEP=false;Object.assign(S,{g:[],rg:[],q:'',v:'univ',t:'교과',f:null,cat:null,sort:null,msort:null,trend:null,wg:'전체'});CF=null;FOLD={k:false,d:false};CMP=[];$('q').value='';save();history.replaceState(null,'',location.pathname+location.search);renderAll();scrollTo(0,0)};
@@ -1564,6 +1604,24 @@ function fhead(box){const t=box.querySelector('table');let fh=box.previousElemen
   fh.onclick=e=>{const x=e.target.closest('th');if(!x)return;const ri=x.parentNode.rowIndex,ci=x.cellIndex;const o=th.rows[ri]&&th.rows[ri].cells[ci];if(!o)return;(o.querySelector('button')||o).click()}}
 (()=>{const boxes=['utbox','mtbox'].map(id=>$(id)).filter(Boolean);let q=0;const run=()=>{q=0;boxes.forEach(fhead)};const sch=()=>{if(!q)q=requestAnimationFrame(run)};
   boxes.forEach(b=>{new MutationObserver(sch).observe(b,{childList:true,subtree:true});if(window.ResizeObserver)new ResizeObserver(sch).observe(b)});addEventListener('resize',sch);sch()})();
+// 오류 제보: 받는 곳은 바닥글의 작성자 메일. 화면 맥락(대학·보기·버전)을 미리 채운 메일을 연다
+const REPORT_TO=['jungsooj','korea.kr'].join('@');
+function rpText(){const u=$('rpu2').value,r=$('rpr').value.trim(),m=$('rpm').value.trim();
+  return [`대학: ${u||'(전체·기타)'}`,`전형·항목: ${r||'-'}`,'',m,'',`---`,`버전 v${LV.v} · 보던 화면 ${location.href}`].join('\n')}
+function openReport(u){const d=$('rpd');if(!d||!d.showModal)return;
+  const sel=$('rpu2');if(!sel.options.length)sel.innerHTML='<option value="">전체·기타</option>'+[...U].map(x=>x.u).sort((a,b)=>a.localeCompare(b,'ko')).map(x=>`<option>${esc(x)}</option>`).join('');
+  sel.value=u||(sheet&&sheet.dataset.u)||(U.some(x=>x.u===S.q)?S.q:'');
+  $('rpi').textContent=`버전 v${LV.v}와 지금 보던 화면 주소가 함께 적힙니다. 받는 곳: ${REPORT_TO}`;$('rpst').textContent='';
+  d.showModal();(sel.value?$('rpr'):sel).focus()}
+$('rpb').onclick=()=>openReport();
+$('rpx').onclick=()=>$('rpd').close();
+$('rpd').addEventListener('keydown',e=>{if(e.key==='Escape')e.stopPropagation()}); // 뒤의 대학 상세가 같이 닫히지 않게
+$('rpd').addEventListener('click',e=>{if(e.target===$('rpd'))$('rpd').close()});
+$('rps').onclick=()=>{if(!$('rpm').value.trim()){$('rpst').textContent='내용을 적어 주세요.';$('rpm').focus();return}
+  const sub=`[2028 대시보드 오류 제보] ${$('rpu2').value||'전체'} ${$('rpr').value.trim()}`.trim();
+  location.href=`mailto:${REPORT_TO}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(rpText())}`;
+  $('rpst').textContent=`메일 앱이 열리지 않으면 '내용 복사'를 눌러 ${REPORT_TO}로 보내 주세요.`};
+$('rpc').onclick=async()=>{try{await navigator.clipboard.writeText(rpText());$('rpst').textContent=`복사했습니다. ${REPORT_TO}로 보내 주세요.`}catch(e){$('rpst').textContent='복사하지 못했습니다. 내용을 직접 선택해 복사해 주세요.'}};
 </script>
 
 </body>
