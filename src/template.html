@@ -1607,7 +1607,7 @@ function fhead(box){const t=box.querySelector('table');let fh=box.previousElemen
   boxes.forEach(b=>{new MutationObserver(sch).observe(b,{childList:true,subtree:true});if(window.ResizeObserver)new ResizeObserver(sch).observe(b)});addEventListener('resize',sch);sch()})();
 // 오류 제보: 관리자만 보는 스프레드시트에 행으로 쌓는다(tools/report-apps-script.gs 웹 앱).
 // 웹 앱 주소가 비어 있으면 바닥글 작성자 메일로 메일을 연다.
-const REPORT_URL='';
+const REPORT_URL='https://script.google.com/macros/s/AKfycby_P5H9r1XhJmqB_4PZHUlgq-PidHOt-xLfsfi2WJQSKJnmVI2wvACq6wzpPggNUPSg/exec';
 const REPORT_TO=['jungsooj','korea.kr'].join('@');
 function rpData(){return {u:$('rpu2').value,r:$('rpr').value.trim(),m:$('rpm').value.trim(),v:LV.v,url:location.href,hp:$('rphp').value}}
 function rpText(){const d=rpData();
