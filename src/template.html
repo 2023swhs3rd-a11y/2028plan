@@ -25,8 +25,8 @@
 <meta name="theme-color" content="#bf3036">
 <link rel="icon" type="image/png" sizes="64x64" href="@@ICON:icon-64.png@@">
 <link rel="apple-touch-icon" sizes="180x180" href="@@ICON:icon-180.png@@">
-<!-- 보안: 외부 스크립트·플러그인·폼 전송을 막는다(GitHub Pages는 응답 헤더를 못 바꿔 meta로 둠). 글꼴은 저장소의 fonts/ 에서 -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<!-- 보안: 외부 스크립트·플러그인·폼 전송을 막는다(GitHub Pages는 응답 헤더를 못 바꿔 meta로 둠). 글꼴은 저장소의 fonts/ 에서, 외부 접속은 오류 제보(Apps Script)만 -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="stylesheet" href="fonts/fonts.css">
 <style>
@@ -891,12 +891,13 @@ details[open]>summary .chev{transform:rotate(90deg)}
 
 <dialog id="rpd" aria-labelledby="rpt">
   <h2 id="rpt">데이터 오류 제보</h2>
-  <p>원문(대학 시행계획)과 다른 값을 알려 주시면 확인해서 고칩니다. 원문 쪽수를 함께 적어 주시면 빠릅니다.</p>
+  <p>원문(대학 시행계획)과 다른 값을 알려 주시면 확인해서 고칩니다. 원문 쪽수를 함께 적어 주시면 빠릅니다. 이름·연락처 같은 개인정보는 적지 마세요.</p>
   <label for="rpu2">대학</label><select id="rpu2"></select>
   <label for="rpr">전형·항목</label><input id="rpr" maxlength="200" placeholder="예: 학교장추천전형 · 수능최저">
   <label for="rpm">내용</label><textarea id="rpm" maxlength="2000" placeholder="화면 값과 원문 값, 원문 쪽수(예: p.12)"></textarea>
+  <input id="rphp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px">
   <p class="rpi" id="rpi"></p>
-  <div class="rpa"><button type="button" class="pri" id="rps">메일로 보내기</button><button type="button" id="rpc">내용 복사</button><button type="button" class="cl" id="rpx">닫기</button></div>
+  <div class="rpa"><button type="button" class="pri" id="rps">제보 보내기</button><button type="button" id="rpc">내용 복사</button><button type="button" class="cl" id="rpx">닫기</button></div>
   <p class="rps" id="rpst" role="status" aria-live="polite"></p>
 </dialog>
 <script>
@@ -1604,24 +1605,33 @@ function fhead(box){const t=box.querySelector('table');let fh=box.previousElemen
   fh.onclick=e=>{const x=e.target.closest('th');if(!x)return;const ri=x.parentNode.rowIndex,ci=x.cellIndex;const o=th.rows[ri]&&th.rows[ri].cells[ci];if(!o)return;(o.querySelector('button')||o).click()}}
 (()=>{const boxes=['utbox','mtbox'].map(id=>$(id)).filter(Boolean);let q=0;const run=()=>{q=0;boxes.forEach(fhead)};const sch=()=>{if(!q)q=requestAnimationFrame(run)};
   boxes.forEach(b=>{new MutationObserver(sch).observe(b,{childList:true,subtree:true});if(window.ResizeObserver)new ResizeObserver(sch).observe(b)});addEventListener('resize',sch);sch()})();
-// 오류 제보: 받는 곳은 바닥글의 작성자 메일. 화면 맥락(대학·보기·버전)을 미리 채운 메일을 연다
+// 오류 제보: 관리자만 보는 스프레드시트에 행으로 쌓는다(tools/report-apps-script.gs 웹 앱).
+// 웹 앱 주소가 비어 있으면 바닥글 작성자 메일로 메일을 연다.
+const REPORT_URL='https://script.google.com/macros/s/AKfycby_P5H9r1XhJmqB_4PZHUlgq-PidHOt-xLfsfi2WJQSKJnmVI2wvACq6wzpPggNUPSg/exec';
 const REPORT_TO=['jungsooj','korea.kr'].join('@');
-function rpText(){const u=$('rpu2').value,r=$('rpr').value.trim(),m=$('rpm').value.trim();
-  return [`대학: ${u||'(전체·기타)'}`,`전형·항목: ${r||'-'}`,'',m,'',`---`,`버전 v${LV.v} · 보던 화면 ${location.href}`].join('\n')}
+function rpData(){return {u:$('rpu2').value,r:$('rpr').value.trim(),m:$('rpm').value.trim(),v:LV.v,url:location.href,hp:$('rphp').value}}
+function rpText(){const d=rpData();
+  return [`대학: ${d.u||'(전체·기타)'}`,`전형·항목: ${d.r||'-'}`,'',d.m,'',`---`,`버전 v${d.v} · 보던 화면 ${d.url}`].join('\n')}
 function openReport(u){const d=$('rpd');if(!d||!d.showModal)return;
   const sel=$('rpu2');if(!sel.options.length)sel.innerHTML='<option value="">전체·기타</option>'+[...U].map(x=>x.u).sort((a,b)=>a.localeCompare(b,'ko')).map(x=>`<option>${esc(x)}</option>`).join('');
   sel.value=u||(sheet&&sheet.dataset.u)||(U.some(x=>x.u===S.q)?S.q:'');
-  $('rpi').textContent=`버전 v${LV.v}와 지금 보던 화면 주소가 함께 적힙니다. 받는 곳: ${REPORT_TO}`;$('rpst').textContent='';
+  $('rpi').textContent=REPORT_URL?`버전 v${LV.v}와 지금 보던 화면 주소가 함께 저장되며, 제보 내용은 관리자만 봅니다.`:`버전 v${LV.v}와 지금 보던 화면 주소가 함께 적힙니다. 받는 곳: ${REPORT_TO}`;
+  $('rps').textContent=REPORT_URL?'제보 보내기':'메일로 보내기';$('rps').disabled=false;$('rpst').textContent='';
   d.showModal();(sel.value?$('rpr'):sel).focus()}
 $('rpb').onclick=()=>openReport();
 $('rpx').onclick=()=>$('rpd').close();
 $('rpd').addEventListener('keydown',e=>{if(e.key==='Escape')e.stopPropagation()}); // 뒤의 대학 상세가 같이 닫히지 않게
 $('rpd').addEventListener('click',e=>{if(e.target===$('rpd'))$('rpd').close()});
-$('rps').onclick=()=>{if(!$('rpm').value.trim()){$('rpst').textContent='내용을 적어 주세요.';$('rpm').focus();return}
-  const sub=`[2028 대시보드 오류 제보] ${$('rpu2').value||'전체'} ${$('rpr').value.trim()}`.trim();
-  location.href=`mailto:${REPORT_TO}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(rpText())}`;
-  $('rpst').textContent=`메일 앱이 열리지 않으면 '내용 복사'를 눌러 ${REPORT_TO}로 보내 주세요.`};
-$('rpc').onclick=async()=>{try{await navigator.clipboard.writeText(rpText());$('rpst').textContent=`복사했습니다. ${REPORT_TO}로 보내 주세요.`}catch(e){$('rpst').textContent='복사하지 못했습니다. 내용을 직접 선택해 복사해 주세요.'}};
+$('rps').onclick=async()=>{const st=$('rpst');if(!$('rpm').value.trim()){st.textContent='내용을 적어 주세요.';$('rpm').focus();return}
+  if(!REPORT_URL){const sub=`[2028 대시보드 오류 제보] ${$('rpu2').value||'전체'} ${$('rpr').value.trim()}`.trim();
+    location.href=`mailto:${REPORT_TO}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(rpText())}`;
+    st.textContent=`메일 앱이 열리지 않으면 '내용 복사'를 눌러 ${REPORT_TO}로 보내 주세요.`;return}
+  // Apps Script는 다른 출처라 응답을 읽을 수 없다(no-cors). 네트워크 오류가 없으면 접수된 것으로 본다
+  const b=$('rps');b.disabled=true;st.textContent='보내는 중…';
+  try{await fetch(REPORT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(rpData())});
+    st.textContent='접수했습니다. 고맙습니다. 확인 후 고치겠습니다.';$('rpr').value='';$('rpm').value='';b.disabled=false}
+  catch(e){b.disabled=false;st.textContent="보내지 못했습니다. 네트워크를 확인하거나 '내용 복사'로 복사해 두었다가 다시 시도해 주세요."}};
+$('rpc').onclick=async()=>{try{await navigator.clipboard.writeText(rpText());$('rpst').textContent=REPORT_URL?'복사했습니다.':`복사했습니다. ${REPORT_TO}로 보내 주세요.`}catch(e){$('rpst').textContent='복사하지 못했습니다. 내용을 직접 선택해 복사해 주세요.'}};
 </script>
 
 </body>
