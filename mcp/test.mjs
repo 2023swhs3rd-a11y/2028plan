@@ -31,6 +31,11 @@ assert.equal((await handle(new Request('https://x.test/mcp'), getData)).status, 
 assert.equal((await handle(new Request('https://x.test/mcp', { headers: { Accept: 'text/html' } }), getData)).status, 200);
 assert.equal((await handle(new Request('https://x.test/'), getData)).status, 200);
 assert.equal((await handle(new Request('https://x.test/mcp', { method: 'POST', body: '{' }), getData)).status, 400);
+// 남용 방지 상한: 묶음 20개, 본문 64KB
+const batch = n => Array.from({ length: n }, (_, i) => ({ jsonrpc: '2.0', id: i, method: 'ping' }));
+assert.equal((await (await post(batch(20))).json()).length, 20);
+assert.equal((await post(batch(21))).status, 400);
+assert.equal((await post({ jsonrpc: '2.0', id: 1, method: 'ping', params: { pad: 'x'.repeat(70000) } })).status, 413);
 
 // 목록
 const tl = (await call('tools/list')).result.tools;

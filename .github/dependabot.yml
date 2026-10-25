@@ -1,0 +1,7 @@
+# GitHub Actions(checkout·setup-node 등) 버전만 달마다 점검한다. 패키지 의존성은 없다.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

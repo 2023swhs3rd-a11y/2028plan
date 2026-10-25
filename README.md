@@ -74,6 +74,7 @@ https://2023swhs3rd-a11y.github.io/2028plan/
 | `scripts/build.mjs` | 데이터 검증 후 `index.html`·`CHANGELOG.md` 생성 |
 | `scripts/export-data.mjs` | 대학별 JSON을 묶은 `data.json` 생성(배포 때 실행, MCP 서버가 읽음) |
 | `scripts/release-notes.mjs` | 릴리스 본문 생성(`CHANGELOG.md`의 해당 버전 절) |
+| `fonts/` ← `scripts/fetch-fonts.mjs` | 화면 글꼴(Gothic A1·IBM Plex, SIL OFL). Google Fonts의 글자 조각을 저장소에 옮겨 같은 주소에서 내보냄(방문자 정보가 Google로 가지 않음) |
 | `mcp/` | 선생님용 MCP 서버(Cloudflare Workers). 사용법은 [mcp/README.md](mcp/README.md) |
 
 ```sh

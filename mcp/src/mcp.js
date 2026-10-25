@@ -11,7 +11,7 @@ const INSTRUCTIONS = `2028학년도 대입전형 시행계획 요약 데이터(�
 - 입시 결과(합격선·경쟁률)는 없습니다. 합격 가능성을 추측하지 마세요.
 - 값이 '미기재'이면 원문에 없거나 판독할 수 없는 것입니다. 추측으로 채우지 마세요.
 - 고른기회·특기자·재외국민·정원 외 전형은 대학 상세의 비고(notes)에만 있습니다.
-- 소재 지역이 다른 캠퍼스(홍익대(세종)·단국대(천안)·을지대(대전))는 따로 항목이 있고 '본교' 필드로 본 항목과 이어집니다. 대학명으로 찾으면 캠퍼스 항목도 함께 나옵니다.
+- 소재 지역이 다른 캠퍼스(홍익대(세종)·단국대(천안)·을지대(대전)·고려대(세종)·연세대(미래)·동국대(WISE)·상명대(천안)·건국대(글로컬))는 따로 항목이 있고 '본교' 필드로 본 항목과 이어집니다. 대학명으로 찾으면 캠퍼스 항목도 함께 나옵니다.
 - 라이선스: CC BY-NC 4.0 (봉일천고등학교 진로진학부). 대시보드: https://2023swhs3rd-a11y.github.io/2028plan/`;
 
 const TRACKS = ['교과', '종합', '논술', '정시'];
@@ -426,12 +426,14 @@ export async function rpc(msg, getData) {
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Accept, Mcp-Session-Id, Mcp-Protocol-Version, Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type, Accept, Mcp-Session-Id, Mcp-Protocol-Version',
   'Access-Control-Expose-Headers': 'Mcp-Session-Id',
 };
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS } });
 
 const info = url => new Response(`${SERVER.title} MCP 서버 (v${SERVER.version})\n\n이 주소는 Claude 같은 AI 도구가 쓰는 주소라 브라우저에서는 이 안내만 보입니다.\nClaude 설정 › 커넥터 › 사용자 지정 커넥터 추가에 아래 주소를 넣으세요.\n${url.origin}/mcp\n\n대시보드: https://2023swhs3rd-a11y.github.io/2028plan/\n`, { headers: { 'Content-Type': 'text/plain; charset=utf-8', ...CORS } });
+
+const MAX_BODY = 64 * 1024, MAX_BATCH = 20;
 
 // HTTP 요청 처리: POST /mcp 가 MCP 엔드포인트. GET / 은 사람이 보는 안내.
 export async function handle(request, getData) {
@@ -443,9 +445,14 @@ export async function handle(request, getData) {
   // 브라우저로 주소를 연 사람에게는 오류 대신 안내를 보여 준다(MCP 클라이언트는 text/html 을 요청하지 않음).
   if (request.method === 'GET' && (request.headers.get('Accept') || '').includes('text/html')) return info(url);
   if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST', ...CORS } });
+  // 남용 방지: 본문 크기와 한 번에 묶어 보내는 요청 수에 상한을 둔다(정상 MCP 클라이언트는 훨씬 작다)
+  if (+(request.headers.get('Content-Length') || 0) > MAX_BODY) return json(fail(null, -32600, 'Request too large'), 413);
+  const text = await request.text();
+  if (text.length > MAX_BODY) return json(fail(null, -32600, 'Request too large'), 413);
   let body;
-  try { body = await request.json() } catch { return json(fail(null, -32700, 'Parse error'), 400) }
+  try { body = JSON.parse(text) } catch { return json(fail(null, -32700, 'Parse error'), 400) }
   if (Array.isArray(body)) {
+    if (body.length > MAX_BATCH) return json(fail(null, -32600, `Batch too large (max ${MAX_BATCH})`), 400);
     const res = (await Promise.all(body.map(m => rpc(m, getData)))).filter(Boolean);
     return res.length ? json(res) : new Response(null, { status: 202, headers: CORS });
   }
