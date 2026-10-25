@@ -1629,7 +1629,7 @@ $('rps').onclick=async()=>{const st=$('rpst');if(!$('rpm').value.trim()){st.text
   // Apps Script는 다른 출처라 응답을 읽을 수 없다(no-cors). 네트워크 오류가 없으면 접수된 것으로 본다
   const b=$('rps');b.disabled=true;st.textContent='보내는 중…';
   try{await fetch(REPORT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(rpData())});
-    st.textContent='접수했습니다. 고맙습니다. 확인 후 고치겠습니다.';$('rpr').value='';$('rpm').value='';b.disabled=false}
+    st.textContent='오류제보가 완료되었습니다. 관리자 확인 후 반영하겠습니다. 감사합니다.';$('rpr').value='';$('rpm').value='';b.disabled=false}
   catch(e){b.disabled=false;st.textContent="보내지 못했습니다. 네트워크를 확인하거나 '내용 복사'로 복사해 두었다가 다시 시도해 주세요."}};
 $('rpc').onclick=async()=>{try{await navigator.clipboard.writeText(rpText());$('rpst').textContent=REPORT_URL?'복사했습니다.':`복사했습니다. ${REPORT_TO}로 보내 주세요.`}catch(e){$('rpst').textContent='복사하지 못했습니다. 내용을 직접 선택해 복사해 주세요.'}};
 </script>
