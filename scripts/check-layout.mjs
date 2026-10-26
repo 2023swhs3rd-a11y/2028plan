@@ -40,9 +40,14 @@ for (const [w, scheme] of [[1440, 'light'], [1440, 'dark'], [390, 'light'], [390
   p.on('pageerror', e => errs.push(e.message));
   await p.goto(URL); await p.evaluate(() => { try { localStorage.clear(); } catch {} }); await p.reload(); await p.waitForTimeout(600);
   const tag = `${w} ${scheme}`;
-  for (const v of ['univ', 'track', 'quota', 'change', 'about', 'rur']) {
+  for (const v of ['univ', 'track', 'quota', 'change', 'topic', 'about', 'rur']) {
     await p.click(`[data-v="${v}"]`); await p.waitForTimeout(300);
-    if (v === 'track' || v === 'rur') {
+    if (v === 'topic') {
+      for (const k of await p.$$eval('#tptop button', bs => bs.map(x => x.dataset.k))) {
+        await p.click(`#tptop [data-k="${k}"]`); await p.waitForTimeout(200);
+        (await p.evaluate(scan)).forEach(x => problems.push(`${tag} 주제별 모음·${k}: ${x}`));
+      }
+    } else if (v === 'track' || v === 'rur') {
       for (const t of await p.$$eval('#ttabs button:not([disabled])', bs => bs.map(x => x.dataset.t))) {
         await p.click(`#ttabs button[data-t="${t}"]`); await p.waitForTimeout(300);
         (await p.evaluate(scan)).forEach(x => problems.push(`${tag} ${v === 'rur' ? '농어촌' : '전형별 비교'}·${t}: ${x}`));
