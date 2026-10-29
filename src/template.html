@@ -25,10 +25,10 @@
 <meta name="theme-color" content="#bf3036">
 <link rel="icon" type="image/png" sizes="64x64" href="@@ICON:icon-64.png@@">
 <link rel="apple-touch-icon" sizes="180x180" href="@@ICON:icon-180.png@@">
-<!-- 보안: 외부 스크립트·플러그인·폼 전송을 막는다(GitHub Pages는 응답 헤더를 못 바꿔 meta로 둠). 글꼴은 저장소의 fonts/ 에서, 외부 접속은 오류 제보(Apps Script)만 -->
+<!-- 보안: 외부 스크립트·플러그인·폼 전송을 막는다(GitHub Pages는 응답 헤더를 못 바꿔 meta로 둠). 글꼴(Pretendard)과 공통 스타일은 같은 주소의 /assets/ 에서, 외부 접속은 오류 제보(Apps Script)만 -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="/assets/site.css?v=1"><!-- 진로진학부 사이트 공통: Pretendard 글꼴·맨 위 경로 줄·바닥글 (2023swhs3rd-a11y.github.io 저장소) -->
 <style>
 /* 레이아웃: 상단 고정 필터(대학 구분·지역·검색) → 요약 수치 → 4개 보기(대학별 · 전형별 · 2028 변경 · 자료 기준). OMR 답안지 적색을 유일한 강조색으로 사용 */
 :root{
@@ -37,9 +37,9 @@
   --accent:#bf3036; --accent-soft:#fbe9e9; --accent-ink:#ffffff;
   --t1:#2f5da8; --t2:#2e8c7c; --t3:#d99a2b; --t4:#7a4e9a; --t5:#9a6a3a;
   --warn:#b7791f; --warn-soft:#fdf3e1; --info:#3a67b1; --info-soft:#e8eef8;
-  --f-display:'Gothic A1','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
-  --f-body:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
-  --f-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --f-display:var(--bon-font,'Apple SD Gothic Neo','Malgun Gothic',sans-serif);
+  --f-body:var(--bon-font,'Apple SD Gothic Neo','Malgun Gothic',sans-serif);
+  --f-mono:var(--bon-font,'Apple SD Gothic Neo','Malgun Gothic',sans-serif);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#12161b; --surface:#1a2027; --sunk:#151a20; --line:#2a323b; --line2:#39434e;
@@ -57,6 +57,11 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sk:#7ea6ec;--sm:#f0a65a;--se:#5cc7b4;--ss:#c49be6;--sc:#93cf6e;--st:#c9b97a;--skf:#12161b;--smf:#12161b;--sef:#12161b;--ssf:#12161b;--scf:#12161b;--stf:#12161b}}
 :root[data-theme="dark"]{--sk:#7ea6ec;--sm:#f0a65a;--se:#5cc7b4;--ss:#c49be6;--sc:#93cf6e;--st:#c9b97a;--skf:#12161b;--smf:#12161b;--sef:#12161b;--ssf:#12161b;--scf:#12161b;--stf:#12161b}
 *{box-sizing:border-box}
+/* 진로진학부 공통 경로 줄·바닥글(/assets/site.css): 색은 이 사이트 값을, 밝기는 수동 테마(data-theme)를 따른다 */
+.bon-bar,.bon-footer{--bon-card:var(--surface);--bon-line:var(--line);--bon-muted:var(--muted);--bon-text:var(--ink)}
+.bon-bar{--bon-max:1440px;--bon-brand:#1e3a8a}.bon-bar-in{padding-inline:clamp(16px,3vw,40px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bon-bar{--bon-brand:#a5b4fc}}
+:root[data-theme="dark"] .bon-bar{--bon-brand:#a5b4fc}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55;margin:0;word-break:keep-all;overflow-wrap:break-word}
 .wrap{max-width:1440px;margin:0 auto;padding-inline:clamp(16px,3vw,40px);padding-block:28px 64px;display:flex;flex-direction:column;gap:22px}
 h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
@@ -381,7 +386,7 @@ body.lock{overflow:hidden}
 @media print{.rpb,.sheet .rpu{display:none}}
 #thp{position:absolute;right:0;top:calc(100% + 6px);z-index:40;background:var(--surface);border:1px solid var(--line2);border-radius:10px;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);flex-direction:column;align-items:flex-end;gap:10px}
 #thp:not([hidden]){display:flex}
-.foot{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--ink2)}
+.foot{margin:8px 0 0;flex-direction:column;justify-content:flex-start;gap:4px;font-size:12.5px;color:var(--ink2)}
 .foot p{margin:0}.foot a{color:var(--info)}
 .lt{color:var(--muted)}
 .vb{font-family:var(--f-mono);font-size:12px;font-weight:600;background:var(--ink);color:var(--bg);border-radius:4px;padding:2px 7px;flex:none}
@@ -828,6 +833,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
 <body>
 <noscript><p style="margin:16px;padding:12px 14px;border:1px solid #c9cfca;border-radius:8px;background:#fff;color:#1b2127;font:15px/1.6 sans-serif">이 페이지는 자바스크립트가 켜져 있어야 보입니다. 브라우저 설정에서 자바스크립트를 켜 주세요.</p></noscript>
 <a class="skip" id="skip" href="#s-univ">본문 바로가기</a>
+<nav class="bon-bar" aria-label="진로진학부 사이트"><div class="bon-bar-in"><a href="/">봉일천고등학교 진로진학부</a><span aria-current="page">2028 대입전형 시행계획 요약</span></div></nav>
 <div class="wrap">
 <header>
   <div class="hrow">
@@ -923,7 +929,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
   <div class="sec-h"><h2>자료 기준</h2></div>
   <div class="about" id="about"></div>
 </section>
-<footer class="foot" id="foot"></footer>
+<footer class="foot bon-footer" id="foot"></footer>
 </div>
 
 <dialog id="rpd" aria-labelledby="rpt">
