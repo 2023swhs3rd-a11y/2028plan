@@ -234,7 +234,7 @@ const filled = template.replace('/*@@DATA@@*/', () => json)
 // 웹페이지(index.html)에는 앱 전용 부분을 넣지 않는다. 앱 전용 페이지(/app/)는 같은 화면에 설치 정보·서비스 워커 등록만 더한 것이다.
 const html = filled.replace('@@APP_HEAD@@', '').replace('@@APP_TAIL@@', '');
 const APP_HEAD = '\n<link rel="manifest" href="manifest.webmanifest">\n<meta name="apple-mobile-web-app-title" content="2028 대입">\n<meta name="robots" content="noindex">';
-const APP_TAIL = "\n<script>\nif('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});\n</script>";
+const APP_TAIL = "\n<script>\nif('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});\n</script>\n<script src=\"ios-hint.js\" defer></script>";
 const appHtml = filled.replace('@@APP_HEAD@@', () => APP_HEAD).replace('@@APP_TAIL@@', () => APP_TAIL);
 // 버전 기록: 화면에서는 빼고 저장소의 CHANGELOG.md 로 남긴다(versions.json·대학별 hu 에서 생성)
 const changelog = ['# 버전 기록', '',
