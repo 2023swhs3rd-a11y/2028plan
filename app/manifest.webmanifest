@@ -1,0 +1,17 @@
+{
+  "id": "/2028plan/app/",
+  "name": "2028 대입전형 시행계획 요약",
+  "short_name": "2028 대입",
+  "description": "95개 대학의 2028학년도 학생부교과·학생부종합·논술·정시 전형과 2027 대비 변경사항 요약",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#bf3036",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
