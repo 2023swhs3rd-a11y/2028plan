@@ -25,6 +25,8 @@
 <meta name="theme-color" content="#bf3036">
 <link rel="icon" type="image/png" sizes="64x64" href="@@ICON:icon-64.png@@">
 <link rel="apple-touch-icon" sizes="180x180" href="@@ICON:icon-180.png@@">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="2028 대입">
 <!-- 보안: 외부 스크립트·플러그인·폼 전송을 막는다(GitHub Pages는 응답 헤더를 못 바꿔 meta로 둠). 글꼴(Pretendard)과 공통 스타일은 같은 주소의 /assets/ 에서, 외부 접속은 오류 제보(Apps Script)만 -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -1757,6 +1759,10 @@ $('rps').onclick=async()=>{const st=$('rpst');if(!$('rpm').value.trim()){st.text
     st.textContent='오류제보가 완료되었습니다. 관리자 확인 후 반영하겠습니다. 감사합니다.';$('rpr').value='';$('rpm').value='';b.disabled=false}
   catch(e){b.disabled=false;st.textContent="보내지 못했습니다. 네트워크를 확인하거나 '내용 복사'로 복사해 두었다가 다시 시도해 주세요."}};
 $('rpc').onclick=async()=>{try{await navigator.clipboard.writeText(rpText());$('rpst').textContent=REPORT_URL?'복사했습니다.':`복사했습니다. ${REPORT_TO}로 보내 주세요.`}catch(e){$('rpst').textContent='복사하지 못했습니다. 내용을 직접 선택해 복사해 주세요.'}};
+</script>
+<script>
+// 홈 화면 설치·오프라인용 서비스 워커(sw.js). 파일로 직접 연 경우(file://)에는 등록하지 않는다.
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
 </script>
 
 </body>
