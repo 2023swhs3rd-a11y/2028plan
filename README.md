@@ -72,6 +72,7 @@ https://2023swhs3rd-a11y.github.io/2028plan/
 | `src/template.html` | 화면(HTML·CSS·JS), 데이터 자리는 `/*@@DATA@@*/` |
 | `src/og-card.html` → `og.png` | 링크 공유 미리보기 이미지(1200×630) |
 | `src/icons/` | 파비콘(64px)·홈 화면 아이콘(180px), 빌드 때 `index.html`에 넣음 |
+| `app/` | 앱 전용 주소(`/2028plan/app/`)의 설치 정보(`manifest.webmanifest`)·서비스 워커(`sw.js`)·앱 아이콘. 화면(`app/index.html`)은 배포 때 `node scripts/build.mjs --app`이 만듦 |
 | `scripts/build.mjs` | 데이터 검증 후 `index.html`·`CHANGELOG.md` 생성 |
 | `scripts/export-data.mjs` | 대학별 JSON을 묶은 `data.json` 생성(배포 때 실행, MCP 서버가 읽음) |
 | `scripts/release-notes.mjs` | 릴리스 본문 생성(`CHANGELOG.md`의 해당 버전 절) |
