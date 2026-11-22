@@ -1,5 +1,6 @@
-// Cloudflare Workers 진입점: GitHub Pages에 배포된 data.json을 읽어 MCP 요청에 답한다.
+// Cloudflare Workers 진입점: GitHub Pages에 배포된 data.json을 읽어 MCP(/mcp)와 챗봇(/chat, /chat/status) 요청에 답한다.
 import { handle } from './mcp.js';
+import { handleChat } from './chat.js';
 
 const DEFAULT_DATA_URL = 'https://2023swhs3rd-a11y.github.io/2028plan/data.json';
 const TTL = 10 * 60 * 1000; // 데이터 캐시 10분: 저장소 반영 후 길어야 10분 안에 새 데이터가 나간다
@@ -17,5 +18,12 @@ async function loadData(env) {
 }
 
 export default {
-  fetch: (request, env) => handle(request, () => loadData(env)),
+  async fetch(request, env) {
+    const { pathname } = new URL(request.url);
+    const getData = () => loadData(env);
+    if (pathname === '/chat' || pathname === '/chat/status') {
+      return handleChat(request, getData, env);
+    }
+    return handle(request, getData);
+  },
 };

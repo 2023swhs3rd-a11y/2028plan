@@ -27,15 +27,18 @@ jobs:
         run: node scripts/build.mjs --check
       - name: MCP 서버 시험
         run: node mcp/test.mjs
+      - name: 챗봇 서버 시험
+        run: node mcp/chat.test.mjs
       - name: 충족 판정 사례 시험
         run: node tools/judge/test.cjs
       - name: 배포 파일 모으기
         run: |
-          mkdir _site
+          mkdir -p _site/chat
           cp index.html og.png sitemap.xml LICENSE .nojekyll _site/
           node scripts/export-data.mjs _site/data.json
           node scripts/build.mjs --app _site/app
           cp -r app/. _site/app/
+          cp -r chat/. _site/chat/
       - uses: actions/upload-pages-artifact@v5
         if: github.event_name != 'pull_request'
         with:

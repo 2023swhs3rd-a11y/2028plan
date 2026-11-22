@@ -1,0 +1,1185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI 상담 · 2028 대입전형 시행계획 요약</title>
+<meta name="description" content="95개 대학 2028학년도 대입전형 시행계획 데이터를 실시간 검색해 비교표·상담 준비표·안내문 초안을 만들어 주는 AI 상담 챗봇">
+<meta name="theme-color" content="#bf3036">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://admissions-2028-mcp.jjbic.workers.dev http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="stylesheet" href="/assets/site.css?v=1">
+<style>
+:root{
+  --bg:#f5f6f4; --surface:#ffffff; --sunk:#eef0ed; --line:#dfe3df; --line2:#c9cfca;
+  --ink:#1b2127; --ink2:#46505a; --muted:#626c76;
+  --accent:#bf3036; --accent-soft:#fbe9e9; --accent-ink:#ffffff;
+  --t1:#2f5da8; --t2:#2e8c7c; --t3:#d99a2b; --t4:#7a4e9a;
+  --warn:#b7791f; --warn-soft:#fdf3e1; --info:#3a67b1; --info-soft:#e8eef8;
+  --ok:#1f7a53; --ok-soft:#e6f4ee;
+  --f-display:var(--bon-font,'Apple SD Gothic Neo','Malgun Gothic',sans-serif);
+  --f-body:var(--bon-font,'Apple SD Gothic Neo','Malgun Gothic',sans-serif);
+  --f-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161b; --surface:#1a2027; --sunk:#151a20; --line:#2a323b; --line2:#39434e;
+  --ink:#e6e9ec; --ink2:#b8c0c8; --muted:#8c96a0;
+  --accent:#ef6b6f; --accent-soft:#3a2124; --accent-ink:#1a0d0e;
+  --t1:#6f9be6; --t2:#57c0ad; --t3:#f0b858; --t4:#b58ad6;
+  --warn:#f0b458; --warn-soft:#3a2f1c; --info:#8cb0ee; --info-soft:#1f2a3c;
+  --ok:#5cc79c; --ok-soft:#1b2e26; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161b; --surface:#1a2027; --sunk:#151a20; --line:#2a323b; --line2:#39434e;
+  --ink:#e6e9ec; --ink2:#b8c0c8; --muted:#8c96a0;
+  --accent:#ef6b6f; --accent-soft:#3a2124; --accent-ink:#1a0d0e;
+  --t1:#6f9be6; --t2:#57c0ad; --t3:#f0b858; --t4:#b58ad6;
+  --warn:#f0b458; --warn-soft:#3a2f1c; --info:#8cb0ee; --info-soft:#1f2a3c;
+  --ok:#5cc79c; --ok-soft:#1b2e26; color-scheme:dark}
+:root[data-accent="ink"]{--accent:#2d333a;--accent-soft:#e9ecef;--accent-ink:#ffffff}
+:root[data-theme="dark"][data-accent="ink"]{--accent:#d5dbe1;--accent-soft:#262d35;--accent-ink:#12161b}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"])[data-accent="ink"]{--accent:#d5dbe1;--accent-soft:#262d35;--accent-ink:#12161b}}
+:root[data-accent="navy"]{--accent:#2d4f9e;--accent-soft:#e8edf8;--accent-ink:#fff;--bg:#f3f5f9}
+:root[data-accent="forest"]{--accent:#2f6b3f;--accent-soft:#e6f0e8;--accent-ink:#fff;--bg:#f3f6f2}
+:root[data-accent="plum"]{--accent:#8e2f6a;--accent-soft:#f6e7f0;--accent-ink:#fff;--bg:#f7f3f5}
+:root[data-theme="dark"][data-accent="navy"]{--accent:#8fb0f0;--accent-soft:#1e2940;--accent-ink:#12161b;--bg:#11151c}
+:root[data-theme="dark"][data-accent="forest"]{--accent:#7cc596;--accent-soft:#1b2c21;--accent-ink:#12161b;--bg:#111713}
+:root[data-theme="dark"][data-accent="plum"]{--accent:#e08cc0;--accent-soft:#35202d;--accent-ink:#12161b;--bg:#171217}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"])[data-accent="navy"]{--accent:#8fb0f0;--accent-soft:#1e2940;--accent-ink:#12161b;--bg:#11151c}
+  :root:not([data-theme="light"])[data-accent="forest"]{--accent:#7cc596;--accent-soft:#1b2c21;--accent-ink:#12161b;--bg:#111713}
+  :root:not([data-theme="light"])[data-accent="plum"]{--accent:#e08cc0;--accent-soft:#35202d;--accent-ink:#12161b;--bg:#171217}}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--f-body);font-size:14.5px;line-height:1.6;
+  word-break:keep-all;overflow-wrap:break-word;
+  display:flex;flex-direction:column;min-height:100dvh;
+}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* 상단 헤더 */
+.topbar{
+  position:sticky;top:0;z-index:30;
+  border-top:4px solid var(--accent);
+  border-bottom:1px solid var(--line);
+  background:color-mix(in srgb,var(--surface) 94%,transparent);
+  backdrop-filter:blur(8px);
+}
+.topbar-in{
+  max-width:960px;margin:0 auto;padding:10px clamp(14px,3vw,24px);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.back-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  height:32px;padding:0 10px;border-radius:8px;
+  border:1px solid var(--line2);background:var(--surface);
+  color:var(--ink2);text-decoration:none;font-size:13px;font-weight:600;
+  white-space:nowrap;flex:none;transition:border-color .15s,color .15s;
+}
+.back-btn:hover{border-color:var(--accent);color:var(--accent)}
+.title-wrap{display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 auto}
+.title-wrap h1{font-family:var(--f-display);font-size:clamp(16px,2vw,19px);font-weight:900;letter-spacing:-.02em;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.auth-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px;
+  border:1px solid var(--line2);background:var(--sunk);color:var(--ink2);white-space:nowrap;flex:none;
+}
+.auth-pill.ok{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 45%,transparent);color:var(--ok)}
+.auth-pill.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 45%,transparent);color:var(--warn)}
+.auth-pill.err{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 45%,transparent);color:var(--accent)}
+.auth-pill i{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+.hact{display:flex;align-items:center;gap:6px;margin-left:auto;flex:none}
+.hbtn{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  height:32px;padding:0 10px;border-radius:8px;
+  border:1px solid var(--line2);background:var(--surface);color:var(--ink);
+  font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;
+  transition:border-color .15s,color .15s,background-color .15s;
+}
+.hbtn:hover{border-color:var(--accent);color:var(--accent)}
+.hbtn.icon{width:32px;padding:0}
+.thw{position:relative}
+#thp{
+  position:absolute;right:0;top:calc(100% + 6px);z-index:40;
+  background:var(--surface);border:1px solid var(--line2);border-radius:10px;
+  padding:10px;box-shadow:0 8px 24px rgba(0,0,0,.16);
+  display:flex;flex-direction:column;align-items:flex-end;gap:10px;
+}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;padding:5px 10px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--ink2);transition:background-color .12s,color .12s}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button:hover:not([aria-pressed="true"]){background:var(--sunk);color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.sw{display:flex;gap:6px;align-items:center}
+.sw button{all:unset;cursor:pointer;width:20px;height:20px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px var(--line2)}
+.sw button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--c)}
+
+/* 메인 영역 */
+main{
+  flex:1 1 auto;width:100%;max-width:960px;margin:0 auto;
+  padding:18px clamp(14px,3vw,24px) 24px;
+  display:flex;flex-direction:column;gap:16px;
+}
+
+/* 접근 제어 카드 */
+.gate{
+  max-width:460px;width:100%;margin:auto;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:24px 22px;display:flex;flex-direction:column;gap:14px;
+  box-shadow:0 4px 20px rgba(0,0,0,.05);
+}
+.gate-head{display:flex;align-items:center;gap:10px}
+.gate-icon{
+  width:38px;height:38px;border-radius:10px;background:var(--accent-soft);color:var(--accent);
+  display:grid;place-items:center;flex:none;
+}
+.gate h2{font-size:17px;font-weight:800;margin:0}
+.gate p{margin:0;color:var(--ink2);font-size:13.5px}
+.gate-form{display:flex;flex-direction:column;gap:10px}
+.code-row{display:flex;gap:6px}
+.code-row input{
+  flex:1;min-width:0;height:40px;padding:0 12px;
+  border:1px solid var(--line2);border-radius:8px;background:var(--bg);color:var(--ink);font-size:14.5px;
+}
+.code-row input:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.btn-pri{
+  height:40px;padding:0 16px;border:0;border-radius:8px;
+  background:var(--accent);color:var(--accent-ink);font-weight:700;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;
+  transition:opacity .15s;
+}
+.btn-pri:hover:not(:disabled){opacity:.9}
+.btn-pri:disabled{opacity:.45;cursor:not-allowed}
+.gate-err{font-size:13px;color:var(--accent);margin:0;font-weight:600}
+.gate-hint{font-size:12px;color:var(--muted);margin:0}
+
+/* 환영 / 빈 대화 화면 */
+.welcome{display:flex;flex-direction:column;gap:18px;margin-top:6px}
+.welcome-hero{
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:20px 22px;display:flex;flex-direction:column;gap:8px;
+}
+.welcome-hero h2{font-size:20px;font-weight:900;letter-spacing:-.02em;margin:0}
+.welcome-hero p{margin:0;color:var(--ink2);font-size:13.5px;max-width:72ch}
+.model-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.mtag{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;padding:3px 9px;border-radius:6px;
+  border:1px solid var(--line);background:var(--sunk);color:var(--ink2);
+}
+.mtag b{color:var(--ink)}
+.mtag .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.mtag .dot.g{background:var(--t2)}
+.mtag .dot.c{background:var(--t1)}
+
+.qgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.qgrid{grid-template-columns:1fr}}
+.qcard{
+  text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:13px 15px;cursor:pointer;display:flex;flex-direction:column;gap:5px;
+  transition:border-color .15s,background-color .15s,transform .12s;
+}
+.qcard:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 4%,var(--surface));transform:translateY(-1px)}
+.qcard .qt{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.02em}
+.qcard .qt.fast{color:var(--t2)}
+.qcard .qt.deep{color:var(--t1)}
+.qcard .qt.tpl{color:var(--accent)}
+.qcard .qb{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.45}
+.qcard .qs{font-size:12px;color:var(--muted)}
+
+.notice{
+  font-size:12.5px;color:var(--muted);background:var(--sunk);
+  border:1px solid var(--line);border-radius:10px;padding:10px 14px;line-height:1.55;
+}
+.notice strong{color:var(--ink2)}
+
+/* 프롬프트 서식 카드 (상담 준비표 / 변경 안내문) */
+.tpl-box{
+  background:var(--surface);border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));
+  border-radius:12px;padding:15px 16px;display:flex;flex-direction:column;gap:10px;
+}
+.tpl-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tpl-head h3{font-size:15px;font-weight:800;margin:0}
+.tpl-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.tpl-box label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:700;color:var(--ink2)}
+.tpl-box input{
+  height:36px;padding:0 10px;border:1px solid var(--line2);border-radius:8px;
+  background:var(--bg);color:var(--ink);font-weight:400;font-size:13.5px;
+}
+.tpl-act{display:flex;justify-content:flex-end;gap:8px}
+
+/* 대화 로그 */
+.thread{display:flex;flex-direction:column;gap:16px}
+.msg{display:flex;flex-direction:column;gap:6px}
+.msg.user{align-items:flex-end}
+.msg.user .bubble{
+  max-width:min(82%,640px);
+  background:var(--accent-soft);
+  border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));
+  color:var(--ink);padding:10px 14px;border-radius:14px 14px 4px 14px;
+  white-space:pre-wrap;font-size:14.5px;
+}
+.msg.user .tpl-badge{
+  display:inline-block;font-size:11px;font-weight:700;color:var(--accent);
+  margin-bottom:3px;
+}
+.msg.assistant .card{
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:14px 18px;display:flex;flex-direction:column;gap:10px;
+}
+.msg-head{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding-bottom:8px;border-bottom:1px solid var(--line);
+}
+.mbadge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;
+}
+.mbadge.gemini{background:color-mix(in srgb,var(--t2) 14%,var(--surface));color:var(--t2);border:1px solid color-mix(in srgb,var(--t2) 35%,transparent)}
+.mbadge.claude{background:color-mix(in srgb,var(--t1) 14%,var(--surface));color:var(--t1);border:1px solid color-mix(in srgb,var(--t1) 35%,transparent)}
+.mreason{font-size:12px;color:var(--muted)}
+.fb-tag{
+  font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;
+  background:var(--warn-soft);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);
+}
+.msg-tools{margin-left:auto;display:flex;align-items:center;gap:6px}
+.copy-btn{
+  border:1px solid var(--line2);background:var(--surface);color:var(--ink2);
+  border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:600;cursor:pointer;
+}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* 도구 호출 현황 */
+.tools-box{
+  background:var(--sunk);border:1px solid var(--line);border-radius:9px;
+  padding:7px 11px;font-size:12.5px;
+}
+.tools-box summary{
+  cursor:pointer;display:flex;align-items:center;gap:7px;font-weight:600;color:var(--ink2);
+  list-style:none;
+}
+.tools-box summary::-webkit-details-marker{display:none}
+.tools-list{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.tools-list li{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;
+  padding:4px 8px;border-radius:6px;background:var(--surface);border:1px solid var(--line);
+  font-size:12px;
+}
+.tools-list .tn{font-weight:700;color:var(--ink)}
+.tools-list .ts{color:var(--ok);font-weight:600}
+.tools-list .ts.err{color:var(--accent)}
+.tools-list .ta{font-family:var(--f-mono);font-size:11px;color:var(--muted);word-break:break-all}
+.spin{
+  width:13px;height:13px;border:2px solid var(--line2);border-top-color:var(--accent);
+  border-radius:50%;display:inline-block;animation:sp .7s linear infinite;flex:none;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* 마크다운 본문 */
+.md{font-size:14.5px;line-height:1.68;color:var(--ink)}
+.md>*:first-child{margin-top:0}
+.md>*:last-child{margin-bottom:0}
+.md h1,.md h2,.md h3,.md h4{font-family:var(--f-display);font-weight:800;line-height:1.35;margin:16px 0 8px}
+.md h1{font-size:18px}.md h2{font-size:16.5px}.md h3{font-size:15px}.md h4{font-size:14px}
+.md p{margin:0 0 10px}
+.md ul,.md ol{margin:0 0 10px;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.md blockquote{
+  margin:10px 0;padding:8px 12px;border-left:3px solid var(--accent);
+  background:var(--sunk);border-radius:0 8px 8px 0;color:var(--ink2);font-size:13.5px;
+}
+.md code{
+  font-family:var(--f-mono);font-size:12.5px;
+  background:var(--sunk);border:1px solid var(--line);border-radius:4px;padding:1px 5px;
+}
+.md pre{
+  margin:10px 0;padding:12px;border-radius:8px;
+  background:var(--sunk);border:1px solid var(--line);overflow-x:auto;
+}
+.md pre code{background:none;border:0;padding:0;font-size:12.5px}
+.md a{color:var(--info);text-decoration:underline;text-underline-offset:2px}
+.md a:hover{color:var(--accent)}
+.md hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+.md-tbox{overflow-x:auto;margin:10px 0;border:1px solid var(--line);border-radius:8px}
+.md table{border-collapse:collapse;width:100%;font-size:13px}
+.md th,.md td{padding:7px 10px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.md th{background:var(--sunk);font-weight:700;color:var(--ink2);white-space:nowrap}
+.md tr:last-child td{border-bottom:0}
+.md tbody tr:hover td{background:color-mix(in srgb,var(--accent) 4%,var(--surface))}
+.cursor{
+  display:inline-block;width:7px;height:15px;margin-left:2px;vertical-align:-2px;
+  background:var(--accent);border-radius:2px;animation:bl 1s steps(1) infinite;
+}
+@keyframes bl{50%{opacity:0}}
+.err-box{
+  padding:10px 12px;border-radius:8px;
+  background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);
+  color:var(--ink);font-size:13.5px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+}
+
+/* 하단 입력 바 */
+.dock{
+  position:sticky;bottom:0;z-index:20;
+  border-top:1px solid var(--line);
+  background:color-mix(in srgb,var(--bg) 95%,transparent);
+  backdrop-filter:blur(8px);
+  padding:10px clamp(14px,3vw,24px) calc(12px + env(safe-area-inset-bottom,0px));
+}
+.dock-in{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.dock-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.mode-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mode-seg button{padding:4px 10px;font-size:12px}
+.mode-seg button[data-mode="fast"][aria-pressed="true"]{background:var(--t2);color:#fff}
+.mode-seg button[data-mode="deep"][aria-pressed="true"]{background:var(--t1);color:#fff}
+.mode-desc{font-size:12px;color:var(--muted)}
+.quota-info{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+.dock-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.composer{
+  display:flex;align-items:flex-end;gap:8px;
+  background:var(--surface);border:1px solid var(--line2);border-radius:12px;
+  padding:7px 8px 7px 12px;transition:border-color .15s,box-shadow .15s;
+}
+.composer:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
+.composer textarea{
+  flex:1;min-width:0;border:0;background:transparent;resize:none;
+  min-height:26px;max-height:150px;padding:4px 0;line-height:1.5;font-size:14.5px;
+}
+.composer textarea:focus{outline:none}
+.send-btn{
+  height:36px;padding:0 14px;border:0;border-radius:8px;
+  background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:13.5px;
+  cursor:pointer;white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:5px;
+}
+.send-btn:disabled{opacity:.4;cursor:not-allowed}
+.send-btn.stop{background:var(--ink);color:var(--bg)}
+.dock-foot{font-size:11.5px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+
+@media (max-width:640px){
+  .topbar-in{gap:6px;padding:8px 12px}
+  .back-btn span{display:none}
+  .auth-pill{font-size:11px;padding:2px 7px}
+  .hbtn .hl{display:none}
+  .mode-desc{display:none}
+  .msg.assistant .card{padding:12px 13px}
+  .msg.user .bubble{max-width:92%}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="back-btn" href="../" aria-label="대시보드로 돌아가기">
+      <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>대시보드</span>
+    </a>
+    <div class="title-wrap">
+      <h1>2028 대입 AI 상담</h1>
+      <span class="auth-pill" id="authPill"><i></i><span id="authText">연결 확인 중…</span></span>
+    </div>
+    <div class="hact">
+      <button type="button" class="hbtn" id="codeBtn" hidden title="접근 코드 설정">
+        <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><rect x="4.5" y="9" width="11" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7 9V6.5a3 3 0 0 1 6 0V9" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+        <span class="hl">접근 코드</span>
+      </button>
+      <button type="button" class="hbtn" id="newBtn" title="새 대화 시작">
+        <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M10 4v12M4 10h12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+        <span class="hl">새 대화</span>
+      </button>
+      <div class="thw">
+        <button type="button" class="hbtn icon" id="thb" aria-expanded="false" aria-controls="thp" aria-label="화면 테마·강조색" title="화면 테마·강조색">
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg>
+        </button>
+        <div id="thp" role="group" aria-label="화면 테마" hidden>
+          <div class="seg" id="thm" role="group" aria-label="밝기">
+            <button type="button" data-m="auto" aria-pressed="true">자동</button>
+            <button type="button" data-m="light" aria-pressed="false">라이트</button>
+            <button type="button" data-m="dark" aria-pressed="false">다크</button>
+          </div>
+          <div class="sw" id="acc" role="group" aria-label="강조색">
+            <button type="button" data-a="red" style="--c:#bf3036" aria-label="적색" aria-pressed="true"></button>
+            <button type="button" data-a="navy" style="--c:#2d4f9e" aria-label="남색" aria-pressed="false"></button>
+            <button type="button" data-a="forest" style="--c:#2f6b3f" aria-label="숲녹색" aria-pressed="false"></button>
+            <button type="button" data-a="plum" style="--c:#8e2f6a" aria-label="자주" aria-pressed="false"></button>
+            <button type="button" data-a="ink" style="--c:#2d333a" aria-label="먹색" aria-pressed="false"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- 접근 제어 게이트 -->
+  <section class="gate" id="gate" hidden aria-label="접근 인증">
+    <div class="gate-head">
+      <div class="gate-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      </div>
+      <div>
+        <h2 id="gateTitle">접근 코드 입력</h2>
+      </div>
+    </div>
+    <p id="gateDesc">외부 네트워크에서는 접근 코드를 입력해야 AI 상담을 이용할 수 있습니다. 학교 네트워크(허용 IP)에서는 코드 없이 자동 통과됩니다.</p>
+    <form class="gate-form" id="gateForm">
+      <div class="code-row" id="codeRow">
+        <input type="password" id="codeInput" autocomplete="off" placeholder="접근 코드 입력" aria-label="접근 코드">
+        <button type="submit" class="btn-pri" id="codeSubmit">확인</button>
+      </div>
+      <p class="gate-err" id="gateErr" hidden></p>
+      <p class="gate-hint" id="gateHint">입력한 코드는 현재 브라우저 탭 세션에만 임시 보관됩니다.</p>
+    </form>
+    <button type="button" class="hbtn" id="retryStatusBtn" hidden>연결 다시 확인</button>
+  </section>
+
+  <!-- 환영 화면 -->
+  <section class="welcome" id="welcome" hidden>
+    <div class="welcome-hero">
+      <h2>2028 대입전형 시행계획을 대화로 검색·비교하세요</h2>
+      <p>95개 대학의 정원 내 교과·종합·논술·정시 및 농어촌 전형 데이터를 실시간 조회해 원문 PDF 쪽수와 함께 답합니다.</p>
+      <div class="model-legend">
+        <span class="mtag"><i class="dot g"></i><b>빠름</b> Gemini 2.5 Flash · 단건 조회·등급 환산</span>
+        <span class="mtag"><i class="dot c"></i><b>심층</b> Claude Sonnet 4.5 · 복합 비교·상담 준비표·안내문</span>
+      </div>
+    </div>
+
+    <div class="qgrid" id="quickGrid">
+      <button type="button" class="qcard" data-q="경기 지역 학생부교과 전형 중 수능최저와 면접이 모두 없는 대학을 표로 정리해 줘">
+        <span class="qt fast">빠른 조회</span>
+        <span class="qb">경기 교과 · 수능최저·면접 없는 대학</span>
+        <span class="qs">지역·전형 조건 필터링 후 원문 쪽수 포함</span>
+      </button>
+      <button type="button" class="qcard" data-q="5등급제 평균 2.3등급일 때 서울·경기 학생부교과 전형 환산점수 상위 대학을 비교해 줘">
+        <span class="qt fast">빠른 조회</span>
+        <span class="qb">5등급제 2.3등급 교과 환산점수 비교</span>
+        <span class="qs">환산표 공개 대학의 1등급 대비 감점 계산</span>
+      </button>
+      <button type="button" class="qcard" data-q="성균관대·한양대·중앙대 2028 학생부종합전형을 표로 비교하고 주요 변경사항과 차이점을 분석해 줘">
+        <span class="qt deep">심층 비교</span>
+        <span class="qb">성균관대·한양대·중앙대 학종 비교 분석</span>
+        <span class="qs">복수 대학 전형방법·수능최저·2028 변경 비교</span>
+      </button>
+      <button type="button" class="qcard" data-q="정시 자연계열에서 수학 반영 비율이 35% 이상이면서 영어를 감점 방식으로 반영하는 대학을 찾아 정리해 줘">
+        <span class="qt fast">빠른 조회</span>
+        <span class="qb">정시 자연 · 수학 35% 이상 + 영어 감점</span>
+        <span class="qs">정시 영역별 반영 비율 및 계열 조건 검색</span>
+      </button>
+      <button type="button" class="qcard" data-tpl="consult_prep">
+        <span class="qt tpl">서식 · 심층</span>
+        <span class="qb">상담 준비표 만들기</span>
+        <span class="qs">학생 조건(익명)에 맞춘 지원 후보표 자동 구성</span>
+      </button>
+      <button type="button" class="qcard" data-tpl="change_notice">
+        <span class="qt tpl">서식 · 심층</span>
+        <span class="qb">2028 변경사항 안내문 초안</span>
+        <span class="qs">학부모·학생용 변경 요약 안내문 작성</span>
+      </button>
+    </div>
+
+    <div class="notice">
+      <strong>자료 기준 및 유의사항</strong> · 출처는 각 대학이 공개한 2028학년도 대입전형 시행계획 PDF뿐이며 입시 결과(합격선·경쟁률)는 포함되지 않습니다. 최종 내용은 각 대학 모집요강으로 확인하세요. <strong>학생 이름·성적표 등 개인정보는 입력하지 마세요.</strong>
+    </div>
+  </section>
+
+  <!-- MCP 프롬프트 서식 패널 -->
+  <section class="tpl-box" id="tplBox" hidden aria-label="질문 서식 입력">
+    <div class="tpl-head">
+      <h3 id="tplTitle">상담 준비표</h3>
+      <button type="button" class="hbtn" id="tplClose">닫기</button>
+    </div>
+    <form id="tplForm" class="tpl-grid">
+      <div id="tplFields" class="tpl-grid"></div>
+      <div class="tpl-act">
+        <button type="submit" class="btn-pri" id="tplSubmit">서식으로 질문하기</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- 대화 스레드 -->
+  <section class="thread" id="thread" role="log" aria-live="polite" aria-label="대화 내용"></section>
+</main>
+
+<div class="dock" id="dock">
+  <div class="dock-in">
+    <div class="dock-top">
+      <div class="mode-wrap">
+        <div class="seg mode-seg" id="modeSeg" role="group" aria-label="응답 모델 선택">
+          <button type="button" data-mode="auto" aria-pressed="true" title="질문 성격에 따라 Gemini/Claude 자동 선택">자동</button>
+          <button type="button" data-mode="fast" aria-pressed="false" title="Gemini 2.5 Flash · 빠른 전형 조회">빠름</button>
+          <button type="button" data-mode="deep" aria-pressed="false" title="Claude Sonnet 4.5 · 복합 비교·상담 준비표·안내문">심층</button>
+        </div>
+        <span class="mode-desc" id="modeDesc">질문 성격에 따라 자동 선택 (오류 시 자동 전환)</span>
+      </div>
+      <div class="dock-right">
+        <button type="button" class="hbtn" id="tplToggleBtn" title="상담 준비표·안내문 서식">서식</button>
+        <span class="quota-info" id="quotaInfo" hidden></span>
+      </div>
+    </div>
+    <div class="composer">
+      <textarea id="input" rows="1" placeholder="2028 대입전형에 대해 질문해 보세요… (Enter 전송 · Shift+Enter 줄바꿈)" aria-label="질문 입력"></textarea>
+      <button type="button" class="send-btn" id="sendBtn">전송</button>
+    </div>
+    <div class="dock-foot">
+      <span>2028 대입전형 시행계획 기준 · 개인정보 입력 금지</span>
+      <span>최종 확인은 각 대학 모집요강 참고</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+
+  // 로컬 개발 시에만 ?api= 허용 (운영 도메인에서는 고정 Worker 주소만 사용)
+  const DEFAULT_API = 'https://admissions-2028-mcp.jjbic.workers.dev';
+  function resolveApiBase() {
+    const isLocal = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    if (isLocal) {
+      const p = new URLSearchParams(location.search).get('api');
+      if (p && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(p)) return p.replace(/\/$/, '');
+    }
+    return DEFAULT_API;
+  }
+  const API_BASE = resolveApiBase();
+  const CODE_KEY = 'chat28_code';
+
+  const MODE_META = {
+    auto: '질문 성격에 따라 자동 선택 (오류 시 자동 전환)',
+    fast: 'Gemini 2.5 Flash · 빠른 조회 우선 (오류 시 심층 전환)',
+    deep: 'Claude Sonnet 4.5 · 복합 비교·작성 우선 (오류 시 빠름 전환)',
+  };
+
+  const TPL_DEFS = {
+    consult_prep: {
+      title: '상담 준비표 만들기',
+      fields: [
+        { name: 'condition', label: '학생 조건 (필수 · 개인정보 제외)', placeholder: '예: 교과 위주, 수능 2개 합 7 가능, 수도권, 면접 부담', required: true },
+        { name: 'tracks', label: '볼 전형 종류 (선택)', placeholder: '예: 교과, 종합', required: false },
+      ],
+    },
+    change_notice: {
+      title: '2028 변경사항 안내문 초안',
+      fields: [
+        { name: 'audience', label: '읽을 대상 (필수)', placeholder: '예: 고1 학부모, 고2 학생', required: true },
+        { name: 'focus', label: '다룰 범위 (선택)', placeholder: '예: 경기 지역 대학, 수능최저, 서울 주요 대학', required: false },
+      ],
+    },
+  };
+
+  const state = {
+    mode: 'auto',
+    code: (() => { try { return sessionStorage.getItem(CODE_KEY) || ''; } catch { return ''; } })(),
+    status: null,
+    messages: [], // { role: 'user' | 'assistant', content: string }
+    streaming: false,
+    abortCtrl: null,
+    activeTpl: null,
+  };
+
+  // ── 테마·강조색 (대시보드와 localStorage 키 thm28 / acc28 공유) ──
+  (() => {
+    const de = document.documentElement;
+    const g = k => { try { return localStorage.getItem(k); } catch { return null; } };
+    const p = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+    function applyTheme() {
+      const m = g('thm28') || 'auto';
+      let a = g('acc28') || 'red';
+      if (!['red', 'navy', 'forest', 'plum', 'ink'].includes(a)) a = 'red';
+      if (m === 'auto') de.removeAttribute('data-theme'); else de.setAttribute('data-theme', m);
+      if (a === 'red') de.removeAttribute('data-accent'); else de.setAttribute('data-accent', a);
+      document.querySelectorAll('#thm button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m)));
+      document.querySelectorAll('#acc button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.a === a)));
+    }
+    document.querySelectorAll('#thm button').forEach(b => b.onclick = () => { p('thm28', b.dataset.m); applyTheme(); });
+    document.querySelectorAll('#acc button').forEach(b => b.onclick = () => { p('acc28', b.dataset.a); applyTheme(); });
+    applyTheme();
+
+    const btn = $('thb'), panel = $('thp');
+    const setOpen = o => { panel.hidden = !o; btn.setAttribute('aria-expanded', String(o)); };
+    btn.onclick = e => { e.stopPropagation(); setOpen(panel.hidden); };
+    document.addEventListener('click', e => { if (!panel.hidden && !e.target.closest('.thw')) setOpen(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) { setOpen(false); btn.focus(); } });
+  })();
+
+  // ── 안전 HTML 이스케이프 & 경량 마크다운 렌더러 (표·링크·목록·코드블록 지원) ──
+  const esc = s => String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+  function renderInline(raw) {
+    let s = esc(raw);
+    const slots = [];
+    const stash = html => {
+      const idx = slots.length;
+      slots.push(html);
+      return `\u0000S${idx}\u0000`;
+    };
+    s = s.replace(/`([^`\n]+)`/g, (_, c) => stash(`<code>${c}</code>`));
+    // [라벨](https://...) 링크를 슬롯으로 보호 (URL 안의 *·_·괄호가 중첩 파싱되지 않게)
+    s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) =>
+      stash(`<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`));
+    // bare https:// URL 링크화
+    s = s.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, (_, pre, url) =>
+      `${pre}${stash(`<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`)}`);
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+    s = s.replace(/\u0000S(\d+)\u0000/g, (_, i) => slots[Number(i)]);
+    return s;
+  }
+
+  function isTableSep(line) {
+    return /^\s*\|?(\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?\s*$/.test(line);
+  }
+
+  function splitTableRow(line) {
+    return line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+  }
+
+  function renderMarkdown(md) {
+    const src = String(md || '').replace(/\r\n/g, '\n');
+    const lines = src.split('\n');
+    const out = [];
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+
+      // 코드 블록
+      if (/^```/.test(line.trim())) {
+        const codeLines = [];
+        i++;
+        while (i < lines.length && !/^```/.test(lines[i].trim())) {
+          codeLines.push(lines[i]);
+          i++;
+        }
+        i++;
+        out.push(`<pre><code>${esc(codeLines.join('\n'))}</code></pre>`);
+        continue;
+      }
+
+      // 빈 줄
+      if (!line.trim()) { i++; continue; }
+
+      // 구분선
+      if (/^\s*([-*_])\1{2,}\s*$/.test(line)) { out.push('<hr>'); i++; continue; }
+
+      // 제목
+      const hm = line.match(/^(#{1,4})\s+(.+)$/);
+      if (hm) {
+        const lvl = hm[1].length;
+        out.push(`<h${lvl}>${renderInline(hm[2])}</h${lvl}>`);
+        i++; continue;
+      }
+
+      // GFM 표
+      if (line.includes('|') && i + 1 < lines.length && isTableSep(lines[i + 1])) {
+        const heads = splitTableRow(line);
+        i += 2;
+        const rows = [];
+        while (i < lines.length && lines[i].trim() && lines[i].includes('|')) {
+          rows.push(splitTableRow(lines[i]));
+          i++;
+        }
+        const thead = `<thead><tr>${heads.map(h => `<th>${renderInline(h)}</th>`).join('')}</tr></thead>`;
+        const tbody = `<tbody>${rows.map(r => `<tr>${heads.map((_, c) => `<td>${renderInline(r[c] ?? '')}</td>`).join('')}</tr>`).join('')}</tbody>`;
+        out.push(`<div class="md-tbox"><table>${thead}${tbody}</table></div>`);
+        continue;
+      }
+
+      // 인용구
+      if (/^>\s?/.test(line)) {
+        const bq = [];
+        while (i < lines.length && /^>\s?/.test(lines[i])) {
+          bq.push(lines[i].replace(/^>\s?/, ''));
+          i++;
+        }
+        out.push(`<blockquote>${bq.map(renderInline).join('<br>')}</blockquote>`);
+        continue;
+      }
+
+      // 순서 없는 목록
+      if (/^\s*[-*•]\s+/.test(line)) {
+        const items = [];
+        while (i < lines.length && /^\s*[-*•]\s+/.test(lines[i])) {
+          items.push(`<li>${renderInline(lines[i].replace(/^\s*[-*•]\s+/, ''))}</li>`);
+          i++;
+        }
+        out.push(`<ul>${items.join('')}</ul>`);
+        continue;
+      }
+
+      // 순서 있는 목록
+      if (/^\s*\d+\.\s+/.test(line)) {
+        const items = [];
+        while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) {
+          items.push(`<li>${renderInline(lines[i].replace(/^\s*\d+\.\s+/, ''))}</li>`);
+          i++;
+        }
+        out.push(`<ol>${items.join('')}</ol>`);
+        continue;
+      }
+
+      // 일반 문단
+      const para = [];
+      while (
+        i < lines.length &&
+        lines[i].trim() &&
+        !/^```/.test(lines[i].trim()) &&
+        !/^#{1,4}\s+/.test(lines[i]) &&
+        !/^>\s?/.test(lines[i]) &&
+        !/^\s*[-*•]\s+/.test(lines[i]) &&
+        !/^\s*\d+\.\s+/.test(lines[i]) &&
+        !(lines[i].includes('|') && i + 1 < lines.length && isTableSep(lines[i + 1]))
+      ) {
+        para.push(lines[i]);
+        i++;
+      }
+      out.push(`<p>${para.map(renderInline).join('<br>')}</p>`);
+    }
+
+    return out.join('');
+  }
+
+  // ── 상태 표시 및 접근 제어 ──
+  function authHeaders() {
+    const h = { 'Content-Type': 'application/json' };
+    if (state.code) h['X-Access-Code'] = state.code;
+    return h;
+  }
+
+  function updateQuota(limits) {
+    const el = $('quotaInfo');
+    if (!limits) { el.hidden = true; return; }
+    el.textContent = `분당 ${limits.remainingMin}/${limits.perMin} · 오늘 ${limits.remainingDayIp}/${limits.perDayIp}`;
+    el.hidden = false;
+  }
+
+  function setAuthPill(kind, label) {
+    const pill = $('authPill');
+    pill.className = `auth-pill${kind ? ' ' + kind : ''}`;
+    $('authText').textContent = label;
+  }
+
+  function updateViewVisibility() {
+    const st = state.status;
+    const ok = Boolean(st && st.authorized && st.configured !== false);
+    $('gate').hidden = ok;
+    $('dock').hidden = !ok;
+    $('welcome').hidden = !ok || state.messages.length > 0;
+    $('codeBtn').hidden = !(st && st.codeConfigured && st.authMethod !== 'ip' && st.authMethod !== 'open');
+  }
+
+  async function refreshStatus(showErrorText = '') {
+    setAuthPill('', '연결 확인 중…');
+    try {
+      const res = await fetch(`${API_BASE}/chat/status`, {
+        method: 'GET',
+        headers: state.code ? { 'X-Access-Code': state.code } : {},
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 429) {
+        state.status = { authorized: false, needsCode: true, message: data.error };
+        setAuthPill('err', '일시 잠금');
+        showGate('접근 일시 제한', data.error || '잠시 후 다시 시도해 주세요.', true, data.error || '');
+        updateViewVisibility();
+        return;
+      }
+      state.status = data;
+      updateQuota(data.limits);
+
+      // 모델 가용 상태 반영
+      const hasG = Boolean(data.providers?.gemini?.available);
+      const hasC = Boolean(data.providers?.claude?.available);
+      document.querySelector('#modeSeg [data-mode="fast"]').disabled = !hasG && hasC;
+      document.querySelector('#modeSeg [data-mode="deep"]').disabled = !hasC && hasG;
+
+      if (data.authorized) {
+        if (!data.configured) {
+          setAuthPill('err', 'AI 키 미설정');
+          showGate('AI 모델 설정 필요', '서버에 GEMINI_API_KEY 또는 ANTHROPIC_API_KEY가 설정되지 않았습니다. 관리자에게 문의하세요.', false, '');
+        } else {
+          const authLabel = data.authMethod === 'ip'
+            ? '학교 네트워크 자동 인증'
+            : data.authMethod === 'both'
+              ? '학교 IP + 코드 인증'
+              : data.authMethod === 'code'
+                ? '접근 코드 인증됨'
+                : '연결됨';
+          setAuthPill('ok', authLabel);
+          $('gateErr').hidden = true;
+        }
+      } else {
+        setAuthPill('warn', data.needsCode ? '접근 코드 필요' : '접근 제한');
+        const title = data.needsCode ? '접근 코드 입력' : '접근이 제한된 네트워크';
+        const desc = data.message || (data.needsCode
+          ? '외부 네트워크에서는 접근 코드를 입력해야 합니다.'
+          : '허용된 학교 네트워크에서만 이용할 수 있습니다.');
+        const errText = showErrorText || (data.reason === 'INVALID_CODE' ? '접근 코드가 올바르지 않습니다.' : '');
+        showGate(title, desc, Boolean(data.needsCode), errText);
+      }
+      updateViewVisibility();
+    } catch {
+      state.status = { authorized: false, needsCode: false };
+      setAuthPill('err', '서버 연결 실패');
+      showGate('챗봇 서버에 연결할 수 없습니다', '잠시 후 다시 시도하거나 네트워크 상태를 확인해 주세요.', false, '', true);
+      updateViewVisibility();
+    }
+  }
+
+  function showGate(title, desc, showCodeInput, errText = '', showRetry = false) {
+    $('gateTitle').textContent = title;
+    $('gateDesc').textContent = desc;
+    $('gateForm').hidden = !showCodeInput;
+    $('retryStatusBtn').hidden = !showRetry && showCodeInput;
+    const errEl = $('gateErr');
+    if (errText) { errEl.textContent = errText; errEl.hidden = false; }
+    else errEl.hidden = true;
+    if (showCodeInput) setTimeout(() => $('codeInput').focus(), 40);
+  }
+
+  $('gateForm').onsubmit = async e => {
+    e.preventDefault();
+    const val = $('codeInput').value.trim();
+    if (!val) { $('gateErr').textContent = '접근 코드를 입력해 주세요.'; $('gateErr').hidden = false; return; }
+    state.code = val;
+    try { sessionStorage.setItem(CODE_KEY, val); } catch {}
+    $('codeSubmit').disabled = true;
+    await refreshStatus();
+    $('codeSubmit').disabled = false;
+    if (state.status?.authorized) $('codeInput').value = '';
+  };
+
+  $('retryStatusBtn').onclick = () => refreshStatus();
+  $('codeBtn').onclick = () => {
+    state.code = '';
+    try { sessionStorage.removeItem(CODE_KEY); } catch {}
+    refreshStatus();
+  };
+
+  // ── 모드 선택 (자동 / 빠름 / 심층) ──
+  document.querySelectorAll('#modeSeg button').forEach(btn => {
+    btn.onclick = () => {
+      state.mode = btn.dataset.mode;
+      document.querySelectorAll('#modeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+      $('modeDesc').textContent = MODE_META[state.mode];
+    };
+  });
+
+  // ── 서식 패널 (consult_prep / change_notice) ──
+  function openTemplate(name) {
+    const def = TPL_DEFS[name];
+    if (!def) return;
+    state.activeTpl = name;
+    $('tplTitle').textContent = def.title;
+    $('tplFields').innerHTML = def.fields.map(f =>
+      `<label>${esc(f.label)}<input type="text" name="${esc(f.name)}" placeholder="${esc(f.placeholder)}" ${f.required ? 'required' : ''}></label>`
+    ).join('');
+    $('tplBox').hidden = false;
+    const first = $('tplFields').querySelector('input');
+    if (first) first.focus();
+  }
+
+  $('tplClose').onclick = () => { $('tplBox').hidden = true; state.activeTpl = null; };
+  $('tplToggleBtn').onclick = () => {
+    if (!$('tplBox').hidden) {
+      const next = state.activeTpl === 'consult_prep' ? 'change_notice' : null;
+      if (next) openTemplate(next); else { $('tplBox').hidden = true; state.activeTpl = null; }
+    } else {
+      openTemplate('consult_prep');
+    }
+  };
+  $('tplForm').onsubmit = e => {
+    e.preventDefault();
+    if (!state.activeTpl || state.streaming) return;
+    const fd = new FormData($('tplForm'));
+    const args = {};
+    for (const [k, v] of fd.entries()) {
+      const s = String(v).trim();
+      if (s) args[k] = s;
+    }
+    const name = state.activeTpl;
+    const label = TPL_DEFS[name].title;
+    const summaryText = Object.values(args).join(' · ');
+    $('tplBox').hidden = true;
+    state.activeTpl = null;
+    sendMessage({
+      displayText: summaryText,
+      tplBadge: label,
+      prompt: { name, arguments: args },
+    });
+  };
+
+  // ── 빠른 질문 카드 ──
+  $('quickGrid').addEventListener('click', e => {
+    const card = e.target.closest('.qcard');
+    if (!card || state.streaming) return;
+    if (card.dataset.tpl) { openTemplate(card.dataset.tpl); return; }
+    if (card.dataset.q) sendMessage({ displayText: card.dataset.q });
+  });
+
+  // ── 새 대화 ──
+  $('newBtn').onclick = () => {
+    if (state.streaming && state.abortCtrl) state.abortCtrl.abort();
+    state.messages = [];
+    $('thread').innerHTML = '';
+    $('tplBox').hidden = true;
+    updateViewVisibility();
+    $('input').focus();
+  };
+
+  // ── 자동 스크롤 (사용자가 위로 올려 보고 있지 않을 때만) ──
+  function isNearBottom() {
+    return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 140;
+  }
+  function scrollBottom(force = false) {
+    if (force || isNearBottom()) {
+      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+    }
+  }
+
+  // ── SSE 파서 (브라우저 fetch stream) ──
+  async function* readSSE(stream) {
+    const reader = stream.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true }).replace(/\r\n/g, '\n');
+        let sep;
+        while ((sep = buf.indexOf('\n\n')) !== -1) {
+          const blk = buf.slice(0, sep);
+          buf = buf.slice(sep + 2);
+          let ev = 'message';
+          const lines = [];
+          for (const l of blk.split('\n')) {
+            if (l.startsWith('event:')) ev = l.slice(6).trim();
+            else if (l.startsWith('data:')) lines.push(l.slice(5).trimStart());
+          }
+          if (lines.length) yield { event: ev, data: JSON.parse(lines.join('\n')) };
+        }
+      }
+    } finally {
+      try { reader.releaseLock(); } catch {}
+    }
+  }
+
+  // ── 메시지 전송 & SSE 스트리밍 렌더링 ──
+  function setStreaming(on) {
+    state.streaming = on;
+    const btn = $('sendBtn');
+    btn.textContent = on ? '중지' : '전송';
+    btn.classList.toggle('stop', on);
+  }
+
+  async function sendMessage({ displayText, tplBadge = '', prompt = null }) {
+    const text = String(displayText || '').trim();
+    if (!text && !prompt) return;
+    if (state.streaming) return;
+
+    $('welcome').hidden = true;
+
+    // 사용자 말풍선 추가
+    const userEl = document.createElement('div');
+    userEl.className = 'msg user';
+    userEl.innerHTML = `<div class="bubble">${tplBadge ? `<div class="tpl-badge">${esc(tplBadge)}</div>` : ''}${esc(text)}</div>`;
+    $('thread').appendChild(userEl);
+
+    const payloadMessages = [...state.messages];
+    if (!prompt) payloadMessages.push({ role: 'user', content: text });
+
+    // 어시스턴트 카드 생성
+    const asstEl = document.createElement('div');
+    asstEl.className = 'msg assistant';
+    asstEl.innerHTML = `
+      <div class="card">
+        <div class="msg-head">
+          <span class="mbadge" data-role="badge">연결 중…</span>
+          <span class="mreason" data-role="reason"></span>
+          <span class="fb-tag" data-role="fb" hidden></span>
+          <div class="msg-tools">
+            <button type="button" class="copy-btn" data-role="copy" hidden>복사</button>
+          </div>
+        </div>
+        <details class="tools-box" data-role="toolsBox" hidden>
+          <summary><span class="spin" data-role="tSpin"></span><span data-role="tSum">데이터 조회 중…</span></summary>
+          <ul class="tools-list" data-role="tList"></ul>
+        </details>
+        <div class="md" data-role="body"><span class="cursor"></span></div>
+      </div>`;
+    $('thread').appendChild(asstEl);
+    scrollBottom(true);
+
+    const q = r => asstEl.querySelector(`[data-role="${r}"]`);
+    const badgeEl = q('badge');
+    const reasonEl = q('reason');
+    const fbEl = q('fb');
+    const copyEl = q('copy');
+    const toolsBox = q('toolsBox');
+    const tSpin = q('tSpin');
+    const tSum = q('tSum');
+    const tList = q('tList');
+    const bodyEl = q('body');
+
+    const toolRows = new Map();
+    let answerText = '';
+    let renderQueued = false;
+    const scheduleRender = (withCursor = true) => {
+      if (renderQueued) return;
+      renderQueued = true;
+      requestAnimationFrame(() => {
+        renderQueued = false;
+        bodyEl.innerHTML = (answerText ? renderMarkdown(answerText) : '') + (withCursor ? '<span class="cursor"></span>' : '');
+        scrollBottom();
+      });
+    };
+
+    const setBadge = (provider, model) => {
+      const label = provider === 'claude' ? 'Claude 심층' : 'Gemini 빠름';
+      badgeEl.className = `mbadge ${provider}`;
+      badgeEl.textContent = `${label} · ${model}`;
+    };
+
+    state.abortCtrl = new AbortController();
+    setStreaming(true);
+
+    try {
+      const res = await fetch(`${API_BASE}/chat`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          mode: state.mode,
+          messages: payloadMessages,
+          ...(prompt ? { prompt } : {}),
+        }),
+        signal: state.abortCtrl.signal,
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        if (res.status === 401 || res.status === 403) {
+          asstEl.remove();
+          userEl.remove();
+          await refreshStatus(errData.error || '접근 인증이 필요합니다.');
+          return;
+        }
+        if (errData.limits) updateQuota(errData.limits);
+        throw new Error(errData.error || `요청 오류 (${res.status})`);
+      }
+
+      for await (const ev of readSSE(res.body)) {
+        if (ev.event === 'meta') {
+          setBadge(ev.data.provider, ev.data.model);
+          reasonEl.textContent = ev.data.reason || '';
+          if (ev.data.limits) updateQuota(ev.data.limits);
+        } else if (ev.event === 'tool_call') {
+          toolsBox.hidden = false;
+          tSpin.hidden = false;
+          const li = document.createElement('li');
+          const argStr = Object.keys(ev.data.arguments || {}).length ? JSON.stringify(ev.data.arguments) : '';
+          li.innerHTML = `<span class="tn">${esc(ev.data.title || ev.data.name)}</span><span class="ts">조회 중…</span>${argStr ? `<span class="ta">${esc(argStr)}</span>` : ''}`;
+          tList.appendChild(li);
+          toolRows.set(ev.data.id, li);
+          tSum.textContent = `${ev.data.title || ev.data.name} 조회 중… (${toolRows.size}건)`;
+          scrollBottom();
+        } else if (ev.event === 'tool_result') {
+          const li = toolRows.get(ev.data.id);
+          if (li) {
+            const st = li.querySelector('.ts');
+            st.textContent = ev.data.summary || '완료';
+            if (ev.data.isError) st.classList.add('err');
+          }
+          tSum.textContent = `시행계획 데이터 ${toolRows.size}건 조회 완료`;
+        } else if (ev.event === 'fallback') {
+          setBadge(ev.data.to, ev.data.model);
+          const fromNm = ev.data.from === 'claude' ? 'Claude' : 'Gemini';
+          const toNm = ev.data.to === 'claude' ? 'Claude' : 'Gemini';
+          fbEl.textContent = `자동 전환 (${fromNm} → ${toNm})`;
+          fbEl.hidden = false;
+          // 1차 모델의 불완전한 출력이 있었다면 깨끗이 비우고 폴백 응답으로 대체
+          answerText = '';
+          scheduleRender(true);
+        } else if (ev.event === 'delta') {
+          tSpin.hidden = true;
+          answerText += ev.data.text || '';
+          scheduleRender(true);
+        } else if (ev.event === 'done') {
+          tSpin.hidden = true;
+          if (ev.data.limits) updateQuota(ev.data.limits);
+          bodyEl.innerHTML = answerText ? renderMarkdown(answerText) : '<p class="mreason">응답이 비어 있습니다.</p>';
+          if (answerText) {
+            copyEl.hidden = false;
+            copyEl.onclick = async () => {
+              try {
+                await navigator.clipboard.writeText(answerText);
+                copyEl.textContent = '복사됨';
+                setTimeout(() => { copyEl.textContent = '복사'; }, 1500);
+              } catch {}
+            };
+          }
+        } else if (ev.event === 'error') {
+          throw new Error(ev.data.message || '응답 생성 오류');
+        }
+      }
+
+      if (answerText) {
+        const userRecord = prompt ? `[${tplBadge}] ${text}` : text;
+        state.messages.push({ role: 'user', content: userRecord });
+        state.messages.push({ role: 'assistant', content: answerText });
+      }
+    } catch (err) {
+      tSpin.hidden = true;
+      if (err.name === 'AbortError') {
+        bodyEl.innerHTML = (answerText ? renderMarkdown(answerText) : '') + '<p class="mreason">생성을 중지했습니다.</p>';
+      } else {
+        badgeEl.className = 'mbadge';
+        badgeEl.textContent = '오류';
+        bodyEl.innerHTML = `<div class="err-box"><span>${esc(err.message || '오류가 발생했습니다.')}</span><button type="button" class="copy-btn" data-retry="1">다시 시도</button></div>`;
+        const rbtn = bodyEl.querySelector('[data-retry]');
+        if (rbtn) rbtn.onclick = () => { asstEl.remove(); userEl.remove(); sendMessage({ displayText, tplBadge, prompt }); };
+      }
+    } finally {
+      state.abortCtrl = null;
+      setStreaming(false);
+      scrollBottom();
+    }
+  }
+
+  // ── 입력창 자동 높이 & 한글 IME 안전 Enter 처리 ──
+  const input = $('input');
+  function fitInput() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 150) + 'px';
+  }
+  input.addEventListener('input', fitInput);
+  input.addEventListener('keydown', e => {
+    if (e.isComposing || e.keyCode === 229) return;
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      submitInput();
+    }
+  });
+
+  function submitInput() {
+    if (state.streaming) {
+      if (state.abortCtrl) state.abortCtrl.abort();
+      return;
+    }
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    fitInput();
+    sendMessage({ displayText: text });
+  }
+  $('sendBtn').onclick = submitInput;
+
+  // 초기 상태 확인
+  refreshStatus();
+})();
+</script>
+</body>
+</html>
