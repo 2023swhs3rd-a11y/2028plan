@@ -6,6 +6,7 @@
 const SHEET_ID = '1YGT5mThhpphGaPuGSDZ-poJnaBb3-Cps3Hy-MmL94i8';
 const NOTIFY = true;        // 새 제보가 오면 소유자에게 알림 메일
 const PER_MINUTE = 20;      // 분당 접수 상한(도배 방지)
+const PER_DAY = 200;        // 하루 접수 상한(알림 메일 할당량 보호)
 
 function doPost(e) {
   let d;
@@ -13,9 +14,12 @@ function doPost(e) {
   if (d.hp) return out('ok'); // 사람에게 보이지 않는 칸이 채워졌으면 자동 입력으로 보고 버림
   const cache = CacheService.getScriptCache(), n = +(cache.get('n') || 0);
   if (n >= PER_MINUTE) return out('busy');
+  const dayKey = 'd' + Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyyMMdd'), nd = +(cache.get(dayKey) || 0);
+  if (nd >= PER_DAY) return out('busy');
   cache.put('n', String(n + 1), 60);
-  // 수식으로 해석되지 않게(=,+,-,@ 로 시작하면 ' 를 붙임) 하고 길이를 자른다
-  const t = (s, max) => String(s == null ? '' : s).slice(0, max).replace(/^[=+\-@]/, "'$&");
+  cache.put(dayKey, String(nd + 1), 21600); // 캐시는 최대 6시간이라 6시간마다 다시 센다
+  // 수식으로 해석되지 않게(=,+,-,@,탭·줄바꿈으로 시작하면 ' 를 붙임) 하고 길이를 자른다
+  const t = (s, max) => String(s == null ? '' : s).slice(0, max).replace(/^[=+\-@\t\r\n]/, "'$&");
   const row = [new Date(), t(d.u, 60), t(d.r, 200), t(d.m, 2000), t(d.v, 20), t(d.url, 500)];
   if (!row[3]) return out('bad');
   const lock = LockService.getScriptLock();
