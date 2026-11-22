@@ -340,6 +340,32 @@ const fullEnv = {
   assert.equal(evRetry.filter(e => e.event === 'delta').map(e => e.data.text).join(''), '재시도 복구 완료');
   assert.equal(evRetry.find(e => e.event === 'done').data.fallbackUsed, false);
 
+  // 8-a3: 기본 Gemini(gemini-3.8-flash) 지속 과부하 시 보조 Gemini(gemini-3.5-flash-lite)로 자동 전환
+  const triedModels = [];
+  const resCascade = await handleChat(new Request('https://x.test/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '210.100.12.5' },
+    body: JSON.stringify({ mode: 'fast', messages: [{ role: 'user', content: '아주대 전형' }] }),
+  }), getData, fullEnv, {
+    limiter,
+    retryDelayMs: 0,
+    fetch: async (url) => {
+      const m = decodeURIComponent(url.match(/\/models\/([^:]+):/)?.[1] || '');
+      triedModels.push(m);
+      if (m === 'gemini-3.8-flash') {
+        return new Response('{"error":{"code":503,"message":"This model is currently experiencing high demand."}}', { status: 503 });
+      }
+      return sseResponse([
+        `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ text: '보조 Gemini 응답' }] } }] })}\n\n`,
+      ]);
+    },
+  });
+  const evCascade = await readClientSSE(resCascade);
+  assert.ok(triedModels.includes('gemini-3.8-flash') && triedModels.includes('gemini-3.5-flash-lite'));
+  assert.equal(evCascade.some(e => e.event === 'fallback'), false);
+  assert.equal(evCascade.find(e => e.event === 'done').data.model, 'gemini-3.5-flash-lite');
+  assert.equal(evCascade.filter(e => e.event === 'delta').map(e => e.data.text).join(''), '보조 Gemini 응답');
+
   // 8-b: Claude 529 -> Gemini 폴백
   const res2 = await handleChat(new Request('https://x.test/chat', {
     method: 'POST',

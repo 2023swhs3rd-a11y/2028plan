@@ -40,7 +40,7 @@
 같은 Cloudflare Worker에서 웹 챗봇 페이지(`/2028plan/chat/`)용 SSE 스트리밍 API를 함께 제공합니다. 내부에서 `src/mcp.js`의 `rpc()`를 직접 호출해 MCP 도구·프롬프트·안내문을 그대로 공유하며 런타임 의존성이 없습니다.
 
 - **자동 라우팅 및 폴백 (`src/router.js`)**:
-  - 빠른 조회·단건 검색·등급 환산 → **Gemini** (`gemini-3.5-flash-lite`)
+  - 빠른 조회·단건 검색·등급 환산 → **Gemini** (`gemini-3.8-flash`, 과부하 시 `gemini-3.5-flash-lite`·`gemini-2.5-flash-lite` 자동 전환)
   - 복합 비교·상담 준비표(`consult_prep`)·안내문 작성(`change_notice`) → **Claude** (`claude-sonnet-4-5`)
   - 한쪽 API 오류 시 다른 모델로 자동 폴백하며, 화면에서 **자동 / 빠름 / 심층** 수동 선택도 지원합니다.
 - **접근 제어 (`src/access.js`)**:
