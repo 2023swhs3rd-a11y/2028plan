@@ -291,13 +291,14 @@ const fullEnv = {
 // ── 8. 자동 폴백 시험 (Gemini 오류 -> Claude, Claude 오류 -> Gemini, 둘 다 실패) ──
 {
   const limiter = new RateLimiter();
-  // 8-a: Gemini 503 -> Claude 폴백
+  // 8-a: Gemini 503 지속 실패 -> Claude 폴백
   const res1 = await handleChat(new Request('https://x.test/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '210.100.12.5' },
     body: JSON.stringify({ mode: 'auto', messages: [{ role: 'user', content: '아주대 전형' }] }),
   }), getData, fullEnv, {
     limiter,
+    retryDelayMs: 0,
     fetch: async (url) => {
       if (url.includes('googleapis')) return new Response('Service Unavailable', { status: 503 });
       return sseResponse([
@@ -311,6 +312,33 @@ const fullEnv = {
   assert.ok(ev1.some(e => e.event === 'fallback' && e.data.from === 'gemini' && e.data.to === 'claude'));
   assert.equal(ev1.filter(e => e.event === 'delta').map(e => e.data.text).join(''), '폴백 Claude 응답');
   assert.equal(ev1.find(e => e.event === 'done').data.fallbackUsed, true);
+
+  // 8-a2: Gemini 일시 과부하(high demand) 1회 자동 재시도로 복구 (폴백 없이 성공)
+  let transientCount = 0;
+  const resRetry = await handleChat(new Request('https://x.test/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '210.100.12.5' },
+    body: JSON.stringify({ mode: 'fast', messages: [{ role: 'user', content: '아주대 전형' }] }),
+  }), getData, fullEnv, {
+    limiter,
+    retryDelayMs: 0,
+    fetch: async () => {
+      transientCount++;
+      if (transientCount === 1) {
+        return sseResponse([
+          `data: ${JSON.stringify({ error: { code: 503, message: 'This model is currently experiencing high demand.' } })}\n\n`,
+        ]);
+      }
+      return sseResponse([
+        `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ text: '재시도 복구 완료' }] } }] })}\n\n`,
+      ]);
+    },
+  });
+  const evRetry = await readClientSSE(resRetry);
+  assert.equal(transientCount, 2);
+  assert.equal(evRetry.some(e => e.event === 'fallback'), false);
+  assert.equal(evRetry.filter(e => e.event === 'delta').map(e => e.data.text).join(''), '재시도 복구 완료');
+  assert.equal(evRetry.find(e => e.event === 'done').data.fallbackUsed, false);
 
   // 8-b: Claude 529 -> Gemini 폴백
   const res2 = await handleChat(new Request('https://x.test/chat', {

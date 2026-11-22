@@ -1027,12 +1027,16 @@ main{
 
     const toolRows = new Map();
     let answerText = '';
-    let renderQueued = false;
+    let rafId = 0;
+    let finished = false;
+    const cancelRender = () => {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+    };
     const scheduleRender = (withCursor = true) => {
-      if (renderQueued) return;
-      renderQueued = true;
-      requestAnimationFrame(() => {
-        renderQueued = false;
+      if (finished || rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        if (finished) return;
         bodyEl.innerHTML = (answerText ? renderMarkdown(answerText) : '') + (withCursor ? '<span class="cursor"></span>' : '');
         scrollBottom();
       });
@@ -1108,6 +1112,8 @@ main{
           answerText += ev.data.text || '';
           scheduleRender(true);
         } else if (ev.event === 'done') {
+          finished = true;
+          cancelRender();
           tSpin.hidden = true;
           if (ev.data.limits) updateQuota(ev.data.limits);
           bodyEl.innerHTML = answerText ? renderMarkdown(answerText) : '<p class="mreason">응답이 비어 있습니다.</p>';
@@ -1132,6 +1138,8 @@ main{
         state.messages.push({ role: 'assistant', content: answerText });
       }
     } catch (err) {
+      finished = true;
+      cancelRender();
       tSpin.hidden = true;
       if (err.name === 'AbortError') {
         bodyEl.innerHTML = (answerText ? renderMarkdown(answerText) : '') + '<p class="mreason">생성을 중지했습니다.</p>';
@@ -1143,6 +1151,9 @@ main{
         if (rbtn) rbtn.onclick = () => { asstEl.remove(); userEl.remove(); sendMessage({ displayText, tplBadge, prompt }); };
       }
     } finally {
+      finished = true;
+      cancelRender();
+      bodyEl.querySelectorAll('.cursor').forEach(el => el.remove());
       state.abortCtrl = null;
       setStreaming(false);
       scrollBottom();

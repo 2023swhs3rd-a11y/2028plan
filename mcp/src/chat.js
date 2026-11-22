@@ -205,8 +205,11 @@ async function executeToolCall({ id, name, args, toolTitleMap, getData, emit }) 
   return { text, isError };
 }
 
+const TRANSIENT_GEMINI_RE = /HTTP (429|503)|high demand|overloaded|UNAVAILABLE|RESOURCE_EXHAUSTED/i;
+const sleep = ms => (ms > 0 ? new Promise(r => setTimeout(r, ms)) : Promise.resolve());
+
 // ── Gemini 스트리밍 + 다중 도구 호출 루프 (AI Studio AIza·AQ. 키 기본 지원, GEMINI_BASE_URL 지정 시 Vertex AI 등 사용) ──
-async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolTitleMap, messages, getData, emit, fetchImpl, signal }) {
+async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolTitleMap, messages, getData, emit, fetchImpl, signal, retryDelayMs = 1200 }) {
   const contents = messages.map(m => ({
     role: m.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: m.content }],
@@ -216,52 +219,69 @@ async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolT
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     const url = geminiEndpoint(model, baseUrl);
-    const res = await fetchImpl(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents,
-        tools,
-        generationConfig: { maxOutputTokens: 4096 },
-      }),
-      signal: combineSignals(signal, UPSTREAM_TIMEOUT_MS),
-    });
+    let modelParts;
+    let functionCalls;
 
-    if (!res.ok) {
-      const errBody = await res.text().catch(() => '');
-      throw new Error(`Gemini HTTP ${res.status}${errBody ? `: ${errBody.slice(0, 320)}` : ''}`);
-    }
+    for (let attempt = 0; attempt < 2; attempt++) {
+      let emittedTextThisAttempt = false;
+      try {
+        const res = await fetchImpl(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents,
+            tools,
+            generationConfig: { maxOutputTokens: 4096 },
+          }),
+          signal: combineSignals(signal, UPSTREAM_TIMEOUT_MS),
+        });
 
-    const modelParts = [];
-    const functionCalls = [];
-    let textBuf = '';
-    const flushText = () => {
-      if (textBuf) { modelParts.push({ text: textBuf }); textBuf = ''; }
-    };
-
-    for await (const ev of parseSSE(res.body)) {
-      let chunk;
-      try { chunk = JSON.parse(ev.data); } catch { continue; }
-      if (chunk.error) throw new Error(`Gemini 오류: ${chunk.error.message || chunk.error.code || 'unknown'}`);
-      const parts = chunk.candidates?.[0]?.content?.parts || [];
-      for (const part of parts) {
-        if (part.functionCall) {
-          flushText();
-          modelParts.push(part);
-          functionCalls.push(part.functionCall);
-        } else if (typeof part.text === 'string' && !part.thought) {
-          if (part.thoughtSignature) {
-            flushText();
-            modelParts.push(part);
-          } else {
-            textBuf += part.text;
-          }
-          emit('delta', { text: part.text });
-        } else if (part.thought && part.thoughtSignature) {
-          flushText();
-          modelParts.push(part);
+        if (!res.ok) {
+          const errBody = await res.text().catch(() => '');
+          throw new Error(`Gemini HTTP ${res.status}${errBody ? `: ${errBody.slice(0, 320)}` : ''}`);
         }
+
+        modelParts = [];
+        functionCalls = [];
+        let textBuf = '';
+        const flushText = () => {
+          if (textBuf) { modelParts.push({ text: textBuf }); textBuf = ''; }
+        };
+
+        for await (const ev of parseSSE(res.body)) {
+          let chunk;
+          try { chunk = JSON.parse(ev.data); } catch { continue; }
+          if (chunk.error) throw new Error(`Gemini 오류: ${chunk.error.message || chunk.error.code || 'unknown'}`);
+          const parts = chunk.candidates?.[0]?.content?.parts || [];
+          for (const part of parts) {
+            if (part.functionCall) {
+              flushText();
+              modelParts.push(part);
+              functionCalls.push(part.functionCall);
+            } else if (typeof part.text === 'string' && !part.thought) {
+              if (part.thoughtSignature) {
+                flushText();
+                modelParts.push(part);
+              } else {
+                textBuf += part.text;
+              }
+              emittedTextThisAttempt = true;
+              emit('delta', { text: part.text });
+            } else if (part.thought && part.thoughtSignature) {
+              flushText();
+              modelParts.push(part);
+            }
+          }
+        }
+        flushText();
+        break;
+      } catch (e) {
+        if (attempt === 0 && !emittedTextThisAttempt && !signal?.aborted && TRANSIENT_GEMINI_RE.test(String(e?.message || ''))) {
+          await sleep(retryDelayMs);
+          continue;
+        }
+        throw e;
       }
     }
 
@@ -269,7 +289,6 @@ async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolT
       return { toolCalls: totalToolCalls };
     }
 
-    flushText();
     contents.push({ role: 'model', parts: modelParts });
 
     const responseParts = [];
@@ -478,7 +497,7 @@ async function handleStatus(request, getData, env, limiter) {
 }
 
 // ── POST /chat (SSE 스트리밍) ──
-async function handlePostChat(request, getData, env, limiter, fetchImpl) {
+async function handlePostChat(request, getData, env, limiter, fetchImpl, retryDelayMs = 1200) {
   const clientIp = getClientIp(request);
   if (getAccessCode(request)) {
     const failCheck = limiter.checkAuthFail(clientIp, env);
@@ -595,6 +614,7 @@ async function handlePostChat(request, getData, env, limiter, fetchImpl) {
             emit,
             fetchImpl,
             signal: request.signal,
+            retryDelayMs,
           });
         }
         return runClaude({
@@ -707,7 +727,7 @@ export async function handleChat(request, getData, env = {}, opts = {}) {
     if (request.method !== 'POST') {
       return jsonRes({ error: 'Method Not Allowed' }, 405, request, env, { Allow: 'POST, OPTIONS' });
     }
-    return handlePostChat(request, getData, env, limiter, fetchImpl);
+    return handlePostChat(request, getData, env, limiter, fetchImpl, opts.retryDelayMs ?? 1200);
   }
   return null;
 }
