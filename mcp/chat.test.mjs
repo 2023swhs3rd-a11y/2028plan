@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { exportData } from '../scripts/export-data.mjs';
 import { parseIp, ipMatchesList, checkAccess, RateLimiter, kstDateKey } from './src/access.js';
 import { classifyComplexity, selectRoute, DEFAULT_GEMINI_MODEL, DEFAULT_CLAUDE_MODEL } from './src/router.js';
-import { handleChat, parseSSE } from './src/chat.js';
+import { handleChat, parseSSE, geminiEndpoint } from './src/chat.js';
 
 const data = exportData();
 const getData = async () => data;
@@ -327,19 +327,53 @@ const fullEnv = {
   assert.equal(ev2.filter(e => e.event === 'delta').map(e => e.data.text).join(''), '폴백 Gemini 응답');
   assert.equal(ev2.find(e => e.event === 'done').data.fallbackUsed, true);
 
-  // 8-c: 둘 다 실패 -> error 이벤트 (키 노출 없음)
+  // 8-c: 둘 다 실패 -> error 이벤트 (1차·2차 오류 모두 표시, 키 노출 없음)
   const res3 = await handleChat(new Request('https://x.test/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '210.100.12.5' },
     body: JSON.stringify({ mode: 'auto', messages: [{ role: 'user', content: '아주대' }] }),
   }), getData, fullEnv, {
     limiter,
-    fetch: async () => new Response('key=AIzaSecret123 sk-ant-secret999', { status: 500 }),
+    fetch: async () => new Response('key=AIzaSecret123 AQ.Secret456 sk-ant-secret999', { status: 500 }),
   });
   const ev3 = await readClientSSE(res3);
   const errEv = ev3.find(e => e.event === 'error');
   assert.equal(errEv.data.code, 'BOTH_PROVIDERS_FAILED');
-  assert.doesNotMatch(errEv.data.message, /AIzaSecret|sk-ant-secret/);
+  assert.match(errEv.data.message, /1차:.*2차:/);
+  assert.doesNotMatch(errEv.data.message, /AIzaSecret|AQ\.Secret|sk-ant-secret/);
+
+  // 8-d: Vertex AI Express Mode (AQ. 키) 엔드포인트 자동 전환 및 스키마 대문자 타입 확인
+  assert.equal(
+    geminiEndpoint('gemini-2.5-flash', 'AQ.Ab8RNtest'),
+    'https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:streamGenerateContent?alt=sse',
+  );
+  assert.equal(
+    geminiEndpoint('gemini-2.5-flash', 'AIzaSyTest'),
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse',
+  );
+  let capturedVertexUrl = '';
+  let capturedSchemaType = '';
+  const vertexEnv = { ...fullEnv, GEMINI_API_KEY: 'AQ.Ab8RNtestKey' };
+  const res4 = await handleChat(new Request('https://x.test/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '210.100.12.5' },
+    body: JSON.stringify({ mode: 'fast', messages: [{ role: 'user', content: '아주대 전형' }] }),
+  }), getData, vertexEnv, {
+    limiter,
+    fetch: async (url, init) => {
+      capturedVertexUrl = url;
+      const body = JSON.parse(init.body);
+      const decl = body.tools[0].functionDeclarations.find(d => d.name === 'get_university');
+      capturedSchemaType = decl.parameters.type;
+      return sseResponse([
+        `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Vertex Express 응답' }] } }] })}\n\n`,
+      ]);
+    },
+  });
+  const ev4 = await readClientSSE(res4);
+  assert.match(capturedVertexUrl, /^https:\/\/aiplatform\.googleapis\.com\/v1\/publishers\/google\/models\//);
+  assert.equal(capturedSchemaType, 'OBJECT');
+  assert.equal(ev4.filter(e => e.event === 'delta').map(e => e.data.text).join(''), 'Vertex Express 응답');
 }
 
 // ── 9. 입력 검증 및 접근 코드 무차별 대입 차단 ──
