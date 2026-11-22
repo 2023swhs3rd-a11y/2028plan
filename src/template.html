@@ -518,7 +518,7 @@ td .chip,td .ssp{white-space:normal;max-width:100%;overflow-wrap:break-word;vert
 .seg,.bar select,.bar input{border-radius:var(--r);min-height:var(--ctl)}
 .seg button{min-height:var(--ctl);align-items:center}
 .bar .views{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;margin:0;gap:0;border:0;overflow:visible}
-.bar .views .seg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));width:min(880px,100%)}
+.bar .views .seg{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));width:min(1000px,100%)}
 .bar .views .seg button{border-radius:0;justify-content:center;font-size:15px;font-weight:700;padding:0 14px;color:var(--ink2)}
 .bar .views .seg button[aria-selected="true"]{background:color-mix(in srgb,var(--ink) 11%,var(--surface));color:var(--ink);font-weight:800;box-shadow:inset 0 -3px 0 var(--accent)}
 .bar .views .seg button:not([aria-selected="true"]):hover{background:var(--sunk);color:var(--ink)}
@@ -530,7 +530,7 @@ td .chip,td .ssp{white-space:normal;max-width:100%;overflow-wrap:break-word;vert
 .trw{display:flex;gap:10px;align-items:center}@media (max-width:640px){.trw>#ttabs{flex:1 1 auto}}.trw[hidden]{display:none}
 .bar .fold.ktog{height:var(--ctl);min-height:var(--ctl);border-radius:var(--r);padding:0 14px}
 .filt{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
-.vrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.vrow .views{flex:0 1 880px;min-width:0}.vrow .views .seg{width:100%}
+.vrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.vrow .views{flex:0 1 1000px;min-width:0}.vrow .views .seg{width:100%}
 .filt[hidden]{display:none}
 /* menu1~3 높이(--ctl)를 맞추고, PC에서는 menu1 너비(760px)에 지역·구분·전형 줄을 맞춤 */
 .bar .views .seg button,.bar #ttabs button{min-height:var(--ctl)}
@@ -824,6 +824,76 @@ details[open]>summary .chev{transform:rotate(90deg)}
   .kpis.tpk{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}.tpk .kpi{padding:10px 12px}.tpk .kpi .v{font-size:22px}
   .tpt td:first-child{max-width:150px}.tpt .tpn{font-size:12px}.tpt .hm{display:none}.tpt td,.tpt th{padding:8px 6px}.tpt td.gh{min-width:0;font-size:11.5px;padding:8px 1px}.tpt th.gc{padding:8px 1px;font-size:11px}.tpdist .qb{width:110px}}
 @media print{.tptop,.tpsubs,.tpgs{display:none}.tpcol{display:block!important;break-inside:avoid}}
+
+/* ── 충족 판정 ── */
+.jd{display:grid;grid-template-columns:330px minmax(0,1fr);gap:20px;align-items:start}
+.jdp{position:sticky;top:calc(var(--barh,64px) + 10px);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.jdp h3{font-size:16px;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.jdp h3 small{font-size:12px;font-weight:500;color:var(--muted)}
+.jdb{display:flex;flex-direction:column;gap:14px}
+.jfs{display:flex;flex-direction:column;gap:6px;min-width:0}
+.jfs>label,.jfs>.lb{font-size:12px;font-weight:700;color:var(--ink2)}
+.jrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.jfs select{font:inherit;border:1px solid var(--line2);border-radius:8px;background:var(--surface);color:var(--ink);padding:7px 8px;width:100%;min-width:0}
+.jseg{display:flex;width:100%}.jseg button{flex:1;justify-content:center;padding:6px 0}
+.jseg button[aria-pressed="true"],.jtrs button[aria-pressed="true"]{background:color-mix(in srgb,var(--ink) 11%,var(--surface));color:var(--ink);font-weight:800;box-shadow:inset 0 -3px 0 var(--accent)}
+.jgr{display:grid;grid-template-columns:62px 1fr;gap:5px 8px;align-items:center}
+.jgr .nm{font-size:13px;font-weight:700}
+.jgb{display:grid;grid-template-columns:repeat(9,1fr) 1.3fr;border:1px solid var(--line2);border-radius:7px;overflow:hidden;background:var(--surface)}
+.jgb button{border:0;background:none;padding:4px 0;font-size:13px;cursor:pointer;font-variant-numeric:tabular-nums;min-width:0}
+.jgb button+button{border-left:1px solid var(--line)}
+.jgb button[aria-pressed="true"]{background:var(--ink);color:var(--bg);font-weight:800}
+.jgb button.q{font-size:11px;color:var(--muted)}
+.jgb button.q[aria-pressed="true"]{color:var(--bg)}
+.jhint{font-size:12px;color:var(--muted);margin:0}
+.jsum{display:none;justify-content:space-between;align-items:center;gap:8px;font-size:13px}
+.jsum b{font-variant-numeric:tabular-nums}
+.jsum button,.jdone{border:1px solid var(--line2);background:var(--surface);border-radius:8px;padding:6px 12px;font-weight:700;white-space:nowrap;cursor:pointer}
+.jdone{display:none}
+.jres{display:flex;flex-direction:column;gap:12px;min-width:0}
+.jkp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.jkp button{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0}
+.jkp .l{font-size:12px;color:var(--muted);font-weight:700}
+.jkp .v{font-size:26px;font-weight:900;line-height:1.1;font-variant-numeric:tabular-nums}
+.jkp .v small{font-size:13px;color:var(--muted);font-weight:700;margin-left:2px}
+.jkp button[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 -3px 0 var(--accent)}
+.jkp .ok .v{color:var(--jok)}.jkp .ck .v{color:var(--warn)}.jkp .no .v{color:var(--accent)}
+.jfl{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.jhr{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--ink2);cursor:pointer}.jhr small{color:var(--muted)}
+#jt{table-layout:fixed}
+#jt th{background:var(--sunk);font-size:12px;color:var(--ink2);font-weight:700;padding:8px 10px}
+#jt td{font-size:13px}
+#jt tr.jr{cursor:pointer}#jt tr.jr:hover td{background:var(--sunk)}
+#jt td.u{font-weight:800;font-size:14px}#jt td.u small{display:block;font-weight:500;font-size:11px;color:var(--muted)}
+.jtk{display:inline-block;font-size:11px;font-weight:800;border-radius:5px;padding:1px 6px;color:#fff;background:var(--tc);margin-right:3px}
+.jtk.논술{color:#1b2127}
+.jst{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:800;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.jst::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor}
+.jst.ok{background:var(--jok-soft);color:var(--jok)}.jst.ck{background:var(--warn-soft);color:var(--warn)}.jst.no{background:var(--accent-soft);color:var(--accent)}
+.jwhy{color:var(--ink2)}.jwhy .p{display:block;font-size:12px;color:var(--muted)}
+.jdept{font-size:11px;font-weight:700;color:var(--t4);border:1px solid currentColor;border-radius:4px;padding:0 4px;margin-left:4px}
+#jt tr.jdt td{background:var(--sunk);padding:12px 16px}
+.jdl{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px 14px;margin:0}
+.jdl dt{font-weight:700;color:var(--ink2);font-size:12px}.jdl dd{margin:0;min-width:0}
+.jun{display:flex;flex-direction:column;gap:4px}.jun div{display:flex;gap:8px;align-items:baseline}.jun .jst{flex:none}
+.jcap{font-size:12px;color:var(--muted)}
+.jmore{text-align:center}.jmore button{border:1px solid var(--line2);background:var(--surface);border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:700}
+.jopen{margin-top:8px;border:1px solid var(--line2);background:var(--surface);border-radius:8px;padding:5px 12px;cursor:pointer;font-weight:700}
+.jcards{display:none;flex-direction:column;gap:8px}
+.jcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;display:flex;flex-direction:column;gap:5px}
+.jcard .h{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.jcard .h b{font-size:15px}
+.jcard .n{font-size:13px;color:var(--ink2)}.jcard .m{font-size:12px;color:var(--muted)}.jcard .w{font-size:12.5px;color:var(--ink2)}.jcard .w .p{display:block;color:var(--muted)}
+.jcard .jdl{margin-top:6px;padding-top:8px;border-top:1px solid var(--line);grid-template-columns:1fr}
+:root{--jok:#1f7a5a;--jok-soft:#e3f3ec}
+:root[data-theme="dark"]{--jok:#5cc79c;--jok-soft:#1b2e26}:root[data-theme="dark"] .jtk{color:#12161b}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--jok:#5cc79c;--jok-soft:#1b2e26}:root:not([data-theme="light"]) .jtk{color:#12161b}}
+@media (max-width:1179px){.jd{grid-template-columns:minmax(0,1fr)}.jdp{position:static}.jdb .jgr{max-width:420px}}
+@media (max-width:640px){
+  .jdp.col .jdb,.jdp.col h3{display:none}.jdp.col .jsum{display:flex}.jdone{display:block}
+  .jkp{gap:6px}.jkp button{padding:8px}.jkp .v{font-size:20px}.jkp .l{font-size:11px}
+  #jtbox{display:none}.jcards{display:flex}
+  .jfl .seg{flex:1 1 100%}.jfl .seg button{flex:1;justify-content:center;padding:6px 4px}
+}
 </style>
 
 </head>
@@ -854,6 +924,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
     <button role="tab" id="v-quota" data-v="quota">모집인원</button>
     <button role="tab" id="v-change" data-v="change">2028 변경</button>
     <button role="tab" id="v-topic" data-v="topic">주제별 모음</button>
+    <button role="tab" id="v-judge" data-v="judge">충족 판정</button>
     <button role="tab" id="v-about" data-v="about">자료 기준</button>
     <button role="tab" id="v-rur" data-v="rur">농어촌</button>
   </div></nav></div>
@@ -921,6 +992,24 @@ details[open]>summary .chev{transform:rotate(90deg)}
   <div id="tpbody"></div>
 </section>
 
+<section class="view" id="s-judge" aria-labelledby="v-judge" hidden>
+  <div class="sec-h"><h2>지원 자격·수능최저 충족 판정</h2><p>학생 정보를 넣으면 전형마다 지원 자격과 수능최저 충족 여부를 봅니다 · 합격 가능성이 아닙니다 · 위의 지역·구분·검색이 그대로 적용됩니다 · 행을 누르면 모집단위별 판정</p></div>
+  <div class="jd">
+    <aside class="jdp" id="jdp" aria-label="학생 정보">
+      <div class="jsum"><span id="jsum"></span><button type="button" id="jedit">입력 고치기</button></div>
+      <h3>학생 정보 <small>저장하지 않아요</small></h3>
+      <div class="jdb" id="jdb"></div>
+    </aside>
+    <div class="jres">
+      <div class="jkp" id="jkp"></div>
+      <div class="jfl"><div class="seg jtrs" id="jtrk" role="group" aria-label="전형 유형"></div><label class="jhr"><input type="checkbox" id="jhreg" checked> 다른 지역 지역인재 숨김 <small id="jhregn"></small></label></div>
+      <div class="tbox" id="jtbox"><table id="jt"></table></div>
+      <div class="jcards" id="jcards"></div>
+      <p class="jcap">출처: 각 대학 2028학년도 대입전형 시행계획 · 원문 문구를 규칙으로 옮겨 판정하며, 원문 해석이 갈리거나 입력하지 않은 정보가 결과를 가르면 '확인 필요'로 보여 줍니다 · 학폭·이수 학기·거주 요건 등은 판정하지 않고 메모로만 보여 줍니다 · 최종 확인은 모집요강으로 하세요</p>
+    </div>
+  </div>
+</section>
+
 <section class="view" id="s-about" aria-labelledby="v-about" hidden>
   <div class="sec-h"><h2>자료 기준</h2></div>
   <div class="about" id="about"></div>
@@ -939,6 +1028,9 @@ details[open]>summary .chev{transform:rotate(90deg)}
   <div class="rpa"><button type="button" class="pri" id="rps">제보 보내기</button><button type="button" id="rpc">내용 복사</button><button type="button" class="cl" id="rpx">닫기</button></div>
   <p class="rps" id="rpst" role="status" aria-live="polite"></p>
 </dialog>
+<script>
+/*@@JUDGE@@*/
+</script>
 <script>
 const D=/*@@DATA@@*/;const U=[...D.U].sort((a,b)=>a.u.localeCompare(b.u,'ko')),VERS=D.V,LV=VERS[VERS.length-1];
 const TR=['교과','종합','논술','정시'];
@@ -967,7 +1059,7 @@ const ALL=U.flatMap(u=>u.rows);
 const AUD=['전용','포함'];const CAP=['외','내','미기재'];const RQ=['6년','12년','6년·12년','미기재'];const CARRY=['별도','이월','없음','미기재'];
 U.forEach(u=>(u.rur||[]).forEach(r=>{r.u=u.u;r.g=u.g;r.rg=u.rg;r.rur=1}));
 const RALL=U.flatMap(u=>u.rur||[]);
-const VIEWS=['univ','track','quota','change','topic','about','rur'];
+const VIEWS=['univ','track','quota','change','topic','judge','about','rur'];
 const isTV=()=>S.v==='track'||S.v==='rur',SRC=()=>S.v==='rur'?RALL:ALL;
 let TT={track:'교과',rur:'교과'};
 const MOB=matchMedia('(max-width: 640px)');
@@ -1670,9 +1762,83 @@ function renderTopic(){if(!TOPICS.some(t=>t[0]===TP.k))TP.k='elig';
   $('tpsub').querySelectorAll('.tpgs button').forEach(b=>b.onclick=()=>{TPG=b.dataset.g;renderTopic()});
   $('tpbody').querySelectorAll('tr[data-u],.tpi').forEach(el=>{el.onclick=e=>{if(!e.target.closest('a'))openU(el.dataset.u)};if(el.tagName==='TR')el.onkeydown=e=>{if(e.key==='Enter')openU(el.dataset.u)}});
   VORD.topic=[...new Set(o.L.map(x=>x.u.u))];syncHash()}
+
+/* ── 충족 판정: src/judge.js(window.Judge) + data/judge.json(D.J) ── */
+// 학생 정보는 이 화면 안에서만 쓰고 저장·주소에 남기지 않는다
+const JST={status:'재학',gradYear:2028,schoolType:'일반고',region:'',recommend:null,grades:{국:null,수:null,영:null,통사:null,통과:null,한국사:null}};
+const JUI={st:'충족',tr:'전체',hreg:true,open:null,lim:60,init:false};
+const JSUB=[['국','국어'],['수','수학'],['영','영어'],['통사','통합사회'],['통과','통합과학'],['한국사','한국사']];
+let JROWS=null;
+function jRows(){if(JROWS)return JROWS;const fill=x=>Object.assign({areas:[],tam:'',req:'',hist:'',eng:'',etc:''},x);
+  JROWS=ALL.map(r=>{const j=D.J[r.u+'|'+r.track+'|'+r.name]||{};return Object.assign({},r,{row0:r,min_rules:(j.m||[]).map(fill),min_status:j.ms||'',min_reason:j.mr||'',elig:j.e||{},elig_status:j.es||'',elig_reason:j.er||''})});return JROWS}
+const jCls=s=>s==='충족'?'ok':s==='미충족'?'no':'ck';
+const jBadge=s=>`<span class="jst ${jCls(s)}">${s}</span>`;
+const jOther=x=>x.elig.status==='미충족'&&x.elig.reasons.some(r=>/^지역 요건\(/.test(r));
+function jPanel(){
+  const seg=(k,opts)=>`<div class="seg jseg" data-k="${k}" role="group">${opts.map(([v,l])=>`<button type="button" data-v="${v}" aria-pressed="${String(JST[k])===v}">${l}</button>`).join('')}</div>`;
+  $('jdb').innerHTML=`<div class="jfs"><span class="lb">신분</span>${seg('status',[['재학','재학생'],['졸업','졸업생'],['검정고시','검정고시']])}</div>
+    <div class="jrow"><div class="jfs"><label for="jsch">고교 유형</label><select id="jsch">${Judge.SCHOOL_TYPES.filter(x=>x!=='검정고시').map(x=>`<option${x===JST.schoolType?' selected':''}>${x}</option>`).join('')}</select></div>
+    <div class="jfs"><label for="jrg">고교 소재 시·도</label><select id="jrg"><option value="">선택</option>${Judge.REGIONS.map(x=>`<option${x===JST.region?' selected':''}>${x}</option>`).join('')}</select></div></div>
+    <div class="jfs" id="jgyw"${JST.status==='재학'?' hidden':''}><label for="jgy">졸업(합격) 연도</label><select id="jgy">${[2027,2026,2025,2024,2023,2022,2021,2020,2019,2018].map(y=>`<option${y===JST.gradYear?' selected':''}>${y}</option>`).join('')}</select></div>
+    <div class="jfs"><span class="lb">학교장 추천</span>${seg('recommend',[['true','받을 수 있음'],['false','어려움'],['null','모름']])}</div>
+    <div class="jfs"><span class="lb">수능 등급(예상·모의고사)</span><div class="jgr">${JSUB.map(([k,n])=>`<span class="nm">${n}</span><div class="jgb" data-s="${k}" role="group" aria-label="${n} 등급">${[1,2,3,4,5,6,7,8,9].map(g=>`<button type="button" data-g="${g}" aria-pressed="${JST.grades[k]===g}">${g}</button>`).join('')}<button type="button" class="q" data-g="" aria-pressed="${JST.grades[k]==null}" aria-label="모름">?</button></div>`).join('')}</div>
+      <p class="jhint">'?'는 모르는 영역이에요. 1등급과 9등급을 모두 넣어 보고 결과가 갈리면 '확인 필요'로 보여 줘요.</p></div>
+    <button type="button" class="jdone" id="jdone">결과 보기</button>`;
+  $('jdb').querySelectorAll('.jseg').forEach(sg=>sg.onclick=e=>{const b=e.target.closest('button');if(!b)return;const v=b.dataset.v,k=sg.dataset.k;
+    JST[k]=v==='true'?true:v==='false'?false:v==='null'?null:v;
+    if(k==='status'){JST.gradYear=v==='재학'?2028:+$('jgy').value;JST.schoolType=v==='검정고시'?'검정고시':$('jsch').value}
+    jPanel();renderJudge()});
+  $('jdb').querySelectorAll('.jgb').forEach(bx=>bx.onclick=e=>{const b=e.target.closest('button');if(!b)return;JST.grades[bx.dataset.s]=b.dataset.g?+b.dataset.g:null;bx.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderJudge()});
+  $('jsch').onchange=e=>{if(JST.status!=='검정고시')JST.schoolType=e.target.value;renderJudge()};
+  $('jrg').onchange=e=>{JST.region=e.target.value;renderJudge()};
+  $('jgy').onchange=e=>{JST.gradYear=+e.target.value;renderJudge()};
+  $('jdone').onclick=()=>{$('jdp').classList.add('col');$('jdp').scrollIntoView({block:'start'})};
+}
+function jMin(r){if(r.min_flag==='없음'||!r.min_rules.length)return '<span class="jcap">없음</span>';const t=r.min_s||r.min_text||'';return esc(t.length>70?t.slice(0,68)+'…':t)}
+function jWhy(x){const r=x.row;
+  if(x.status==='충족'){if(!r.min_rules.length||r.min_flag==='없음')return '수능최저 없음 · 지원 자격 해당';
+    const u=x.min.units||[],ok=u.filter(v=>v.status==='충족'&&!/없음/.test(v.detail)),part=(x.notes||[]).find(n=>/^일부 모집단위만/.test(n));
+    const main=ok[0]?`${u.length>1&&ok[0].label!=='기본'?ok[0].label+': ':''}${ok[0].detail}`:'수능최저 미적용 모집단위 지원 가능';
+    return esc(main)+(part?`<span class="p">${esc(part.replace('일부 모집단위만 충족: ','못 맞추는 모집단위: '))}</span>`:'')}
+  return esc(x.reasons.slice(0,2).join(' · '))+(x.reasons.length>2?`<span class="p">외 ${x.reasons.length-2}건</span>`:'')}
+function jDetail(x){const r=x.row;
+  const units=(x.min.units||[]).map(u=>`<div>${jBadge(u.status)}<span><b>${esc(u.label)}</b> ${esc(u.detail)}</span></div>`).join('')||'수능최저 없음';
+  const el=[...(x.elig.status==='충족'?[]:x.elig.reasons),...x.elig.notes,...(x.min.notes||[]).filter(n=>!/^일부 모집단위만/.test(n))].map(esc).join(' · ')||'해당 조건 없음';
+  return `<dl class="jdl"><dt>모집단위별 최저</dt><dd><div class="jun">${units}</div></dd>
+    <dt>지원 자격</dt><dd>${jBadge(x.elig.status)} ${el}</dd>
+    <dt>원문 문구</dt><dd>${esc(r.min_text||'수능최저 없음')}<br><span class="jcap">지원자격: ${esc(r.elig_text)}${r.pg?` · 원문 ${r.pg}쪽`:''}</span><br><button type="button" class="jopen" data-u="${esc(r.u)}">대학 상세 보기</button></dd></dl>`}
+const jKey=r=>r.u+'|'+r.track+'|'+r.name;
+function renderJudge(){
+  if(!JUI.init){JUI.init=true;jPanel();
+    $('jhreg').onchange=e=>{JUI.hreg=e.target.checked;renderJudge()};
+    $('jedit').onclick=()=>$('jdp').classList.remove('col');
+    $('jkp').onclick=e=>{const b=e.target.closest('button');if(b){JUI.st=b.dataset.s;JUI.lim=60;renderJudge()}};
+    $('jtrk').onclick=e=>{const b=e.target.closest('button');if(b){JUI.tr=b.dataset.t;JUI.lim=60;renderJudge()}};
+    const open=e=>{const o=e.target.closest('.jopen');if(o){openU(o.dataset.u);return true}const m=e.target.closest('.jmore button');if(m){JUI.lim+=120;renderJudge();return true}};
+    $('jt').onclick=e=>{if(open(e))return;const tr=e.target.closest('tr.jr');if(tr){JUI.open=JUI.open===tr.dataset.k?null:tr.dataset.k;renderJudge()}};
+    $('jcards').onclick=e=>{if(open(e))return;const c=e.target.closest('.jcard');if(c){JUI.open=JUI.open===c.dataset.k?null:c.dataset.k;renderJudge()}}}
+  document.documentElement.style.setProperty('--barh',$('bar').offsetHeight+'px');
+  const UM=Object.fromEntries(U.map(u=>[u.u,u]));
+  const res=Judge.judgeAll(jRows(),JST).filter(x=>{const u=UM[x.row.u];return inScope(u)&&qMatch(u,x.row)});
+  const nOther=res.filter(jOther).length;$('jhregn').textContent=nOther+'개';
+  const vis=res.filter(x=>!(JUI.hreg&&jOther(x)));
+  const inT=x=>JUI.tr==='전체'||x.row.track===JUI.tr,inS=x=>JUI.st==='전체'||x.status===JUI.st;
+  $('jkp').innerHTML=[['전체','','전체 전형'],['충족','ok','충족'],['확인 필요','ck','확인 필요'],['미충족','no','미충족']].map(([k,c,l])=>`<button type="button" class="${c}" data-s="${k}" aria-pressed="${JUI.st===k}"><span class="l">${l}</span><span class="v">${vis.filter(x=>inT(x)&&(k==='전체'||x.status===k)).length}<small>개</small></span></button>`).join('');
+  $('jtrk').innerHTML=['전체',...TR].map(t=>`<button type="button" data-t="${t}" aria-pressed="${JUI.tr===t}">${t}<small>${vis.filter(x=>inS(x)&&(t==='전체'||x.row.track===t)).length}</small></button>`).join('');
+  const list=vis.filter(x=>inT(x)&&inS(x)).sort((a,b)=>a.row.u.localeCompare(b.row.u,'ko')||TR.indexOf(a.row.track)-TR.indexOf(b.row.track)||a.row.name.localeCompare(b.row.name,'ko'));
+  const shown=list.slice(0,JUI.lim),more=list.length>JUI.lim?`<div class="jmore"><button type="button">${list.length-JUI.lim}개 더 보기</button></div>`:'';
+  const nm=r=>`<span class="jtk ${r.track}" style="--tc:${TC[r.track]}">${r.track}</span>${esc(r.name)}${r.dept?`<span class="jdept">${esc(r.dept)}</span>`:''}`;
+  if(MOB.matches){$('jt').innerHTML='';
+    $('jcards').innerHTML=shown.map(x=>{const r=x.row,k=jKey(r);return `<div class="jcard" data-k="${esc(k)}"><div class="h"><b>${esc(r.u)}</b>${jBadge(x.status)}</div><div class="n">${nm(r)}</div><div class="m">최저 ${jMin(r)}</div><div class="w">${jWhy(x)}</div>${JUI.open===k?jDetail(x):''}</div>`}).join('')+more||'<p class="jcap">조건에 맞는 전형이 없어요.</p>'}
+  else{$('jcards').innerHTML='';
+    $('jt').innerHTML=`<colgroup><col style="width:132px"><col><col style="width:100px"><col style="width:23%"><col style="width:32%"></colgroup><thead><tr><th>대학</th><th>전형</th><th>판정</th><th>수능최저</th><th>판정 근거</th></tr></thead><tbody>${shown.map(x=>{const r=x.row,k=jKey(r);
+      return `<tr class="jr" data-k="${esc(k)}" tabindex="0"><td class="u">${esc(r.u)}<small>${esc(r.g)} · ${esc(r.rg)}</small></td><td>${nm(r)}</td><td>${jBadge(x.status)}</td><td>${jMin(r)}</td><td class="jwhy">${jWhy(x)}</td></tr>`+(JUI.open===k?`<tr class="jdt"><td colspan="5">${jDetail(x)}</td></tr>`:'')}).join('')||'<tr><td colspan="5" class="jcap">조건에 맞는 전형이 없어요.</td></tr>'}</tbody>`+(more?`<tfoot><tr><td colspan="5">${more}</td></tr></tfoot>`:'')}
+  const g=JST.grades,gv=k=>g[k]??'?';
+  $('jsum').innerHTML=`${JST.status==='재학'?'재학생':JST.status} · ${esc(JST.schoolType)} · ${esc(JST.region||'지역 미선택')}<br><b>국${gv('국')} 수${gv('수')} 영${gv('영')} 사${gv('통사')} 과${gv('통과')} 한${gv('한국사')}</b>`;
+}
 function renderMain(){hideTip();
-  ['univ','quota','track','change','topic','about'].forEach(v=>$('s-'+v).hidden=v==='track'?!isTV():S.v!==v);
-  if(S.v==='univ')renderUniv();else if(S.v==='quota')renderQuota();else if(isTV())renderTrack();else if(S.v==='change')renderChange();else if(S.v==='topic')renderTopic();else renderAbout();syncHash();
+  ['univ','quota','track','change','topic','judge','about'].forEach(v=>$('s-'+v).hidden=v==='track'?!isTV():S.v!==v);
+  if(S.v==='judge')renderJudge();else if(S.v==='univ')renderUniv();else if(S.v==='quota')renderQuota();else if(isTV())renderTrack();else if(S.v==='change')renderChange();else if(S.v==='topic')renderTopic();else renderAbout();syncHash();
 }
 // 2028 수시모집요강 발표(2027-04-30) D-day, 한국 시간 날짜 기준
 (function(){const el=$('dday');if(!el)return;const kd=Math.floor((Date.now()+9*36e5)/864e5),td=Math.floor(Date.UTC(2027,3,30)/864e5),n=td-kd;
@@ -1680,12 +1846,12 @@ function renderMain(){hideTip();
 function renderAll(){renderVer();renderBar();renderKpis();renderMain();renderTray()}
 MOB.addEventListener?.('change',()=>{if(isTV())renderTrack()});
 matchMedia('(max-width: 1179px)').addEventListener?.('change',()=>{if(isTV())renderTrack()});
-MOB.addEventListener?.('change',()=>{if(S.v==='univ')renderUniv()});MID.addEventListener?.('change',()=>{if(S.v==='univ')renderUniv();if(isTV())renderTrack()});
+MOB.addEventListener?.('change',()=>{if(S.v==='univ')renderUniv();if(S.v==='judge')renderJudge()});MID.addEventListener?.('change',()=>{if(S.v==='univ')renderUniv();if(isTV())renderTrack()});
 renderAll();
 {const m=location.hash.match(/^#u\/(.+)$/);if(m){DEEP=true;openU(decodeURIComponent(m[1]),'none')}}
 
 /* ── 인쇄: 모든 쪽 위에 머리글·인쇄 시각, 아래에 쪽 번호(@page 여백 상자, 크롬·엣지 131+) ── */
-const VNAME={univ:'대학별 한눈에',quota:'전형별 모집인원',track:'전형별 비교',rur:'농어촌 전형',change:'2027 대비 2028 변경사항',topic:'주제별 모음',about:'자료 기준'};
+const VNAME={judge:'충족 판정',univ:'대학별 한눈에',quota:'전형별 모집인원',track:'전형별 비교',rur:'농어촌 전형',change:'2027 대비 2028 변경사항',topic:'주제별 모음',about:'자료 기준'};
 function printHead(){if(sheet&&sheet.dataset.u)return `${sheet.dataset.u} 대학 상세`;if(sheet)return '전형 비교';
   return isTV()?$('pinfo').textContent.split(' · v')[0]:`${VNAME[S.v]} · ${gL()}${rgL()}`}
 function setPrintBoxes(){const d=new Date(),p=n=>String(n).padStart(2,'0');const ts=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;

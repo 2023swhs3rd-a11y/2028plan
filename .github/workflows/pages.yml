@@ -27,6 +27,8 @@ jobs:
         run: node scripts/build.mjs --check
       - name: MCP 서버 시험
         run: node mcp/test.mjs
+      - name: 충족 판정 사례 시험
+        run: node tools/judge/test.cjs
       - name: 배포 파일 모으기
         run: |
           mkdir _site

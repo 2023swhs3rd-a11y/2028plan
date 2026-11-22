@@ -40,7 +40,7 @@ for (const [w, scheme] of [[1440, 'light'], [1440, 'dark'], [390, 'light'], [390
   p.on('pageerror', e => errs.push(e.message));
   await p.goto(URL); await p.evaluate(() => { try { localStorage.clear(); } catch {} }); await p.reload(); await p.waitForTimeout(600);
   const tag = `${w} ${scheme}`;
-  for (const v of ['univ', 'track', 'quota', 'change', 'topic', 'about', 'rur']) {
+  for (const v of ['univ', 'track', 'quota', 'change', 'topic', 'judge', 'about', 'rur']) {
     await p.click(`[data-v="${v}"]`); await p.waitForTimeout(300);
     if (v === 'topic') {
       for (const k of await p.$$eval('#tptop button', bs => bs.map(x => x.dataset.k))) {
