@@ -20,5 +20,14 @@ RATE_LIMIT_PER_DAY_TOTAL = "500"
 #   ACCESS_CODE        : 외부 접속용 접근 코드(비밀번호)
 #   ALLOWED_ORIGINS    : (선택) 허용 Origin 제한 (예: https://2023swhs3rd-a11y.github.io)
 
+# 한국→홍콩(HKG) 경유 시 Gemini 지역 차단 회피용 북미(wnam) 출구 Durable Object (무료 플랜 SQLite 지원)
+[[durable_objects.bindings]]
+name = "GEMINI_PROXY"
+class_name = "GeminiProxy"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["GeminiProxy"]
+
 # 미리보기 배포(main 이외 브랜치·PR)용. 비워 두면 위 설정을 그대로 쓴다.
 [previews]

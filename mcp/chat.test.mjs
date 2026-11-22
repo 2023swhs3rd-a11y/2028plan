@@ -408,4 +408,52 @@ const fullEnv = {
   assert.equal(locked.status, 429);
 }
 
-console.log('챗봇 서버 시험 통과 (IP/CIDR·접근제어·호출상한·라우팅·자동폴백·SSE·MCP 도구 호출 전체 확인)');
+// ── 10. GeminiProxy Durable Object (북미 wnam 출구 프록시 및 대상 도메인 제한) ──
+{
+  const { GeminiProxy, createGeminiFetch } = await import('./src/worker.js');
+  const proxy = new GeminiProxy({}, {});
+
+  // 허용되지 않은 도메인 차단 (SSRF 방지)
+  const bad = await proxy.fetch(new Request('https://gemini-proxy.internal/', {
+    method: 'POST',
+    headers: { 'X-Proxy-Target': 'https://evil.example.com/steal' },
+  }));
+  assert.equal(bad.status, 400);
+
+  // createGeminiFetch가 Gemini 요청을 wnam locationHint DO로 전달하고 Claude 요청은 직접 호출하는지 확인
+  let hintUsed = null;
+  let forwardedUrl = null;
+  let directUrl = null;
+  const fakeEnv = {
+    GEMINI_PROXY: {
+      idFromName: name => `id:${name}`,
+      get: (_id, opts) => {
+        hintUsed = opts?.locationHint;
+        return {
+          fetch: (u, init) => proxy.fetch(new Request(u, init), async (target) => {
+            forwardedUrl = target;
+            return new Response('ok-gemini', { status: 200 });
+          }),
+        };
+      },
+    },
+  };
+  const wrappedFetch = createGeminiFetch(fakeEnv, async (u) => {
+    directUrl = u;
+    return new Response('ok-claude', { status: 200 });
+  });
+  const rGem = await wrappedFetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:streamGenerateContent?alt=sse', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': 'AQ.test' },
+    body: '{}',
+  });
+  assert.equal(await rGem.text(), 'ok-gemini');
+  assert.equal(hintUsed, 'wnam');
+  assert.match(forwardedUrl, /^https:\/\/generativelanguage\.googleapis\.com\//);
+
+  const rCla = await wrappedFetch('https://api.anthropic.com/v1/messages', { method: 'POST', body: '{}' });
+  assert.equal(await rCla.text(), 'ok-claude');
+  assert.equal(directUrl, 'https://api.anthropic.com/v1/messages');
+}
+
+console.log('챗봇 서버 시험 통과 (IP/CIDR·접근제어·호출상한·라우팅·자동폴백·SSE·MCP 도구 호출·wnam 프록시 전체 확인)');
