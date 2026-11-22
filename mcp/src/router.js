@@ -1,8 +1,17 @@
 // 질문 성격·복잡도에 따른 Gemini(빠른 조회) ↔ Claude(복합 비교·상담 준비표·안내문 작성) 자동 라우팅.
 // 수동 모드(auto / fast / deep)와 한쪽 API 키 미설정·오류 시 폴백 대상 결정을 함께 처리한다.
 
-export const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash-lite';
+export const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
+export const DEFAULT_GEMINI_FALLBACKS = ['gemini-3.5-flash-lite', 'gemini-2.5-flash-lite'];
 export const DEFAULT_CLAUDE_MODEL = 'claude-sonnet-4-5';
+
+export function getGeminiCandidates(primaryModel, env = {}) {
+  const custom = String(env.GEMINI_FALLBACK_MODELS || '').trim();
+  const extras = custom
+    ? custom.split(/[\s,]+/).filter(Boolean)
+    : DEFAULT_GEMINI_FALLBACKS;
+  return [...new Set([primaryModel, ...extras].filter(Boolean))];
+}
 
 export function getProviders(env = {}) {
   return {

@@ -5,7 +5,7 @@
 
 import { rpc, SERVER } from './mcp.js';
 import { checkAccess, getClientIp, getAccessCode, RateLimiter } from './access.js';
-import { getProviders, selectRoute } from './router.js';
+import { getProviders, selectRoute, getGeminiCandidates } from './router.js';
 
 const MAX_BODY = 64 * 1024;
 const MAX_MESSAGES = 20;
@@ -206,10 +206,11 @@ async function executeToolCall({ id, name, args, toolTitleMap, getData, emit }) 
 }
 
 const TRANSIENT_GEMINI_RE = /HTTP (429|503)|high demand|overloaded|UNAVAILABLE|RESOURCE_EXHAUSTED/i;
+const CASCADE_GEMINI_RE = /HTTP (404|429|503)|high demand|overloaded|UNAVAILABLE|RESOURCE_EXHAUSTED/i;
 const sleep = ms => (ms > 0 ? new Promise(r => setTimeout(r, ms)) : Promise.resolve());
 
 // ── Gemini 스트리밍 + 다중 도구 호출 루프 (AI Studio AIza·AQ. 키 기본 지원, GEMINI_BASE_URL 지정 시 Vertex AI 등 사용) ──
-async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolTitleMap, messages, getData, emit, fetchImpl, signal, retryDelayMs = 1200 }) {
+async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolTitleMap, messages, getData, emit, fetchImpl, signal, retryDelayMs = 600 }) {
   const contents = messages.map(m => ({
     role: m.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: m.content }],
@@ -600,24 +601,49 @@ async function handlePostChat(request, getData, env, limiter, fetchImpl, retryDe
         }
       };
 
-      const runOne = (providerName, modelName) => {
+      const runOne = async (providerName, modelName) => {
         if (providerName === 'gemini') {
-          return runGemini({
-            model: modelName,
-            apiKey: String(env.GEMINI_API_KEY).trim(),
-            baseUrl: env.GEMINI_BASE_URL,
-            systemPrompt,
-            mcpTools,
-            toolTitleMap,
-            messages: parsedMsgs.messages,
-            getData,
-            emit,
-            fetchImpl,
-            signal: request.signal,
-            retryDelayMs,
-          });
+          const candidates = getGeminiCandidates(modelName, env);
+          let lastErr;
+          for (let idx = 0; idx < candidates.length; idx++) {
+            const m = candidates[idx];
+            if (idx > 0) {
+              emit('meta', {
+                provider: 'gemini',
+                model: m,
+                mode: route.mode,
+                complexity: route.complexity,
+                reason: `${route.reason} (과부하로 ${m} 자동 전환)`,
+                fallbackAvailable: Boolean(route.fallback),
+                limits: rl.limits,
+              });
+            }
+            try {
+              const r = await runGemini({
+                model: m,
+                apiKey: String(env.GEMINI_API_KEY).trim(),
+                baseUrl: env.GEMINI_BASE_URL,
+                systemPrompt,
+                mcpTools,
+                toolTitleMap,
+                messages: parsedMsgs.messages,
+                getData,
+                emit,
+                fetchImpl,
+                signal: request.signal,
+                retryDelayMs,
+              });
+              return { ...r, model: m };
+            } catch (e) {
+              lastErr = e;
+              if (request.signal?.aborted || idx === candidates.length - 1 || !CASCADE_GEMINI_RE.test(String(e?.message || ''))) {
+                throw e;
+              }
+            }
+          }
+          throw lastErr;
         }
-        return runClaude({
+        const r = await runClaude({
           model: modelName,
           apiKey: String(env.ANTHROPIC_API_KEY).trim(),
           systemPrompt,
@@ -629,6 +655,7 @@ async function handlePostChat(request, getData, env, limiter, fetchImpl, retryDe
           fetchImpl,
           signal: request.signal,
         });
+        return { ...r, model: modelName };
       };
 
       emit('meta', {
@@ -649,7 +676,7 @@ async function handlePostChat(request, getData, env, limiter, fetchImpl, retryDe
         const res = await runOne(route.provider, route.model);
         emit('done', {
           provider: usedProvider,
-          model: usedModel,
+          model: res.model || usedModel,
           fallbackUsed,
           toolCalls: res.toolCalls,
           limits: rl.limits,
@@ -674,7 +701,7 @@ async function handlePostChat(request, getData, env, limiter, fetchImpl, retryDe
             const res = await runOne(route.fallback, route.fallbackModel);
             emit('done', {
               provider: usedProvider,
-              model: usedModel,
+              model: res.model || usedModel,
               fallbackUsed,
               toolCalls: res.toolCalls,
               limits: rl.limits,
@@ -727,7 +754,7 @@ export async function handleChat(request, getData, env = {}, opts = {}) {
     if (request.method !== 'POST') {
       return jsonRes({ error: 'Method Not Allowed' }, 405, request, env, { Allow: 'POST, OPTIONS' });
     }
-    return handlePostChat(request, getData, env, limiter, fetchImpl, opts.retryDelayMs ?? 1200);
+    return handlePostChat(request, getData, env, limiter, fetchImpl, opts.retryDelayMs ?? 600);
   }
   return null;
 }
