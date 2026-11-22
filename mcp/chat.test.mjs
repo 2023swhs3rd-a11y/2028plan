@@ -342,38 +342,38 @@ const fullEnv = {
   assert.match(errEv.data.message, /1차:.*2차:/);
   assert.doesNotMatch(errEv.data.message, /AIzaSecret|AQ\.Secret|sk-ant-secret/);
 
-  // 8-d: Vertex AI Express Mode (AQ. 키) 엔드포인트 자동 전환 및 스키마 대문자 타입 확인
+  // 8-d: AI Studio 신규 AQ. 키도 기본 generativelanguage.googleapis.com 사용, GEMINI_BASE_URL 지정 시에만 커스텀 엔드포인트 사용
   assert.equal(
-    geminiEndpoint('gemini-2.5-flash', 'AQ.Ab8RNtest'),
-    'https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:streamGenerateContent?alt=sse',
-  );
-  assert.equal(
-    geminiEndpoint('gemini-2.5-flash', 'AIzaSyTest'),
+    geminiEndpoint('gemini-2.5-flash'),
     'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse',
   );
-  let capturedVertexUrl = '';
+  assert.equal(
+    geminiEndpoint('gemini-2.5-flash', 'https://aiplatform.googleapis.com/v1/publishers/google/'),
+    'https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:streamGenerateContent?alt=sse',
+  );
+  let capturedUrl = '';
   let capturedSchemaType = '';
-  const vertexEnv = { ...fullEnv, GEMINI_API_KEY: 'AQ.Ab8RNtestKey' };
+  const aqStudioEnv = { ...fullEnv, GEMINI_API_KEY: 'AQ.Ab8RNtestKey' };
   const res4 = await handleChat(new Request('https://x.test/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '210.100.12.5' },
     body: JSON.stringify({ mode: 'fast', messages: [{ role: 'user', content: '아주대 전형' }] }),
-  }), getData, vertexEnv, {
+  }), getData, aqStudioEnv, {
     limiter,
     fetch: async (url, init) => {
-      capturedVertexUrl = url;
+      capturedUrl = url;
       const body = JSON.parse(init.body);
       const decl = body.tools[0].functionDeclarations.find(d => d.name === 'get_university');
       capturedSchemaType = decl.parameters.type;
       return sseResponse([
-        `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Vertex Express 응답' }] } }] })}\n\n`,
+        `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ text: 'AI Studio AQ 응답' }] } }] })}\n\n`,
       ]);
     },
   });
   const ev4 = await readClientSSE(res4);
-  assert.match(capturedVertexUrl, /^https:\/\/aiplatform\.googleapis\.com\/v1\/publishers\/google\/models\//);
+  assert.match(capturedUrl, /^https:\/\/generativelanguage\.googleapis\.com\/v1beta\/models\//);
   assert.equal(capturedSchemaType, 'OBJECT');
-  assert.equal(ev4.filter(e => e.event === 'delta').map(e => e.data.text).join(''), 'Vertex Express 응답');
+  assert.equal(ev4.filter(e => e.event === 'delta').map(e => e.data.text).join(''), 'AI Studio AQ 응답');
 }
 
 // ── 9. 입력 검증 및 접근 코드 무차별 대입 차단 ──
