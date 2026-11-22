@@ -6,7 +6,7 @@ compatibility_date = "2025-10-01"
 [vars]
 DATA_URL = "https://2023swhs3rd-a11y.github.io/2028plan/data.json"
 ACCESS_MODE = "either"
-GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_MODEL = "gemini-3.5-flash-lite"
 CLAUDE_MODEL = "claude-sonnet-4-5"
 RATE_LIMIT_PER_MIN = "10"
 RATE_LIMIT_PER_DAY_IP = "100"

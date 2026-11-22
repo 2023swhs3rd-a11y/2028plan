@@ -197,18 +197,22 @@ const fullEnv = {
   const mockFetch = async (url, init) => {
     assert.match(url, /generativelanguage\.googleapis\.com/);
     const reqBody = JSON.parse(init.body);
-    // 도구 목록에 data_info 의 빈 parameters 생략 확인
+    // 도구 목록에 data_info 의 빈 parameters 생략 및 deprecated temperature 미전송 확인
     const dataInfoDecl = reqBody.tools[0].functionDeclarations.find(d => d.name === 'data_info');
     assert.ok(dataInfoDecl && !('parameters' in dataInfoDecl), 'Gemini 빈 parameters 생략');
+    assert.equal('temperature' in reqBody.generationConfig, false, 'Gemini 3.x deprecated temperature 미전송');
     geminiRound++;
     if (geminiRound === 1) {
       return sseResponse([
         `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ thought: true, text: '내부 추론은 숨김' }] } }] })}\n\n`,
-        `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ functionCall: { name: 'get_university', args: { name: '아주대' } }, thoughtSignature: 'sig-1' }] } }] })}\n\n`,
+        `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ functionCall: { id: 'fc-1', name: 'get_university', args: { name: '아주대' } }, thoughtSignature: 'sig-1' }] } }] })}\n\n`,
       ]);
     }
-    // 2라운드: 실제 rpc('tools/call') 결과가 functionResponse로 전달되었는지 검증
+    // 2라운드: 실제 rpc('tools/call') 결과와 id·thoughtSignature가 그대로 전달되었는지 검증
+    const prevModelTurn = reqBody.contents[reqBody.contents.length - 2];
+    assert.equal(prevModelTurn.parts[0].thoughtSignature, 'sig-1');
     const lastTurn = reqBody.contents[reqBody.contents.length - 1];
+    assert.equal(lastTurn.parts[0].functionResponse.id, 'fc-1');
     capturedToolOutput = lastTurn.parts[0].functionResponse.response.result;
     assert.equal(capturedToolOutput.대학, '아주대');
     assert.ok(capturedToolOutput.전형.length > 0);
