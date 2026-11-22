@@ -16,6 +16,7 @@ const err = (where, msg) => errors.push(`${where}: ${msg}`);
 
 const template = readFileSync(P('src/template.html'), 'utf8');
 if (template.split('/*@@DATA@@*/').length !== 2) throw new Error('src/template.html 에 /*@@DATA@@*/ 자리표시자가 정확히 1개 있어야 합니다');
+if (template.split('/*@@JUDGE@@*/').length !== 2) throw new Error('src/template.html 에 /*@@JUDGE@@*/ 자리표시자가 정확히 1개 있어야 합니다');
 
 // 허용값은 화면 코드와 같은 목록을 쓰도록 템플릿에서 읽는다
 const listFrom = name => {
@@ -205,6 +206,25 @@ for (const u of U) {
   }
 }
 
+// 충족 판정 데이터(data/judge.json): tools/judge/build.py 가 대학 파일에서 만든다. 전형마다 1개, 원본 칸이 바뀌면 다시 만들어야 한다
+const judgeSrc = r => createHash('sha1').update(['min_flag', 'min_text', 'elig', 'elig_text', 'recommend', 'reg'].map(k => String(r[k] ?? '')).join('\n')).digest('hex').slice(0, 10);
+let J = { rows: {} };
+try { J = JSON.parse(readFileSync(P('data/judge.json'), 'utf8')) } catch (e) { err('data/judge.json', '읽기 실패 - ' + e.message) }
+{
+  const want = new Set(), stale = [];
+  for (const u of U) for (const r of u.rows) {
+    const k = `${u.u}|${r.track}|${r.name}`;
+    want.add(k);
+    const j = J.rows[k];
+    if (!j) err('data/judge.json', `'${k}' 항목이 없습니다. python3 tools/judge/build.py 를 실행하세요`);
+    else if (j.src !== judgeSrc(r)) stale.push(k);
+    else if (r.min_flag !== '없음' && !(j.m && j.m.length)) err('data/judge.json', `'${k}' 수능최저가 있는데 판정 규칙이 없습니다(tools/judge 보정 필요)`);
+  }
+  if (stale.length) err('data/judge.json', `수능최저·지원자격 문구가 바뀐 전형 ${stale.length}개(${stale.slice(0, 3).join(', ')}${stale.length > 3 ? ' 등' : ''}). python3 tools/judge/build.py 로 다시 만들고, 새 문구가 자동 분해되는지 tools/judge/README.md 대로 확인하세요`);
+  const extra = Object.keys(J.rows).filter(k => !want.has(k));
+  if (extra.length) err('data/judge.json', `없는 전형 ${extra.length}개(${extra.slice(0, 3).join(', ')}). python3 tools/judge/build.py 를 실행하세요`);
+}
+
 let V = [];
 try { V = JSON.parse(readFileSync(P('data/versions.json'), 'utf8')) } catch (e) { err('data/versions.json', 'JSON 문법 오류 - ' + e.message) }
 if (!Array.isArray(V) || !V.length) err('data/versions.json', '버전 기록이 1개 이상 있어야 합니다');
@@ -219,7 +239,7 @@ else V.forEach((v, i) => {
 for (const k of ['og:title', 'og:description', 'og:image', 'og:url']) if (!template.includes(`property="${k}"`)) err('src/template.html', `${k} 메타 태그가 없습니다`);
 if (template.indexOf('property="og:image"') > template.indexOf('@@ICON:')) err('src/template.html', 'og 메타 태그는 파비콘 링크보다 앞에 두어야 합니다(미리보기 수집기가 문서 앞부분만 읽을 수 있음)');
 if (!existsSync(P('og.png'))) err('og.png', '공유 미리보기 이미지가 없습니다');
-const json = JSON.stringify({ U, V });
+const json = JSON.stringify({ U, V, J: J.rows });
 if (/<\/script|<!--/i.test(json)) err('data', "데이터에 '</script' 또는 '<!--' 문자열이 있으면 페이지가 깨집니다");
 
 if (errors.length) {
@@ -228,7 +248,7 @@ if (errors.length) {
 }
 
 // 파비콘: src/icons 의 PNG를 data URI로 넣어 단일 파일에서도 아이콘이 보이게 함
-const filled = template.replace('/*@@DATA@@*/', () => json)
+const filled = template.replace('/*@@DATA@@*/', () => json).replace('/*@@JUDGE@@*/', () => readFileSync(P('src/judge.js'), 'utf8'))
   .replace(/@@VER@@/g, () => V[V.length - 1].v + '-' + createHash('sha1').update(readFileSync(P('og.png'))).digest('hex').slice(0, 8)) // 공유 미리보기 이미지 캐시 갱신용(버전이나 og.png가 바뀌면 카카오톡 등이 새 이미지를 받음)
   .replace(/@@ICON:([\w.-]+)@@/g, (_, f) => 'data:image/png;base64,' + readFileSync(P('src/icons', f)).toString('base64'));
 // 웹페이지(index.html)에는 앱 전용 부분을 넣지 않는다. 앱 전용 페이지(/app/)는 같은 화면에 설치 정보·서비스 워커 등록만 더한 것이다.
