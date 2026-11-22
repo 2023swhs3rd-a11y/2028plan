@@ -441,7 +441,7 @@ main{
       <h2>2028 대입전형 시행계획을 대화로 검색·비교하세요</h2>
       <p>95개 대학의 정원 내 교과·종합·논술·정시 및 농어촌 전형 데이터를 실시간 조회해 원문 PDF 쪽수와 함께 답합니다.</p>
       <div class="model-legend">
-        <span class="mtag"><i class="dot g"></i><b>빠름</b> Gemini 2.5 Flash · 단건 조회·등급 환산</span>
+        <span class="mtag"><i class="dot g"></i><b>빠름</b> Gemini 3.5 Flash-Lite · 단건 조회·등급 환산</span>
         <span class="mtag"><i class="dot c"></i><b>심층</b> Claude Sonnet 4.5 · 복합 비교·상담 준비표·안내문</span>
       </div>
     </div>
@@ -508,7 +508,7 @@ main{
       <div class="mode-wrap">
         <div class="seg mode-seg" id="modeSeg" role="group" aria-label="응답 모델 선택">
           <button type="button" data-mode="auto" aria-pressed="true" title="질문 성격에 따라 Gemini/Claude 자동 선택">자동</button>
-          <button type="button" data-mode="fast" aria-pressed="false" title="Gemini 2.5 Flash · 빠른 전형 조회">빠름</button>
+          <button type="button" data-mode="fast" aria-pressed="false" title="Gemini 3.5 Flash-Lite · 빠른 전형 조회">빠름</button>
           <button type="button" data-mode="deep" aria-pressed="false" title="Claude Sonnet 4.5 · 복합 비교·상담 준비표·안내문">심층</button>
         </div>
         <span class="mode-desc" id="modeDesc">질문 성격에 따라 자동 선택 (오류 시 자동 전환)</span>
@@ -548,7 +548,7 @@ main{
 
   const MODE_META = {
     auto: '질문 성격에 따라 자동 선택 (오류 시 자동 전환)',
-    fast: 'Gemini 2.5 Flash · 빠른 조회 우선 (오류 시 심층 전환)',
+    fast: 'Gemini 3.5 Flash-Lite · 빠른 조회 우선 (오류 시 심층 전환)',
     deep: 'Claude Sonnet 4.5 · 복합 비교·작성 우선 (오류 시 빠름 전환)',
   };
 

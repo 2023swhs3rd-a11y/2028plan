@@ -223,7 +223,7 @@ async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolT
         systemInstruction: { parts: [{ text: systemPrompt }] },
         contents,
         tools,
-        generationConfig: { temperature: 0.2, maxOutputTokens: 4096 },
+        generationConfig: { maxOutputTokens: 4096 },
       }),
       signal: combineSignals(signal, UPSTREAM_TIMEOUT_MS),
     });
@@ -236,6 +236,9 @@ async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolT
     const modelParts = [];
     const functionCalls = [];
     let textBuf = '';
+    const flushText = () => {
+      if (textBuf) { modelParts.push({ text: textBuf }); textBuf = ''; }
+    };
 
     for await (const ev of parseSSE(res.body)) {
       let chunk;
@@ -244,12 +247,19 @@ async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolT
       const parts = chunk.candidates?.[0]?.content?.parts || [];
       for (const part of parts) {
         if (part.functionCall) {
+          flushText();
           modelParts.push(part);
           functionCalls.push(part.functionCall);
         } else if (typeof part.text === 'string' && !part.thought) {
-          textBuf += part.text;
+          if (part.thoughtSignature) {
+            flushText();
+            modelParts.push(part);
+          } else {
+            textBuf += part.text;
+          }
           emit('delta', { text: part.text });
         } else if (part.thought && part.thoughtSignature) {
+          flushText();
           modelParts.push(part);
         }
       }
@@ -259,14 +269,14 @@ async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolT
       return { toolCalls: totalToolCalls };
     }
 
-    if (textBuf) modelParts.unshift({ text: textBuf });
+    flushText();
     contents.push({ role: 'model', parts: modelParts });
 
     const responseParts = [];
     for (let i = 0; i < functionCalls.length; i++) {
       const fc = functionCalls[i];
       totalToolCalls++;
-      const callId = `g-${round}-${i}`;
+      const callId = fc.id || `g-${round}-${i}`;
       const { text, isError } = await executeToolCall({
         id: callId,
         name: fc.name,
@@ -279,6 +289,7 @@ async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolT
       try { parsed = JSON.parse(text); } catch { parsed = { text }; }
       responseParts.push({
         functionResponse: {
+          ...(fc.id ? { id: fc.id } : {}),
           name: fc.name,
           response: isError ? { error: parsed } : { result: parsed },
         },
