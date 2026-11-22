@@ -5,6 +5,19 @@ compatibility_date = "2025-10-01"
 
 [vars]
 DATA_URL = "https://2023swhs3rd-a11y.github.io/2028plan/data.json"
+ACCESS_MODE = "either"
+GEMINI_MODEL = "gemini-2.5-flash"
+CLAUDE_MODEL = "claude-sonnet-4-5"
+RATE_LIMIT_PER_MIN = "10"
+RATE_LIMIT_PER_DAY_IP = "100"
+RATE_LIMIT_PER_DAY_TOTAL = "500"
+
+# 비밀값은 `npx wrangler secret put <이름>` 또는 Cloudflare 대시보드에서 설정:
+#   GEMINI_API_KEY     : Google AI Studio API 키 (빠른 조회)
+#   ANTHROPIC_API_KEY  : Anthropic API 키 (복합 비교·상담 준비표·안내문 작성)
+#   ALLOWED_IPS        : 학교/기관 허용 IP 또는 CIDR (쉼표·공백 구분, 예: 210.100.12.0/24)
+#   ACCESS_CODE        : 외부 접속용 접근 코드(비밀번호)
+#   ALLOWED_ORIGINS    : (선택) 허용 Origin 제한 (예: https://2023swhs3rd-a11y.github.io)
 
 # 미리보기 배포(main 이외 브랜치·PR)용. 비워 두면 위 설정을 그대로 쓴다.
 [previews]

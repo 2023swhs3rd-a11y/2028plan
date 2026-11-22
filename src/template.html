@@ -366,6 +366,8 @@ body.lock{overflow:hidden}
 /* 오류 제보: 머리글 버튼과 대화상자 */
 .rpb{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 11px;border:1px solid var(--line2);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none}
 .rpb:hover{border-color:var(--accent);color:var(--accent)}
+.rpb.chb{text-decoration:none;border-color:color-mix(in srgb,var(--accent) 42%,var(--line2));background:var(--accent-soft);color:var(--accent)}
+.rpb.chb:hover{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 #rpd{width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px);border:1px solid var(--line2);border-radius:12px;background:var(--bg);color:var(--ink);padding:18px 18px 16px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
 #rpd::backdrop{background:rgba(0,0,0,.4)}
 #rpd h2{font-family:var(--f-display);font-size:18px;margin:0 0 6px}
@@ -906,6 +908,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
     <h1><a href="./" class="home" id="home" title="첫 화면으로">2028 대입전형 시행계획 요약</a></h1><span class="vb" id="vb"></span><span class="dday" id="dday" hidden></span>
     <div class="hact">
       <button type="button" class="fold ktog" id="ktog" aria-controls="kpis" aria-expanded="false"></button>
+      <a href="@@CHAT_HREF@@" class="rpb chb" id="chb" aria-label="AI 상담" data-tip="2028 대입 AI 상담 챗봇"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h7A2.5 2.5 0 0 1 16 5.5v5A2.5 2.5 0 0 1 13.5 13H9l-3.5 3v-3H6.5A2.5 2.5 0 0 1 4 10.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span>AI<span class="rpl"> 상담</span></span></a>
       <button type="button" class="rpb" id="rpb" aria-haspopup="dialog" aria-label="데이터 오류 제보" data-tip="잘못된 값 알리기"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M4.5 17.5V3m0 .8h9.2l-1.8 3.4 1.8 3.4H4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg><span class="rpl">오류 제보</span></button>
       <div class="thw"><button type="button" class="thb" id="thb" aria-expanded="false" aria-controls="thp" aria-label="화면 테마·강조색" data-tip="화면 테마·강조색"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg></button>
       <div class="theme" id="thp" role="group" aria-label="화면 테마" hidden>

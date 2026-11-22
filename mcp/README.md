@@ -35,8 +35,30 @@
 
 사용자 지정 커넥터 메뉴와 개수 제한은 Claude 요금제에 따라 다릅니다. Team·Enterprise 계정은 관리자가 조직 커넥터로 한 번 등록하면 구성원은 켜기만 하면 됩니다.
 
+## AI 상담 챗봇 (`/chat`, `/chat/status`)
+
+같은 Cloudflare Worker에서 웹 챗봇 페이지(`/2028plan/chat/`)용 SSE 스트리밍 API를 함께 제공합니다. 내부에서 `src/mcp.js`의 `rpc()`를 직접 호출해 MCP 도구·프롬프트·안내문을 그대로 공유하며 런타임 의존성이 없습니다.
+
+- **자동 라우팅 및 폴백 (`src/router.js`)**:
+  - 빠른 조회·단건 검색·등급 환산 → **Gemini** (`gemini-2.5-flash`)
+  - 복합 비교·상담 준비표(`consult_prep`)·안내문 작성(`change_notice`) → **Claude** (`claude-sonnet-4-5`)
+  - 한쪽 API 오류 시 다른 모델로 자동 폴백하며, 화면에서 **자동 / 빠름 / 심층** 수동 선택도 지원합니다.
+- **접근 제어 (`src/access.js`)**:
+  - `ALLOWED_IPS`(IPv4/IPv6 및 CIDR, 쉼표·공백 구분)와 `ACCESS_CODE`(비밀번호)를 모두 지원합니다.
+  - 기본 `ACCESS_MODE=either`: 허용 IP(학교 네트워크)는 자동 통과하고, 외부는 접근 코드(`X-Access-Code`)로 인증합니다. (`ip`, `code`, `both`, `open` 모드 선택 가능)
+- **호출 상한**:
+  - `RATE_LIMIT_PER_MIN`(기본 10회/분), `RATE_LIMIT_PER_DAY_IP`(기본 100회/일), `RATE_LIMIT_PER_DAY_TOTAL`(기본 500회/일, KST 자정 초기화), 접근 코드 연속 오입력 잠금 포함.
+- **비밀값 설정** (`mcp/` 폴더에서 실행):
+  ```sh
+  npx wrangler secret put GEMINI_API_KEY
+  npx wrangler secret put ANTHROPIC_API_KEY
+  npx wrangler secret put ALLOWED_IPS
+  npx wrangler secret put ACCESS_CODE
+  ```
+
 ## 시험
 
 ```sh
-node mcp/test.mjs   # 저장소 data/ 로 data.json 을 만들어 모든 도구·프롬프트·HTTP 응답을 확인(CI에서도 실행)
+node mcp/test.mjs       # 저장소 data/ 로 data.json 을 만들어 모든 MCP 도구·프롬프트·HTTP 응답 확인(CI에서도 실행)
+node mcp/chat.test.mjs  # 챗봇 접근 제어·호출 상한·라우팅·자동 폴백·SSE 스트리밍·MCP rpc() 연동 확인(CI에서도 실행)
 ```
