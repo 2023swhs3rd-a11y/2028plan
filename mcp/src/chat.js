@@ -172,15 +172,15 @@ function combineSignals(reqSignal, timeoutMs) {
 
 function sanitizeErrorMessage(err) {
   const raw = String(err?.message || err || '알 수 없는 오류');
-  return raw.replace(/(key=|AIza|AQ\.|sk-ant-)[^\s&"']+/gi, '[REDACTED]').slice(0, 240);
+  return raw.replace(/(key=|AIza|AQ\.|sk-ant-)[^\s&"']+/gi, '[REDACTED]').slice(0, 400);
 }
 
-export function geminiEndpoint(model, apiKey) {
+const DEFAULT_GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+
+export function geminiEndpoint(model, baseUrl = '') {
+  const base = String(baseUrl || DEFAULT_GEMINI_BASE).trim().replace(/\/+$/, '');
   const m = encodeURIComponent(model);
-  if (String(apiKey || '').trim().startsWith('AQ.')) {
-    return `https://aiplatform.googleapis.com/v1/publishers/google/models/${m}:streamGenerateContent?alt=sse`;
-  }
-  return `https://generativelanguage.googleapis.com/v1beta/models/${m}:streamGenerateContent?alt=sse`;
+  return `${base}/models/${m}:streamGenerateContent?alt=sse`;
 }
 
 // ── 도구 실행 공통 헬퍼 ──
@@ -205,8 +205,8 @@ async function executeToolCall({ id, name, args, toolTitleMap, getData, emit }) 
   return { text, isError };
 }
 
-// ── Gemini 스트리밍 + 다중 도구 호출 루프 (Google AI Studio AIza 키 및 Vertex AI Express AQ. 키 모두 지원) ──
-async function runGemini({ model, apiKey, systemPrompt, mcpTools, toolTitleMap, messages, getData, emit, fetchImpl, signal }) {
+// ── Gemini 스트리밍 + 다중 도구 호출 루프 (AI Studio AIza·AQ. 키 기본 지원, GEMINI_BASE_URL 지정 시 Vertex AI 등 사용) ──
+async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolTitleMap, messages, getData, emit, fetchImpl, signal }) {
   const contents = messages.map(m => ({
     role: m.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: m.content }],
@@ -215,7 +215,7 @@ async function runGemini({ model, apiKey, systemPrompt, mcpTools, toolTitleMap, 
   let totalToolCalls = 0;
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-    const url = geminiEndpoint(model, apiKey);
+    const url = geminiEndpoint(model, baseUrl);
     const res = await fetchImpl(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
@@ -230,7 +230,7 @@ async function runGemini({ model, apiKey, systemPrompt, mcpTools, toolTitleMap, 
 
     if (!res.ok) {
       const errBody = await res.text().catch(() => '');
-      throw new Error(`Gemini HTTP ${res.status}${errBody ? `: ${errBody.slice(0, 140)}` : ''}`);
+      throw new Error(`Gemini HTTP ${res.status}${errBody ? `: ${errBody.slice(0, 320)}` : ''}`);
     }
 
     const modelParts = [];
@@ -575,6 +575,7 @@ async function handlePostChat(request, getData, env, limiter, fetchImpl) {
           return runGemini({
             model: modelName,
             apiKey: String(env.GEMINI_API_KEY).trim(),
+            baseUrl: env.GEMINI_BASE_URL,
             systemPrompt,
             mcpTools,
             toolTitleMap,
