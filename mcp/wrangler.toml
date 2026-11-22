@@ -13,7 +13,7 @@ RATE_LIMIT_PER_DAY_IP = "100"
 RATE_LIMIT_PER_DAY_TOTAL = "500"
 
 # 비밀값은 `npx wrangler secret put <이름>` 또는 Cloudflare 대시보드에서 설정:
-#   GEMINI_API_KEY     : Google AI Studio API 키 (빠른 조회)
+#   GEMINI_API_KEY     : Gemini API 키 (Google AI Studio AIza… 및 Vertex AI Express AQ.… 모두 자동 지원)
 #   ANTHROPIC_API_KEY  : Anthropic API 키 (복합 비교·상담 준비표·안내문 작성)
 #   ALLOWED_IPS        : 학교/기관 허용 IP 또는 CIDR (쉼표·공백 구분, 예: 210.100.12.0/24)
 #   ACCESS_CODE        : 외부 접속용 접근 코드(비밀번호)

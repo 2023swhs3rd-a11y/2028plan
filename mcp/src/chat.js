@@ -63,7 +63,7 @@ function buildSystemPrompt(instructions) {
 function sanitizeGeminiSchema(schema) {
   if (!schema || typeof schema !== 'object') return undefined;
   const out = {};
-  if (schema.type) out.type = schema.type;
+  if (schema.type) out.type = String(schema.type).toUpperCase();
   if (schema.description) out.description = schema.description;
   if (Array.isArray(schema.enum)) out.enum = schema.enum;
   if (schema.items) out.items = sanitizeGeminiSchema(schema.items);
@@ -172,7 +172,15 @@ function combineSignals(reqSignal, timeoutMs) {
 
 function sanitizeErrorMessage(err) {
   const raw = String(err?.message || err || '알 수 없는 오류');
-  return raw.replace(/(key=|AIza|sk-ant-)[^\s&"']+/gi, '[REDACTED]').slice(0, 240);
+  return raw.replace(/(key=|AIza|AQ\.|sk-ant-)[^\s&"']+/gi, '[REDACTED]').slice(0, 240);
+}
+
+export function geminiEndpoint(model, apiKey) {
+  const m = encodeURIComponent(model);
+  if (String(apiKey || '').trim().startsWith('AQ.')) {
+    return `https://aiplatform.googleapis.com/v1/publishers/google/models/${m}:streamGenerateContent?alt=sse`;
+  }
+  return `https://generativelanguage.googleapis.com/v1beta/models/${m}:streamGenerateContent?alt=sse`;
 }
 
 // ── 도구 실행 공통 헬퍼 ──
@@ -197,7 +205,7 @@ async function executeToolCall({ id, name, args, toolTitleMap, getData, emit }) 
   return { text, isError };
 }
 
-// ── Gemini 스트리밍 + 다중 도구 호출 루프 ──
+// ── Gemini 스트리밍 + 다중 도구 호출 루프 (Google AI Studio AIza 키 및 Vertex AI Express AQ. 키 모두 지원) ──
 async function runGemini({ model, apiKey, systemPrompt, mcpTools, toolTitleMap, messages, getData, emit, fetchImpl, signal }) {
   const contents = messages.map(m => ({
     role: m.role === 'assistant' ? 'model' : 'user',
@@ -207,7 +215,7 @@ async function runGemini({ model, apiKey, systemPrompt, mcpTools, toolTitleMap, 
   let totalToolCalls = 0;
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
+    const url = geminiEndpoint(model, apiKey);
     const res = await fetchImpl(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
@@ -642,7 +650,7 @@ async function handlePostChat(request, getData, env, limiter, fetchImpl) {
           } catch (fallbackErr) {
             emit('error', {
               code: 'BOTH_PROVIDERS_FAILED',
-              message: `두 AI 모델 모두 응답하지 못했습니다. (${sanitizeErrorMessage(fallbackErr)})`,
+              message: `두 AI 모델 모두 응답하지 못했습니다. (1차: ${errMsg} / 2차: ${sanitizeErrorMessage(fallbackErr)})`,
             });
           }
         } else {
