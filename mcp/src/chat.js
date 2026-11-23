@@ -12,7 +12,7 @@ const MAX_MESSAGES = 20;
 const MAX_MSG_CHARS = 4000;
 const MAX_TOOL_ROUNDS = 6;
 const MAX_TOOL_RESULT_CHARS = 40_000;
-const UPSTREAM_TIMEOUT_MS = 45_000;
+const UPSTREAM_TIMEOUT_MS = 35_000;
 
 const defaultLimiter = new RateLimiter();
 
@@ -206,8 +206,16 @@ async function executeToolCall({ id, name, args, toolTitleMap, getData, emit }) 
 }
 
 const TRANSIENT_GEMINI_RE = /HTTP (429|503)|high demand|overloaded|UNAVAILABLE|RESOURCE_EXHAUSTED/i;
-const CASCADE_GEMINI_RE = /HTTP (404|429|503)|high demand|overloaded|UNAVAILABLE|RESOURCE_EXHAUSTED/i;
+const CASCADE_GEMINI_RE = /HTTP (404|429|500|502|503|504|522|524)|high demand|overloaded|UNAVAILABLE|RESOURCE_EXHAUSTED|timeout|timed out|TimeoutError|AbortError/i;
 const sleep = ms => (ms > 0 ? new Promise(r => setTimeout(r, ms)) : Promise.resolve());
+
+export function geminiGenerationConfig(model) {
+  // Gemini 3.x/4.x는 기본 thinking이 길어 Cloudflare 524 타임아웃을 유발할 수 있으므로 low로 제한(2.5는 thinkingLevel 미지원)
+  if (/^gemini-[34]/i.test(String(model || ''))) {
+    return { maxOutputTokens: 8192, thinkingConfig: { thinkingLevel: 'low' } };
+  }
+  return { maxOutputTokens: 4096 };
+}
 
 // ── Gemini 스트리밍 + 다중 도구 호출 루프 (AI Studio AIza·AQ. 키 기본 지원, GEMINI_BASE_URL 지정 시 Vertex AI 등 사용) ──
 async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolTitleMap, messages, getData, emit, fetchImpl, signal, retryDelayMs = 600 }) {
@@ -216,6 +224,7 @@ async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolT
     parts: [{ text: m.content }],
   }));
   const tools = toGeminiTools(mcpTools);
+  const generationConfig = geminiGenerationConfig(model);
   let totalToolCalls = 0;
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
@@ -233,7 +242,7 @@ async function runGemini({ model, apiKey, baseUrl, systemPrompt, mcpTools, toolT
             systemInstruction: { parts: [{ text: systemPrompt }] },
             contents,
             tools,
-            generationConfig: { maxOutputTokens: 4096 },
+            generationConfig,
           }),
           signal: combineSignals(signal, UPSTREAM_TIMEOUT_MS),
         });
@@ -636,7 +645,8 @@ async function handlePostChat(request, getData, env, limiter, fetchImpl, retryDe
               return { ...r, model: m };
             } catch (e) {
               lastErr = e;
-              if (request.signal?.aborted || idx === candidates.length - 1 || !CASCADE_GEMINI_RE.test(String(e?.message || ''))) {
+              const errInfo = `${e?.name || ''} ${e?.message || ''}`;
+              if (request.signal?.aborted || idx === candidates.length - 1 || !CASCADE_GEMINI_RE.test(errInfo)) {
                 throw e;
               }
             }

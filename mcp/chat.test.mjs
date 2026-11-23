@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { exportData } from '../scripts/export-data.mjs';
 import { parseIp, ipMatchesList, checkAccess, RateLimiter, kstDateKey } from './src/access.js';
 import { classifyComplexity, selectRoute, DEFAULT_GEMINI_MODEL, DEFAULT_CLAUDE_MODEL } from './src/router.js';
-import { handleChat, parseSSE, geminiEndpoint } from './src/chat.js';
+import { handleChat, parseSSE, geminiEndpoint, geminiGenerationConfig } from './src/chat.js';
 
 const data = exportData();
 const getData = async () => data;
@@ -366,6 +366,31 @@ const fullEnv = {
   assert.equal(evCascade.find(e => e.event === 'done').data.model, 'gemini-3.5-flash-lite');
   assert.equal(evCascade.filter(e => e.event === 'delta').map(e => e.data.text).join(''), '보조 Gemini 응답');
 
+  // 8-a4: thinkingConfig(3.x만 low, 2.5는 미설정) 및 HTTP 524 타임아웃 즉시 보조 모델 전환
+  assert.deepEqual(geminiGenerationConfig('gemini-3.8-flash'), { maxOutputTokens: 8192, thinkingConfig: { thinkingLevel: 'low' } });
+  assert.deepEqual(geminiGenerationConfig('gemini-2.5-flash-lite'), { maxOutputTokens: 4096 });
+  const tried524 = [];
+  const res524 = await handleChat(new Request('https://x.test/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '210.100.12.5' },
+    body: JSON.stringify({ mode: 'fast', messages: [{ role: 'user', content: '아주대 전형' }] }),
+  }), getData, fullEnv, {
+    limiter,
+    retryDelayMs: 0,
+    fetch: async (url) => {
+      const m = decodeURIComponent(url.match(/\/models\/([^:]+):/)?.[1] || '');
+      tried524.push(m);
+      if (m === 'gemini-3.8-flash') return new Response('error code: 524', { status: 524 });
+      return sseResponse([
+        `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ text: '524 우회 응답' }] } }] })}\n\n`,
+      ]);
+    },
+  });
+  const ev524 = await readClientSSE(res524);
+  assert.deepEqual(tried524, ['gemini-3.8-flash', 'gemini-3.5-flash-lite'], '524 타임아웃은 같은 모델 재시도 없이 즉시 보조 모델로 전환');
+  assert.equal(ev524.find(e => e.event === 'done').data.model, 'gemini-3.5-flash-lite');
+  assert.equal(ev524.filter(e => e.event === 'delta').map(e => e.data.text).join(''), '524 우회 응답');
+
   // 8-b: Claude 529 -> Gemini 폴백
   const res2 = await handleChat(new Request('https://x.test/chat', {
     method: 'POST',
@@ -473,6 +498,17 @@ const fullEnv = {
     headers: { 'X-Proxy-Target': 'https://evil.example.com/steal' },
   }));
   assert.equal(bad.status, 400);
+
+  // 업스트림 타임아웃 시 HTTP 504 반환 (Cloudflare 524 방지)
+  const timedOut = await proxy.fetch(new Request('https://gemini-proxy.internal/', {
+    method: 'POST',
+    headers: { 'X-Proxy-Target': 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:streamGenerateContent?alt=sse' },
+  }), async () => {
+    const err = new Error('timed out');
+    err.name = 'TimeoutError';
+    throw err;
+  });
+  assert.equal(timedOut.status, 504);
 
   // createGeminiFetch가 Gemini 요청을 wnam locationHint DO로 전달하고 Claude 요청은 직접 호출하는지 확인
   let hintUsed = null;

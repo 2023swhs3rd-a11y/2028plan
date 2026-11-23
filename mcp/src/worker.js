@@ -36,11 +36,22 @@ export class GeminiProxy {
     headers.set('Content-Type', request.headers.get('Content-Type') || 'application/json');
     const apiKey = request.headers.get('x-goog-api-key');
     if (apiKey) headers.set('x-goog-api-key', apiKey);
-    return fetchImpl(targetUrl, {
-      method: request.method || 'POST',
-      headers,
-      body: request.body,
-    });
+    const signal = typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
+      ? AbortSignal.timeout(35_000)
+      : undefined;
+    try {
+      return await fetchImpl(targetUrl, {
+        method: request.method || 'POST',
+        headers,
+        body: request.body,
+        ...(signal ? { signal } : {}),
+      });
+    } catch (e) {
+      if (e?.name === 'TimeoutError' || e?.name === 'AbortError') {
+        return new Response('Upstream Gemini timeout', { status: 504 });
+      }
+      throw e;
+    }
   }
 }
 
